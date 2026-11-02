@@ -1,9 +1,10 @@
 # Build a small compositional numerical library
 
-Status: first slice published after approval; textual-front-end slice in progress
-locally. Later slices remain proposed.
+Status: first slice published after approval; textual-front-end slice implemented
+and verified locally. Later slices remain proposed.
 Observed: 2026-11-02. Implementation ref: `main` at
-`9f745a0471406c556a3c35146a9c8fa5113c3c41`.
+`811f40c4d7a31df41a771a0200bc5937cae0b642` (local).
+Published foundation: `9f745a0471406c556a3c35146a9c8fa5113c3c41`.
 
 ## Intent
 
@@ -67,8 +68,8 @@ Specify the grammar, whitespace, precedence, error spans, and resource bounds
 before implementation. Reject unsupported forms at compile time, with bounded
 negative fixtures for malformed, unknown, truncated, and oversized input.
 
-The exact facade name and syntax remain a decision for this slice; do not
-promise a `J[...]` or `Phrase[...]` API in the foundation README yet.
+Implemented as `Expr[source: StringLiteral]`. See the
+[grammar contract and verification evidence](expression-strings.md).
 
 ## Slice 3: shared reductions
 
@@ -91,7 +92,7 @@ Investigate Linux CI and packaging as a separately verified portability step.
 ## Current unknowns
 
 - MIT is included in the approved first public commit.
-- No CI, benchmark, Linux runtime, or textual-front-end result exists for Mojj yet.
+- No CI, benchmark, or Linux runtime result exists for Mojj yet.
 - This plan is a sequence of reviewable slices, not a claim that later APIs or
   performance outcomes are already settled.
 
@@ -114,5 +115,5 @@ the final contents before committing. Linux, CI, performance benchmarks, and
 exhaustive IEEE special values were not tested.
 
 The user approved the initial public push. GitHub `main` was verified at the
-above implementation commit. Planning and all later implementation commits
+published foundation commit. Planning and all later implementation commits
 remain local. See [the next slice contract](expression-strings.md).

@@ -24,3 +24,7 @@ local unless explicitly included in that approval.
 The initial `main` commit `9f745a0` was approved and published to
 [davidmashburn/mojj](https://github.com/davidmashburn/mojj). All further work,
 including this planning branch, remains local until separately authorized.
+
+Local `main` now includes `811f40c`, the verified expression-string slice.
+Its readable phrases and symbolic forms share compile-time parsing and typed
+lowering. See the expression plan for exact scope and validation evidence.
