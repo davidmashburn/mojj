@@ -1,0 +1,15 @@
+[workspace]
+name = "mojj"
+version = "0.1.0"
+description = "Inspectable numerical composition in Mojo"
+channels = ["https://conda.modular.com/max", "conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[dependencies]
+mojo = "==1.1.0"
+
+[tasks]
+test = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
+demo = "mojo run --fp-mode contract=off -I src examples/rms.mojo"
+package = "mkdir -p build && mojo precompile src/mojj -o build/mojj.mojoc"
+package-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo", depends-on = ["package"] }
