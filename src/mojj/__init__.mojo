@@ -5,3 +5,4 @@ from .core import (
     ReductionExpr, ScalarOp, Scale, SeriesExpr, Sqrt, Square, Sum,
     evaluate, materialize,
 )
+from .strings import Expr

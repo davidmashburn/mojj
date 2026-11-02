@@ -33,6 +33,29 @@ var output = jj.materialize[Pipeline](data)  # (x + 2) * 3
 
 `materialize` creates a fresh result list. The source list is not changed.
 
+## Compiled phrases
+
+`Expr` accepts a compile-time string literal. Words and selected J-inspired
+symbols share one grammar and lower to the same numerical operations:
+
+```mojo
+comptime Words = jj.Expr["sqrt mean square"]
+comptime Symbols = jj.Expr["%: @: ((+/ % #) @: *:)"]
+var words = Words.reduce(data)
+var symbols = Symbols.reduce(data)
+```
+
+Whitespace composes operations from right to left. `of` is optional:
+`sqrt mean square` and `sqrt of mean of square` mean the same thing.
+
+Scalar expressions offer `apply(value)` and `map(data)`; reductions offer
+`reduce(data)`. Both expose `describe()`, which also works at compile time.
+For example, `Expr["negate square"].apply(3.0)` is `-9.0`.
+
+Malformed syntax and wrong-category calls fail at compile time when an entrypoint
+is used. An unused type alias alone is not a validation check. See the bounded
+[grammar and diagnostics](docs/SYNTAX.md).
+
 ## Run locally
 
 Install [Pixi](https://pixi.sh/), then run these commands from this checkout:
@@ -41,13 +64,16 @@ Install [Pixi](https://pixi.sh/), then run these commands from this checkout:
 pixi install --locked
 pixi run test
 pixi run demo
+pixi run strings-demo
 pixi run package-smoke
 ```
 
 The toolchain is pinned to Mojo 1.1.0. `package-smoke` precompiles
 `src/mojj` into `build/mojj.mojoc` and runs the example using that compiled
-package. From another project, add this repository's `src` or precompiled
-`build` directory to Mojo's import path with `-I`.
+package, then runs the expression tests against that package. Python is installed
+in the development environment to drive bounded compiler-failure tests; the
+library and numerical execution are pure Mojo. From another project, add this
+repository's `src` or precompiled `build` directory to Mojo's import path with `-I`.
 
 ## Current contract
 
@@ -81,8 +107,8 @@ or general automatic fusion pass. The tasks disable floating-point contraction;
 this is not a guarantee of bitwise portability. No speedup or compiler-level
 allocation claim is made without measurements.
 
-This first slice does not yet include string parsing, readable phrases, forks,
-strides, windows, rank operations, GPU execution, or Python/NumPy integration.
+This version does not yet include forks, strides, windows, rank operations,
+GPU execution, or Python/NumPy integration.
 Those belong to the separate `project-planning` branch. Numerical tests use
 finite inputs; exhaustive IEEE special-value behavior is not established.
 

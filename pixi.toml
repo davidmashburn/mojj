@@ -7,9 +7,16 @@ platforms = ["osx-arm64", "linux-64"]
 
 [dependencies]
 mojo = "==1.1.0"
+python = ">=3.11,<4"
 
 [tasks]
-test = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
+test = { depends-on = ["test-core", "test-strings", "test-syntax"] }
+test-core = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
+test-strings = "mojo run --fp-mode contract=off -I src tests/test_strings.mojo"
+test-syntax = "python3 tests/check_syntax.py"
 demo = "mojo run --fp-mode contract=off -I src examples/rms.mojo"
+strings-demo = "mojo run --fp-mode contract=off -I src examples/strings.mojo"
 package = "mkdir -p build && mojo precompile src/mojj -o build/mojj.mojoc"
-package-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo", depends-on = ["package"] }
+package-smoke = { depends-on = ["package-core-smoke", "package-strings-smoke"] }
+package-core-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo", depends-on = ["package"] }
+package-strings-smoke = { cmd = "mojo run --fp-mode contract=off -I build tests/test_strings.mojo", depends-on = ["package"] }
