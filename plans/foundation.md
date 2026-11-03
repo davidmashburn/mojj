@@ -1,9 +1,10 @@
 # Build a small compositional numerical library
 
-Status: first slice published after approval; textual-front-end slice implemented
-and verified locally. Later slices remain proposed.
+Status: foundation and textual-front-end prototype published after approval.
+Later slices remain proposed. The [J vocabulary roadmap](j-vocabulary.md) now
+prioritizes semantic fidelity before adding shared reductions and views.
 Observed: 2026-11-02. Implementation ref: `main` at
-`811f40c4d7a31df41a771a0200bc5937cae0b642` (local).
+`811f40c4d7a31df41a771a0200bc5937cae0b642` (published).
 Published foundation: `9f745a0471406c556a3c35146a9c8fa5113c3c41`.
 
 ## Intent
@@ -117,3 +118,8 @@ exhaustive IEEE special values were not tested.
 The user approved the initial public push. GitHub `main` was verified at the
 published foundation commit. Planning and all later implementation commits
 remain local. See [the next slice contract](expression-strings.md).
+
+Subsequent publication update, 2026-11-02: the user approved pushing `811f40c`,
+and remote main was verified at that revision. Planning remains local. The
+earlier verification above describes the foundation checkpoint, not current
+publication state.

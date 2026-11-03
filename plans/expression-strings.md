@@ -4,6 +4,13 @@ Status: implemented and verified locally; not pushed. Observed 2026-11-02.
 Implementation: `811f40c4d7a31df41a771a0200bc5937cae0b642` on `main`.
 Baseline: `main` at `9f745a0471406c556a3c35146a9c8fa5113c3c41`.
 
+Subsequent update, 2026-11-02: the user approved publication; remote main is now
+at `811f40c`. The record below documents the implemented prototype. Its grammar
+is not J train parsing. See the [J vocabulary roadmap](j-vocabulary.md) for the
+proposal to preserve J semantics with word aliases, including `of` for `@:`,
+and the still-open option of a separate pipeline grammar. No replacement has
+been implemented yet.
+
 ## Intent and API
 
 Add `Expr[source: StringLiteral]`, exported by `mojj`. Its static methods are:

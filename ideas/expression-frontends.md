@@ -3,6 +3,11 @@
 Status: initial grammar implemented locally in `811f40c`; branching remains
 proposed. Recorded 2026-11-02.
 
+Update: `811f40c` is now published. The user wants to explore faithful J trains
+as well as readable composition. See the [vocabulary roadmap](../plans/j-vocabulary.md):
+the recommended compromise keeps `of` as `@:` and uses J rules for bare trains.
+The current pipeline grammar remains a prototype, not J semantic compatibility.
+
 Dense J-inspired symbols and space-separated word phrases should be alternate
 ways of composing the same numerical operations. The readable form is explicit
 syntax, not natural-language interpretation. Its vocabulary and grammar remain

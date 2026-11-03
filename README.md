@@ -5,8 +5,11 @@ proposals and design reasoning only; never merge it into implementation history.
 
 ## Active plan
 
+- [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — current proposal;
+  J trains and modifiers, readable aliases, and include/defer/exclude decisions.
 - [Build a small compositional numerical library](plans/foundation.md)
-- [Compile expression strings](plans/expression-strings.md)
+- [Compile expression strings](plans/expression-strings.md) — published prototype;
+  its whitespace-composition grammar is under reconsideration.
 
 ## Ideas
 
@@ -21,10 +24,11 @@ explicit approval for the initial public repository push. Subsequent development
 stays local until a later publication instruction. This planning branch is also
 local unless explicitly included in that approval.
 
-The initial `main` commit `9f745a0` was approved and published to
-[davidmashburn/mojj](https://github.com/davidmashburn/mojj). All further work,
-including this planning branch, remains local until separately authorized.
+Both `9f745a0` and the expression-string slice `811f40c` were approved and
+published to [davidmashburn/mojj](https://github.com/davidmashburn/mojj).
+Remote `main` was verified at `811f40c` on 2026-11-02. This planning branch
+remains local; the later push approval covered the implementation commit.
 
-Local `main` now includes `811f40c`, the verified expression-string slice.
-Its readable phrases and symbolic forms share compile-time parsing and typed
-lowering. See the expression plan for exact scope and validation evidence.
+The new roadmap recommends J train rules for bare phrases and `of` as a word
+alias for `@:`. A separate pipeline grammar remains an option, not an implemented
+decision. No parser changes accompany this planning update.
