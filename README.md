@@ -5,6 +5,14 @@ proposals and design reasoning only; never merge it into implementation history.
 
 ## Active plan
 
+Next proposed step (2026-11-03): **J reference fixtures to validate parsing and
+semantics before expanding the vocabulary. J runtime conformance remains
+unverified.** See [P0 in the vocabulary roadmap](plans/j-vocabulary.md#p0--establish-semantic-fixtures-before-adding-vocabulary).
+
+Pin a J reference runtime, execute the small discriminating fixture set, and
+record its version, results and any differences from Mojj. This step does not
+add primitives or change the parser.
+
 - [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — current proposal;
   J trains and modifiers, readable aliases, and include/defer/exclude decisions.
 - [Build a small compositional numerical library](plans/foundation.md)
@@ -26,8 +34,8 @@ local unless explicitly included in that approval.
 
 Both `9f745a0` and the expression-string slice `811f40c` were approved and
 published to [davidmashburn/mojj](https://github.com/davidmashburn/mojj).
-Remote `main` was verified at `811f40c` on 2026-11-02. This planning branch
-remains local; the later push approval covered the implementation commit.
+Remote `main` was verified at `811f40c` on 2026-11-02. The user authorized
+publishing this planning branch on 2026-11-03, including the next-step note.
 
 The new roadmap recommends J train rules for bare phrases and `of` as a word
 alias for `@:`. A separate pipeline grammar remains an option, not an implemented
