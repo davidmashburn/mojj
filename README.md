@@ -5,14 +5,19 @@ proposals and design reasoning only; never merge it into implementation history.
 
 ## Active plan
 
-Next proposed step (2026-11-03): **J reference fixtures to validate parsing and
-semantics before expanding the vocabulary. J runtime conformance remains
-unverified.** See [P0 in the vocabulary roadmap](plans/j-vocabulary.md#p0--establish-semantic-fixtures-before-adding-vocabulary).
+Next proposed step (2026-11-06): **measure and reduce compiled `Expr` overhead**.
+See the [performance tuning plan](plans/expression-performance.md) for prioritized
+hypotheses, a bounded first slice and correctness gates.
 
-Pin a J reference runtime, execute the small discriminating fixture set, and
-record its version, results and any differences from Mojj. This step does not
-add primitives or change the parser.
+The original reference-fixture next step has landed in
+[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13):
+33 selected conformance expectations passed, with documented differences from J,
+and nine provisional performance comparisons were recorded. This does not prove
+full subset parity. The vocabulary roadmap below retains its original baseline
+and proposal history; consult current implementation docs for shipped behavior.
 
+- [Expr performance tuning](plans/expression-performance.md) — current next step;
+  measure first, then optimize one demonstrated cost at a time.
 - [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — current proposal;
   J trains and modifiers, readable aliases, and include/defer/exclude decisions.
 - [Build a small compositional numerical library](plans/foundation.md)
@@ -37,6 +42,7 @@ published to [davidmashburn/mojj](https://github.com/davidmashburn/mojj).
 Remote `main` was verified at `811f40c` on 2026-11-02. The user authorized
 publishing this planning branch on 2026-11-03, including the next-step note.
 
-The new roadmap recommends J train rules for bare phrases and `of` as a word
+The original roadmap recommends J train rules for bare phrases and `of` as a word
 alias for `@:`. A separate pipeline grammar remains an option, not an implemented
-decision. No parser changes accompany this planning update.
+decision. No parser changes accompany this planning update. The 2026-11-06 performance
+proposal was explicitly authorized for commit and push to this planning branch.
