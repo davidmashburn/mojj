@@ -1,28 +1,33 @@
 # One expression, two textual forms
 
-Status: initial grammar implemented locally in `811f40c`; branching remains
-proposed. Recorded 2026-11-02.
+Status: shared word/symbol semantic model implemented; a separate pipeline DSL
+remains an idea. Reconciled 2026-11-06 against published `main` at
+[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13).
 
-Update: `811f40c` is now published. The user wants to explore faithful J trains
-as well as readable composition. See the [vocabulary roadmap](../plans/j-vocabulary.md):
-the recommended compromise keeps `of` as `@:` and uses J rules for bare trains.
-The current pipeline grammar remains a prototype, not J semantic compatibility.
+Readable words are explicit syntax, not natural-language interpretation. They
+normalize to the same tokens as J symbols, sharing bounded parsing, typed
+execution and inspectable expression trees. This preserves the original reason
+for two spellings without introducing two numerical interpreters.
 
-Dense J-inspired symbols and space-separated word phrases should be alternate
-ways of composing the same numerical operations. The readable form is explicit
-syntax, not natural-language interpretation. Its vocabulary and grammar remain
-small enough to learn and validate.
+The prototype in `811f40c` treated whitespace as composition. That historical
+choice was replaced in `f6b05c8`: bare sequences now form J trains, while `of`
+is the explicit alias for `@:`. The earlier examples must be read accordingly:
 
-A compiled expression should retain enough structure for an honest description,
-while the evaluator specializes typed operations over runtime data. Parsing,
-inspection, and execution are separate responsibilities; sharing a semantic
-model avoids letting each syntax acquire subtly different numerical behavior.
+| Current phrase | Meaning |
+| --- | --- |
+| `negate square` / `- *:` | Hook; at 3, produces -6. |
+| `negate of square` / `- @: *:` | Composition; at 3, produces -9. |
+| `sqrt of mean of square` / `%: @: (+/ % #) @: *:` | RMS. |
+| `sqrt mean square` | Fork requiring an unsupported dyadic mean; not RMS. |
 
-Implemented examples include `Expr["negate square"]` and
-`Expr["sqrt mean square"]`, with matching symbolic forms.
-Later branching phrases should expose tree boundaries clearly and be tested
-against direct typed construction, including failures and error locations.
+Branching is now implemented through hooks/forks, cap and longer trains.
+[Tests](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_strings.mojo#L24) compare descriptions and behavior with
+typed construction, and distinguish grouped trains from ordinary noun sentences.
+A separate, explicitly named pipeline entrypoint remains optional and unbuilt;
+there is no implicit mode chosen by word versus symbol spelling.
 
-See the [staged implementation plan](../plans/foundation.md) and
-[completed grammar slice](../plans/expression-strings.md). The initial slice is
-built independently; it does not import the experimental parser.
+See the [current syntax/migration guide](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/SYNTAX.md),
+[reconciled vocabulary roadmap](../plans/j-vocabulary.md), and
+[historical prototype contract](../plans/expression-strings.md).
+This update inspected source and tests but reran no compiler/runtime checks.
+It records implemented semantics, not full J compatibility or optimization.

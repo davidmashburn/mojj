@@ -1,5 +1,48 @@
 # J vocabulary and semantics roadmap
 
+Status: bounded P0/P1 foundation implemented; P2 partial and P3 still proposed.
+Reconciled 2026-11-06 against published `main` at
+[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13).
+Semantic implementation: [`f6b05c8`](https://github.com/davidmashburn/mojj/commit/f6b05c82ac3251876a2e8a8af394f52581ebfcee).
+Reference runner/results: `09cf8d4`. No dirty implementation delta was included.
+
+## Current phase status
+
+| Phase | Implemented evidence | Remaining boundary |
+| --- | --- | --- |
+| P0: contracts and reference fixtures | [Syntax/migration](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/SYNTAX.md), [compatibility ledger](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/COMPATIBILITY.md), [pinned J runner](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/reference/compare.py) and [raw results](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/reference/results.json). All 33 recorded expectations met. | This closes the bounded fixture milestone, not exhaustive compatibility. Thirty cases agree on successful values/shapes, one agrees on failure, two document domain differences; empty sum/product dtype also differs. |
+| P1: semantic foundation | [Nouns](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/nouns.mojo), [verbs](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/verbs.mojo), [parser](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/_syntax.mojo) and [lowering](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/strings.mojo) implement the retained atom/vector grammar and typed execution. | No arbitrary modifier trains, higher-rank assembly, explicit rank operator, verb-verb bond, dyadic repeated binding, insertion tables or full J numeric domain. |
+| P2: breadth and shared evaluation | Arithmetic, square/double/real sqrt, general insertion for retained verbs, product (`*/`) and derived mean already exist. Hooks/forks expose independent branches. | Additional math, comparisons/tolerance, Boolean dyads, min/max/all/any, stable moments and shared traversal remain proposed. Existing Boolean noun storage does not imply Boolean verb coverage. |
+| P3: shaped arrays | Atom/vector ranks and scalar extension provide a foundation only. | General shapes/cells/rank, reshape, gather, take/drop, views/windows, scans, outer/dot products and multidimensional arrays remain proposed. |
+
+The P1 surface includes both valences of `+ - * % [ ]`, monadic `*: +: %: #`,
+hooks/forks/longer verb trains, cap, numeric literals and noun sentences, `@:`,
+restricted rank-sensitive `@`, monadic noun binding and right-grouped insertion.
+`of` is now the implemented alias for `@:`, and bare word phrases follow the
+same train grammar as symbols. A separate pipeline DSL remains an unimplemented
+option; it is not required to complete the shipped P1 milestone.
+
+The original discriminating cases below now have [string fixtures](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_strings.mojo#L24)
+and [typed fixtures](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_verbs.mojo#L141): hooks versus composition,
+forks/derived mean, right-fold subtraction, binding sides, noun sentences,
+`@` versus `@:`, modifier binding, zero division, empty mean and rejected complex
+results. Negative fixtures cover malformed/oversized input and unsupported forms.
+Do not read the historical table's **Include** label as shipped coverage; its
+family-level decisions include valences and domains still deferred.
+
+The active next step is [measured performance tuning](expression-performance.md).
+This does not mark the remaining P2/P3 work complete or expand its scope.
+Confidence is high in the bounded implementation status, limited to inspected
+source/tests and recorded outcomes. Additional conformance failures would change
+that assessment. No runtime tests, benchmarks, external dictionary revalidation,
+Linux execution or remote CI were performed in this reconciliation; the
+[recorded validation](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/reference/RESULTS.md) is inherited evidence.
+
+## Historical roadmap and rationale — 2026-11-02
+
+Everything below is the original dated record; use the reconciliation above
+for current implementation and verification status.
+
 Status: proposed; no new primitives implemented by this plan.
 Observed 2026-11-02. Implementation baseline:
 [`811f40c4d7a31df41a771a0200bc5937cae0b642`](https://github.com/davidmashburn/mojj/commit/811f40c4d7a31df41a771a0200bc5937cae0b642),

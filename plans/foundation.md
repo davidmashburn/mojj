@@ -1,5 +1,35 @@
 # Build a small compositional numerical library
 
+Status: slices 1–2 implemented; slice 2's original grammar superseded. Slice 3
+is partial; slice 4 remains proposed apart from initial benchmark evidence.
+Reconciled 2026-11-06 against published `main` at
+[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13),
+with no uncommitted implementation changes.
+
+| Slice | Current evidence | Remaining work |
+| --- | --- | --- |
+| 1. Typed foundation | [Core](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/core.mojo) and [tests](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_core.mojo) retain composition, lazy maps, sum/mean, RMS, descriptions, custom scalar extension, empty policies and runtime-size reuse. | No new foundation feature is pending. Linux and exhaustive IEEE behavior remain unverified. |
+| 2. Textual front ends | `811f40c` shipped the prototype; `f6b05c8` replaced whitespace composition with J trains, typed verbs/nouns and explicit `of`/`@:`. [Migration and current grammar](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/SYNTAX.md). | The historical grammar below is not the current contract. No separate pipeline entrypoint exists. |
+| 3. Shared reductions | [Fork](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/verbs.mojo#L727), branch composition and derived mean exist, with [typed tests](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_verbs.mojo#L141). | Fork branches evaluate independently. Shared traversal, stable moments and an optimized shared reduction API are still proposed; semantic forks do not complete this slice. |
+| 4. Views, windows and evidence | [Recorded J comparisons](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/reference/RESULTS.md) now provide nine API timings and selected conformance evidence. | Views/windows, shaped output contracts, direct-loop/materialized controls, compile-time measurements, assembly inspection and Linux verification remain open. |
+
+The [performance plan](expression-performance.md) is the active next step; this
+reconciliation does not reprioritize the remaining vocabulary/array proposals.
+The library remains pure Mojo; Python and pinned J are development-only tools.
+Legacy `Mean` still rejects empty input and accumulates left to right; the new
+J-derived mean returns zero on empty input and uses right-grouped insertion.
+
+Source and focused tests were inspected for this reconciliation; no runtime
+checks were rerun. Passing macOS tests/demo/package checks and reference outcomes
+are inherited from the linked record, not fresh validation. Confidence is high
+in these implementation statuses, not in full J parity or performance causation;
+new failing cases or profiling evidence could change the assessment.
+
+## Historical foundation proposal and verification — 2026-11-02
+
+Everything below is the original dated record; use the reconciliation above
+for current implementation and verification status.
+
 Status: foundation and textual-front-end prototype published after approval.
 Later slices remain proposed. The [J vocabulary roadmap](j-vocabulary.md) now
 prioritizes semantic fidelity before adding shared reductions and views.

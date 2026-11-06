@@ -1,5 +1,43 @@
 # Compile expression strings
 
+Status: implemented prototype, then superseded by the J semantic front end.
+Reconciled 2026-11-06 against published `main` at
+[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13).
+
+`811f40c` shipped the contract preserved below; `f6b05c8` deliberately replaced
+its whitespace pipeline grammar. `Expr` still specializes literal strings at
+compile time, but words and symbols now share J train/modifier rules and typed
+noun/verb evaluation. See the authoritative [syntax and migration guide](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/SYNTAX.md)
+and [compatibility ledger](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/docs/COMPATIBILITY.md).
+
+- **Retained:** word/symbol aliases, grouping, descriptions, bounded compile-time
+  parsing and the `apply`, `map`, `reduce` convenience entrypoints. Limits remain
+  512 bytes, 64 nodes and 16 nesting levels.
+- **Changed:** bare verbs form trains; composition requires `of` or `@:`.
+  `sqrt mean square` is not RMS. Descriptions expose verb trees. Consumers can
+  raise runtime result-rank/domain errors; the old scalar/reduction category
+  model and its reduction-after-reduction prohibition are no longer the contract.
+- **Added:** `Noun` atoms/vectors, Int/Bool/Float64 storage, `monad`/`dyad`/`value`,
+  noun literals/sentences, hooks/forks/cap, insertion, noun binding, and supported
+  rank-sensitive `@`. Mean is a derived fork, not a special symbolic pattern.
+- **Still outside scope:** runtime parsing, a separate pipeline language,
+  general arrays/rank, broad J vocabulary and automatic optimization.
+
+Evidence inspected: [lowering](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/src/mojj/strings.mojo),
+[behavioral tests](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/test_strings.mojo), and
+[negative compiler fixtures](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/check_syntax.py). Tests explicitly
+separate hook/composition descriptions, changed RMS syntax, empty mean, binding,
+rank agreement and input reuse. The [recorded comparison](https://github.com/davidmashburn/mojj/blob/09cf8d4df865581b60727b11ecddb512de3dcc13/tests/reference/RESULTS.md)
+reports selected live-J results; it does not prove exhaustive subset parity.
+No tests, benchmarks, assembly checks, Linux runs or CI were rerun for this
+planning reconciliation. Historical verification counts below apply only to the
+old prototype, not the current suite.
+
+## Historical prototype contract and verification — 2026-11-02
+
+Everything below is the original dated record; use the reconciliation above
+for current implementation and verification status.
+
 Status: implemented and verified locally; not pushed. Observed 2026-11-02.
 Implementation: `811f40c4d7a31df41a771a0200bc5937cae0b642` on `main`.
 Baseline: `main` at `9f745a0471406c556a3c35146a9c8fa5113c3c41`.
