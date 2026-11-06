@@ -1,0 +1,1583 @@
+{
+  "recorded_at": "2026-11-06T22:04:24.391558+00:00",
+  "source_revision": "f6b05c82ac3251876a2e8a8af394f52581ebfcee",
+  "file_sha256": {
+    "src/mojj/__init__.mojo": "ae9862e40780d93b5f5e3c8adf5991aa9f45b6f1551543fe7b9d1c205186a4ca",
+    "src/mojj/_syntax.mojo": "98c23d482973d5f5eb21188d6c7d2f1d9702d1d2163f09d6679928c7512058e0",
+    "src/mojj/core.mojo": "31bedd5bbae8961b7f61f69dabb06186f436cab68979aa20d1e916b153045545",
+    "src/mojj/nouns.mojo": "43e33bbf722d7b75124284d012d36604129dc3931af8537546f192a4c6f3fc69",
+    "src/mojj/strings.mojo": "e273cd76eec4b85e1d597c6664d25cfa3cbb5d7b1b65c87b0443ee0da817ed85",
+    "src/mojj/verbs.mojo": "412c094da1f5ed6483cb7ca254731c9b5fee9650fcb3446a2b513830efc7c914",
+    "tests/reference/compare.py": "3952cfed9d19367b6a449cfba0c0d263bd3f4c697faceab11455845737cb728b",
+    "tests/reference/test_compare.py": "62cc7657b8340518d3ebe175f054b10624838a8495ea8221c258b4c6ebb124b0",
+    "tests/reference/cases.json": "17cd94f1d5ad7402899da653ebaba42eac98962ee6f0310dcb21f78a75273748",
+    "tests/reference/runtime.json": "b008d1272746239d12b1ba6d3fcae4b4380263bc2f4aef62024e56bee68cba8e",
+    "pixi.toml": "360a6e479ec649ddb1a1400a5c7ad7818704920173c9420fea54259c1512ba88",
+    "pixi.lock": "486afa416e0b424c70d9891c37be46b77173ce584301dacad51c3a4343ca987f"
+  },
+  "host_load_average": {
+    "before": [
+      8.9833984375,
+      25.74072265625,
+      24.54443359375
+    ],
+    "after": [
+      8.56201171875,
+      24.8359375,
+      24.24267578125
+    ]
+  },
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "os_version": "27.0.1",
+    "cpu": "Apple M4"
+  },
+  "mojo_version": "Mojo 1.1.0 (8189361e)",
+  "j_runtime": {
+    "archive_url": "https://github.com/jsoftware/jsource/releases/download/build96/m64arm.zip",
+    "archive_sha256": "96d95c68869b65ede588c8edb77366ab6e411e89478ca6fd6dadf589fec94378",
+    "platform": "Darwin-arm64",
+    "version": "j9.6.3/j64arm/darwin/commercial/www.jsoftware.com/2026-02-02T04:34:00/clang-17-0-0/SLEEF=1",
+    "files": {
+      "j64/jconsole": "270a879824d00643870d2880bcf8a7c155d771b6f0c4cbb008d75c7bad0f5036",
+      "j64/libj.dylib": "7cd4d9cee9a6a6b9cd352d9a4bd55657d664c8d207d6a71b02d5ed8e0f085fe8",
+      "j64/libgmp.dylib": "a2487c211660b2eb6685ac0ce3f05deb0b4ad0a530b0b893134249cd95f59465"
+    }
+  },
+  "compile_flags": [
+    "--fp-mode",
+    "contract=off"
+  ],
+  "method": {
+    "samples": 5,
+    "target_batch_ns": 50000000,
+    "maximum_repetitions": 65536,
+    "input": "Float64(i % 97) / 16; first cell changes to (iteration % 17) / 16 inside each timed call",
+    "timed": "batch loop, first-cell update, operation, first-result-cell consumption, allocation and destruction",
+    "excluded": "compilation, process startup, initial input construction, output serialization",
+    "order": "all Mojj workloads, then all J workloads; single process per runtime; no parallel runs",
+    "comparison": "exact values whenever either storage dtype is integer/Boolean; otherwise float abs/relative tolerance 1e-12; rank and length; dtype recorded separately for conformance and required equal for benchmarks"
+  },
+  "conformance": [
+    {
+      "id": "hook",
+      "expression": "- *:",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -6
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -6
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "composition",
+      "expression": "- @: *:",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -9
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -9
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "hook-dyad",
+      "expression": "- *:",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          10
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          1
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          1
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "fork",
+      "expression": "*: + +:",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          15
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          15
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "fork-dyad",
+      "expression": "+ * -",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          5
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          16
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          16
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "cap",
+      "expression": "[: - *:",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -9
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -9
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "long-train",
+      "expression": "+ - * % +",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          2
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          1.5
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          1.5
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "right-insert",
+      "expression": "-/",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          2
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          2
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "sum",
+      "expression": "+/",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          10
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          10
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "empty-sum",
+      "expression": "+/",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Float64",
+        "rank": 1,
+        "values": []
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Bool",
+        "rank": 0,
+        "values": [
+          0
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          0.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": false,
+      "expectation_met": true
+    },
+    {
+      "id": "empty-product",
+      "expression": "*/",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Float64",
+        "rank": 1,
+        "values": []
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Bool",
+        "rank": 0,
+        "values": [
+          1
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          1.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": false,
+      "expectation_met": true
+    },
+    {
+      "id": "mean",
+      "expression": "+/ % #",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Float64",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2.5
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2.5
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "empty-mean",
+      "expression": "+/ % #",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Float64",
+        "rank": 1,
+        "values": []
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          0
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          0.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "rms",
+      "expression": "%: @: (+/ % #) @: *:",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Float64",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2.7386127875258306
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2.7386127875258306
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "left-binding",
+      "expression": "10&-",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          7
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          7
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "right-binding",
+      "expression": "-&10",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          3
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -7
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -7
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "vector-binding",
+      "expression": "1 2 3 & +",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          10
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          11,
+          12,
+          13
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          11,
+          12,
+          13
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "whole-compose",
+      "expression": "*/ @: +",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          7,
+          5,
+          3,
+          2
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          2016
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          2016
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "rank-atop",
+      "expression": "*/ @ +",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          7,
+          5,
+          3,
+          2
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          8,
+          7,
+          6,
+          6
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          8,
+          7,
+          6,
+          6
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "modifier-binding",
+      "expression": "*:@+/",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          6770404
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          6770404
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "grouped-modifier",
+      "expression": "*:@(+/)",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          100
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          100
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "scalar-extension",
+      "expression": "+",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2,
+          3
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          10
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          11,
+          12,
+          13
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          11,
+          12,
+          13
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "singleton-vector",
+      "expression": "]",
+      "mode": "monad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          7
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          7
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          7
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "shape-error",
+      "expression": "+",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1
+        ]
+      },
+      "x": {
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2
+        ]
+      },
+      "j_status": "error",
+      "mojj_status": "error",
+      "j": {
+        "status": "error"
+      },
+      "mojj": {
+        "status": "error"
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "bool-arithmetic",
+      "expression": "+",
+      "mode": "dyad",
+      "expected": "match",
+      "y": {
+        "dtype": "Bool",
+        "rank": 1,
+        "values": [
+          false,
+          true
+        ]
+      },
+      "x": {
+        "dtype": "Bool",
+        "rank": 0,
+        "values": [
+          true
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          1,
+          2
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "right-to-left",
+      "expression": "10 % 3 + 2",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          2.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "noun-sentence",
+      "expression": "1 2 3 + 4 5 6",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          5,
+          7,
+          9
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 1,
+        "values": [
+          5,
+          7,
+          9
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "exact-integer",
+      "expression": "9007199254740993 + 2",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          9007199254740995
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          9007199254740995
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "mixed-literal",
+      "expression": "1 2.5 _3",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 1,
+        "values": [
+          1,
+          2.5,
+          -3
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 1,
+        "values": [
+          1.0,
+          2.5,
+          -3.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "bool-literal",
+      "expression": "0 1 1",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Bool",
+        "rank": 1,
+        "values": [
+          0,
+          1,
+          1
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Bool",
+        "rank": 1,
+        "values": [
+          0,
+          1,
+          1
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "zero-division",
+      "expression": "0 % 0",
+      "mode": "value",
+      "expected": "match",
+      "j_status": "value",
+      "mojj_status": "value",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          0
+        ]
+      },
+      "mojj": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          0.0
+        ]
+      },
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "expectation_met": true
+    },
+    {
+      "id": "overflow-policy",
+      "expression": "9223372036854775807 + 1",
+      "mode": "value",
+      "expected": "different",
+      "j_status": "value",
+      "mojj_status": "error",
+      "j": {
+        "status": "value",
+        "dtype": "Float64",
+        "rank": 0,
+        "values": [
+          9.223372036854776e+18
+        ]
+      },
+      "mojj": {
+        "status": "error"
+      },
+      "values_and_shape_match": false,
+      "dtype_match": false,
+      "expectation_met": true
+    },
+    {
+      "id": "complex-policy",
+      "expression": "%:",
+      "mode": "monad",
+      "expected": "different",
+      "y": {
+        "dtype": "Int",
+        "rank": 0,
+        "values": [
+          -1
+        ]
+      },
+      "j_status": "value",
+      "mojj_status": "error",
+      "j": {
+        "status": "value",
+        "dtype": "Complex",
+        "rank": 0,
+        "values": [
+          "0j1"
+        ]
+      },
+      "mojj": {
+        "status": "error"
+      },
+      "values_and_shape_match": false,
+      "dtype_match": false,
+      "expectation_met": true
+    }
+  ],
+  "benchmarks": [
+    {
+      "workload": "double",
+      "expression": "+:",
+      "size": 1000,
+      "mojj": {
+        "repetitions": 16384,
+        "ns_per_call": [
+          7011.90185546875,
+          7179.443359375,
+          7370.1171875,
+          7674.01123046875,
+          7260.43701171875
+        ]
+      },
+      "j": {
+        "repetitions": 65536,
+        "ns_per_call": [
+          384.3088052235544,
+          394.1786417271942,
+          371.7359504662454,
+          371.11021811142564,
+          374.17703424580395
+        ]
+      },
+      "mojj_median_ns": 7260.43701171875,
+      "j_median_ns": 374.17703424580395,
+      "mojj_over_j": 19.403748352308636,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 1000
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 1000
+      }
+    },
+    {
+      "workload": "double",
+      "expression": "+:",
+      "size": 10000,
+      "mojj": {
+        "repetitions": 1024,
+        "ns_per_call": [
+          72065.4296875,
+          70435.546875,
+          67031.25,
+          69835.9375,
+          67367.1875
+        ]
+      },
+      "j": {
+        "repetitions": 32768,
+        "ns_per_call": [
+          2137.1160983107984,
+          2162.6256057061255,
+          2266.293449793011,
+          2651.6427169553936,
+          2748.6239559948444
+        ]
+      },
+      "mojj_median_ns": 69835.9375,
+      "j_median_ns": 2266.293449793011,
+      "mojj_over_j": 30.81504626260045,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 10000
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 10000
+      }
+    },
+    {
+      "workload": "double",
+      "expression": "+:",
+      "size": 100000,
+      "mojj": {
+        "repetitions": 128,
+        "ns_per_call": [
+          715914.0625,
+          711968.75,
+          767750.0,
+          743437.5,
+          863156.25
+        ]
+      },
+      "j": {
+        "repetitions": 4096,
+        "ns_per_call": [
+          22591.03348478675,
+          20799.05243590474,
+          21343.061234802008,
+          23102.271370589733,
+          21688.23266401887
+        ]
+      },
+      "mojj_median_ns": 743437.5,
+      "j_median_ns": 21688.23266401887,
+      "mojj_over_j": 34.27838088593428,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 100000
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 1,
+        "length": 100000
+      }
+    },
+    {
+      "workload": "sum",
+      "expression": "+/",
+      "size": 1000,
+      "mojj": {
+        "repetitions": 4096,
+        "ns_per_call": [
+          15855.46875,
+          14741.455078125,
+          14703.369140625,
+          14574.70703125,
+          32688.720703125
+        ]
+      },
+      "j": {
+        "repetitions": 65536,
+        "ns_per_call": [
+          348.554749507457,
+          377.96053220517933,
+          351.16681829094887,
+          349.28962122648954,
+          352.84392652101815
+        ]
+      },
+      "mojj_median_ns": 14741.455078125,
+      "j_median_ns": 351.16681829094887,
+      "mojj_over_j": 41.97849657284933,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    },
+    {
+      "workload": "sum",
+      "expression": "+/",
+      "size": 10000,
+      "mojj": {
+        "repetitions": 256,
+        "ns_per_call": [
+          208617.1875,
+          188929.6875,
+          186343.75,
+          210105.46875,
+          179457.03125
+        ]
+      },
+      "j": {
+        "repetitions": 65536,
+        "ns_per_call": [
+          862.5029295217246,
+          848.3148121740669,
+          879.7142072580755,
+          841.2462193518877,
+          862.6411727163941
+        ]
+      },
+      "mojj_median_ns": 188929.6875,
+      "j_median_ns": 862.5029295217246,
+      "mojj_over_j": 219.04816903609284,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    },
+    {
+      "workload": "sum",
+      "expression": "+/",
+      "size": 100000,
+      "mojj": {
+        "repetitions": 32,
+        "ns_per_call": [
+          1621187.5,
+          1529187.5,
+          1545406.25,
+          1601093.75,
+          1612187.5
+        ]
+      },
+      "j": {
+        "repetitions": 8192,
+        "ns_per_call": [
+          11045.776773244143,
+          10636.955266818404,
+          10922.609362751245,
+          10071.293218061328,
+          9568.46633926034
+        ]
+      },
+      "mojj_median_ns": 1601093.75,
+      "j_median_ns": 10636.955266818404,
+      "mojj_over_j": 150.52180909273483,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    },
+    {
+      "workload": "rms",
+      "expression": "%: @: (+/ % #) @: *:",
+      "size": 1000,
+      "mojj": {
+        "repetitions": 4096,
+        "ns_per_call": [
+          22441.40625,
+          26725.341796875,
+          24376.46484375,
+          23101.318359375,
+          22103.759765625
+        ]
+      },
+      "j": {
+        "repetitions": 65536,
+        "ns_per_call": [
+          520.5256456974894,
+          515.8217390999198,
+          534.7428668756038,
+          518.2519089430571,
+          502.7432052884251
+        ]
+      },
+      "mojj_median_ns": 23101.318359375,
+      "j_median_ns": 518.2519089430571,
+      "mojj_over_j": 44.575462165665186,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    },
+    {
+      "workload": "rms",
+      "expression": "%: @: (+/ % #) @: *:",
+      "size": 10000,
+      "mojj": {
+        "repetitions": 256,
+        "ns_per_call": [
+          205015.625,
+          202304.6875,
+          201769.53125,
+          199515.625,
+          191292.96875
+        ]
+      },
+      "j": {
+        "repetitions": 32768,
+        "ns_per_call": [
+          2535.278326831758,
+          2458.3787308074534,
+          2434.3025870621204,
+          2425.076672807336,
+          2343.9934011548758
+        ]
+      },
+      "mojj_median_ns": 201769.53125,
+      "j_median_ns": 2434.3025870621204,
+      "mojj_over_j": 82.8859700196552,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    },
+    {
+      "workload": "rms",
+      "expression": "%: @: (+/ % #) @: *:",
+      "size": 100000,
+      "mojj": {
+        "repetitions": 32,
+        "ns_per_call": [
+          2234718.75,
+          2126406.25,
+          2055156.25,
+          2232218.75,
+          2253843.75
+        ]
+      },
+      "j": {
+        "repetitions": 2048,
+        "ns_per_call": [
+          25783.199816942215,
+          25627.901777625084,
+          25763.64204287529,
+          25479.93790358305,
+          30325.143598020077
+        ]
+      },
+      "mojj_median_ns": 2232218.75,
+      "j_median_ns": 25763.64204287529,
+      "mojj_over_j": 86.64220478941566,
+      "values_and_shape_match": true,
+      "dtype_match": true,
+      "mojj_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      },
+      "j_result": {
+        "dtype": "Float64",
+        "rank": 0,
+        "length": 1
+      }
+    }
+  ]
+}

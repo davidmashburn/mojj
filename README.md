@@ -55,7 +55,9 @@ structure through `describe()`.
 
 See [syntax and migration](docs/SYNTAX.md) for the breaking changes from the
 prototype and [compatibility](docs/COMPATIBILITY.md) for supported valences,
-numerical policies, reference evidence, and limits.
+numerical policies, reference evidence, and limits. A bounded
+[live comparison with J](tests/reference/RESULTS.md) records conformance and
+performance for the compiled `Expr` API.
 
 ## Run locally
 

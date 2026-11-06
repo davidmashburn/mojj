@@ -1,0 +1,11 @@
+{
+  "archive_url": "https://github.com/jsoftware/jsource/releases/download/build96/m64arm.zip",
+  "archive_sha256": "96d95c68869b65ede588c8edb77366ab6e411e89478ca6fd6dadf589fec94378",
+  "platform": "Darwin-arm64",
+  "version": "j9.6.3/j64arm/darwin/commercial/www.jsoftware.com/2026-02-02T04:34:00/clang-17-0-0/SLEEF=1",
+  "files": {
+    "j64/jconsole": "270a879824d00643870d2880bcf8a7c155d771b6f0c4cbb008d75c7bad0f5036",
+    "j64/libj.dylib": "7cd4d9cee9a6a6b9cd352d9a4bd55657d664c8d207d6a71b02d5ed8e0f085fe8",
+    "j64/libgmp.dylib": "a2487c211660b2eb6685ac0ce3f05deb0b4ad0a530b0b893134249cd95f59465"
+  }
+}

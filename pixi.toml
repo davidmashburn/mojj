@@ -10,7 +10,9 @@ mojo = "==1.1.0"
 python = ">=3.11,<4"
 
 [tasks]
-test = { depends-on = ["test-core", "test-verbs", "test-strings", "test-syntax"] }
+compare-j = "python3 tests/reference/compare.py"
+test-reference-harness = "python3 -m unittest discover -s tests/reference -p 'test_*.py'"
+test = { depends-on = ["test-core", "test-verbs", "test-strings", "test-syntax", "test-reference-harness"] }
 test-verbs = "mojo run --fp-mode contract=off -I src tests/test_verbs.mojo"
 test-core = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
 test-strings = "mojo run --fp-mode contract=off -I src tests/test_strings.mojo"

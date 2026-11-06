@@ -1,0 +1,524 @@
+[
+  {
+    "id": "hook",
+    "expression": "- *:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "composition",
+    "expression": "- @: *:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "hook-dyad",
+    "expression": "- *:",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        10
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "fork",
+    "expression": "*: + +:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "fork-dyad",
+    "expression": "+ * -",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        5
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "cap",
+    "expression": "[: - *:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "long-train",
+    "expression": "+ - * % +",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        2
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "right-insert",
+    "expression": "-/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "sum",
+    "expression": "+/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-sum",
+    "expression": "+/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 1,
+      "values": []
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-product",
+    "expression": "*/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 1,
+      "values": []
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "mean",
+    "expression": "+/ % #",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-mean",
+    "expression": "+/ % #",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 1,
+      "values": []
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rms",
+    "expression": "%: @: (+/ % #) @: *:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "left-binding",
+    "expression": "10&-",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "right-binding",
+    "expression": "-&10",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        3
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "vector-binding",
+    "expression": "1 2 3 & +",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        10
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "whole-compose",
+    "expression": "*/ @: +",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        7,
+        5,
+        3,
+        2
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-atop",
+    "expression": "*/ @ +",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        7,
+        5,
+        3,
+        2
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "modifier-binding",
+    "expression": "*:@+/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "grouped-modifier",
+    "expression": "*:@(+/)",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "scalar-extension",
+    "expression": "+",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2,
+        3
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        10
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "singleton-vector",
+    "expression": "]",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        7
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "shape-error",
+    "expression": "+",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1
+      ]
+    },
+    "x": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [
+        1,
+        2
+      ]
+    },
+    "j_status": "error",
+    "mojj_status": "error"
+  },
+  {
+    "id": "bool-arithmetic",
+    "expression": "+",
+    "mode": "dyad",
+    "expected": "match",
+    "y": {
+      "dtype": "Bool",
+      "rank": 1,
+      "values": [
+        false,
+        true
+      ]
+    },
+    "x": {
+      "dtype": "Bool",
+      "rank": 0,
+      "values": [
+        true
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "right-to-left",
+    "expression": "10 % 3 + 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "noun-sentence",
+    "expression": "1 2 3 + 4 5 6",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "exact-integer",
+    "expression": "9007199254740993 + 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "mixed-literal",
+    "expression": "1 2.5 _3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "bool-literal",
+    "expression": "0 1 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "zero-division",
+    "expression": "0 % 0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "overflow-policy",
+    "expression": "9223372036854775807 + 1",
+    "mode": "value",
+    "expected": "different",
+    "j_status": "value",
+    "mojj_status": "error"
+  },
+  {
+    "id": "complex-policy",
+    "expression": "%:",
+    "mode": "monad",
+    "expected": "different",
+    "y": {
+      "dtype": "Int",
+      "rank": 0,
+      "values": [
+        -1
+      ]
+    },
+    "j_status": "value",
+    "mojj_status": "error"
+  }
+]

@@ -64,7 +64,11 @@ arrays remain separate work.
 
 ## Reference execution
 
-No pinned J reference runner or generated reference fixtures are included in
-this change. The tests encode expected behavior; live J conformance remains
-unverified. J is not linked into the library and is not required by library
-consumers or the default Mojo tests.
+A [bounded live-J runner](../tests/reference/README.md) pins J 9.6.3 for macOS
+arm64 and records 33 conformance expectations plus nine matched performance
+measurements. Thirty cases agree on successful values/shapes, one agrees on
+failure, and two document intentional domain differences. Empty sum/product
+also differ in dtype. This is evidence for the selected cases, not full J parity
+or exhaustive agreement over the supported syntax. See the
+[recorded results](../tests/reference/RESULTS.md) for performance and limitations.
+J is not linked into the library or required by consumers or the default tests.
