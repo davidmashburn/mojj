@@ -1,344 +1,163 @@
+"""J semantic fixtures through the public compile-time string facade."""
 from std.collections import List
-from std.math import sqrt
-from std.testing import assert_equal, assert_raises, assert_true
-
-from mojj.core import (
-    After, Compose, Map, Mean, Negate, Scale, Sqrt, Square, Sum,
-)
+from std.math import abs, sqrt
+from std.testing import assert_equal, assert_true, assert_raises
 from mojj.strings import Expr
+from mojj.nouns import Noun
+from mojj.verbs import (
+    Minus, Squared, Doubled, Plus, Divide, Tally, Insert, Hook, Fork,
+    ComposeAll, Atop,
+)
 
 
-def assert_close(actual: Float64, expected: Float64, message: String) raises:
-    var difference = abs(actual - expected)
-    var tolerance = 1.0e-12 * (1.0 + abs(expected))
-    assert_true(difference <= tolerance, message)
+def close(actual: Float64, expected: Float64) raises:
+    assert_true(abs(actual - expected) < 1e-12)
 
 
-def assert_list_close(
-    actual: List[Float64], expected: List[Float64], message: String
-) raises:
-    assert_equal(len(actual), len(expected), message)
-    for index in range(len(actual)):
-        assert_close(actual[index], expected[index], message)
+def vector(actual: Noun, expected: List[Float64]) raises:
+    var values = actual.as_floats()
+    assert_equal(len(values), len(expected))
+    for index in range(len(values)):
+        close(values[index], expected[index])
 
 
-def test_primitive_words_and_symbols() raises:
-    comptime IdentityWord = Expr["identity"]
-    comptime IdentitySymbol = Expr["]"]
-    comptime NegateWord = Expr["negate"]
-    comptime NegateSymbol = Expr["-"]
-    comptime SquareWord = Expr["square"]
-    comptime SquareSymbol = Expr["*:"]
-    comptime SqrtWord = Expr["sqrt"]
-    comptime SqrtSymbol = Expr["%:"]
-    comptime DoubleWord = Expr["double"]
-    comptime DoubleSymbol = Expr["+:"]
-
-    assert_equal(IdentityWord.apply(-2.5), -2.5)
-    assert_equal(IdentitySymbol.apply(3.25), 3.25)
-    assert_equal(NegateWord.apply(-2.5), 2.5)
-    assert_equal(NegateSymbol.apply(3.25), -3.25)
-    assert_equal(SquareWord.apply(-2.5), 6.25)
-    assert_equal(SquareSymbol.apply(3.25), 10.5625)
-    assert_close(SqrtWord.apply(9.0), 3.0, "word sqrt is incorrect")
-    assert_close(SqrtSymbol.apply(16.0), 4.0, "symbol sqrt is incorrect")
-    assert_equal(DoubleWord.apply(2.5), 5.0)
-    assert_equal(DoubleSymbol.apply(-2.5), -5.0)
-
-    var data: List[Float64] = [1.0, -2.0, 3.0]
-    assert_equal(Expr["+/"].reduce(data), 2.0)
-    assert_close(
-        Expr["(+/ % #)"].reduce(data),
-        2.0 / 3.0,
-        "the exact mean symbol pattern is incorrect",
-    )
+def test_trains_and_composition() raises:
+    assert_equal(Expr["minus square"].apply(3.0), -6.0)
+    assert_equal(Expr["minus of square"].apply(3.0), -9.0)
+    assert_equal(Expr["- *:"].describe(), Hook[Minus, Squared].describe())
+    assert_equal(Expr["- @: *:"].describe(), ComposeAll[Minus, Squared].describe())
+    assert_equal(Expr["square plus double"].apply(3.0), 15.0)
+    assert_equal(Expr["*: + +:"].describe(), Fork[Squared, Plus, Doubled].describe())
+    assert_equal(Expr["cap minus square"].apply(3.0), -9.0)
+    assert_equal(Expr["[: - *:"].describe(), Expr["minus of square"].describe())
+    # Even and odd trains repeatedly resolve the rightmost fork.
+    assert_equal(Expr["+ - * %"].describe(), Expr["+ (- * %)"].describe())
+    assert_equal(Expr["+ - * % +"].describe(), Expr["+ - (* % +)"].describe())
+    assert_equal(Expr["- *:"].dyad(Noun(10), Noun(3)).as_float(), 1.0)
+    assert_equal(Expr["+ * -"].dyad(Noun(5), Noun(3)).as_float(), 16.0)
 
 
-def test_scalar_order_and_map() raises:
-    comptime DoubleOfSquare = Expr["double of square"]
-    comptime SquareOfDouble = Expr["square of double"]
-    comptime MixedSymbols = Expr["+: of *:"]
-
-    # "of" is right-associative: the right operand runs first.
-    assert_equal(DoubleOfSquare.apply(3.0), 18.0)
-    assert_equal(SquareOfDouble.apply(3.0), 36.0)
-    assert_equal(MixedSymbols.apply(-2.0), 8.0)
-
-    var data: List[Float64] = [2.0, -3.0, 1.0]
-    var mapped = MixedSymbols.map(data)
-    var expected: List[Float64] = [8.0, 18.0, 2.0]
-    assert_list_close(
-        mapped,
-        expected,
-        "scalar map does not preserve composition order",
-    )
+def test_reductions_and_rms() raises:
+    var data: List[Float64] = [1.0, 2.0, 3.0, 4.0]
+    assert_equal(Expr["mean"].reduce(data), 2.5)
+    assert_equal(Expr["mean"].describe(), Expr["(+/ % #)"].describe())
+    assert_equal(Expr["mean"].describe(), Fork[Insert[Plus], Divide, Tally].describe())
+    assert_equal(Expr["minus insert"].reduce([1.0, 2.0, 3.0]), 2.0)
+    assert_equal(Expr["-/"].reduce([1.0, 2.0, 3.0]), 2.0)
+    close(Expr["sqrt of mean of square"].reduce(data), sqrt(7.5))
+    assert_equal(Expr["sqrt of mean of square"].describe(), Expr["%: @: (+/ % #) @: *:"].describe())
+    assert_true(Expr["sqrt mean square"].describe() != Expr["sqrt of mean of square"].describe())
+    with assert_raises():
+        _ = Expr["sqrt mean square"].reduce(data)
+    var empty = List[Float64]()
+    assert_equal(Expr["sum"].reduce(empty), 0.0)
+    assert_equal(Expr["mean"].reduce(empty), 0.0)
+    assert_equal(Expr["sqrt of mean of square"].reduce(empty), 0.0)
 
 
-def test_reduction_compositions() raises:
-    comptime SumSquares = Expr["sum of square"]
-    comptime SquareOfSum = Expr["square of sum"]
-    comptime MeanSquares = Expr["mean of square"]
-    comptime RMS = Expr["sqrt of mean of square"]
-    comptime MeanNegatedSquares = Expr["mean of (negate of square)"]
-
-    var data: List[Float64] = [1.0, -2.0, 3.0, -4.0]
-    # Independently known values: sum=-2, square sum=30, mean square=7.5.
-    assert_equal(SumSquares.reduce(data), 30.0)
-    assert_equal(SquareOfSum.reduce(data), 4.0)
-    assert_close(
-        MeanSquares.reduce(data),
-        7.5,
-        "mean after a scalar map is incorrect",
-    )
-    assert_close(
-        RMS.reduce(data),
-        sqrt(7.5),
-        "RMS reduction is incorrect",
-    )
-    assert_close(
-        MeanNegatedSquares.reduce(data),
-        -7.5,
-        "mean of negate of square is incorrect",
-    )
+def test_binding_and_sentences() raises:
+    assert_equal(Expr["10 bind minus"].apply(3.0), 7.0)
+    assert_equal(Expr["minus bind 10"].apply(3.0), -7.0)
+    assert_equal(Expr["10&-"].describe(), Expr["10 bind minus"].describe())
+    assert_equal(Expr["-&10"].describe(), Expr["minus bind 10"].describe())
+    assert_equal(Expr["10 % 3 + 2"].value().as_float(), 2.0)
+    assert_equal(Expr["10 divide 3 plus 2"].describe(), Expr["10 % 3 + 2"].describe())
+    assert_equal(Expr["(- *:) 3"].value().as_float(), -6.0)
+    assert_equal(Expr["minus square 3"].value().as_float(), -9.0)
+    assert_equal(Expr["group minus square end 3"].value().as_float(), -6.0)
+    assert_equal(Expr["(10 + 2)&-"].apply(3.0), 9.0)
+    assert_equal(Expr["0.5&*"].apply(3.0), 1.5)
+    assert_equal(Expr["2:"].apply(3.0), 2.0)
+    assert_equal(Expr["2 + *:"].apply(3.0), 11.0)
+    assert_equal(Expr["1.25e2"].value().as_float(), 125.0)
+    assert_equal(Expr["_3.5e_1"].value().as_float(), -0.35)
+    vector(Expr["1 2 3 & +"].monad(Noun(10)), [11.0, 12.0, 13.0])
+    vector(Expr["1 2 3 + 4 5 6"].value(), [5.0, 7.0, 9.0])
 
 
-def test_grouping_equivalence() raises:
-    comptime FlatRMS = Expr["sqrt of mean of square"]
-    comptime ParenthesizedRMS = Expr["(sqrt of mean) of square"]
-    comptime WordGroupedRMS = Expr["group sqrt of mean end of square"]
-    comptime NegatedSquareMean = Expr["mean of (negate of square)"]
-    comptime NegatedSquareMeanWithGroup = Expr[
-        "mean of group negate of square end"
-    ]
-
-    var data: List[Float64] = [1.0, -2.0, 3.0]
-    var expected_rms = sqrt(14.0 / 3.0)
-    assert_close(
-        ParenthesizedRMS.reduce(data),
-        expected_rms,
-        "parenthesized mixed grouping changed the reduction",
-    )
-    assert_close(
-        WordGroupedRMS.reduce(data),
-        expected_rms,
-        "word grouping changed the reduction",
-    )
-    assert_close(
-        FlatRMS.reduce(data),
-        expected_rms,
-        "ungrouped mixed composition is incorrect",
-    )
-    assert_close(
-        NegatedSquareMeanWithGroup.reduce(data),
-        NegatedSquareMean.reduce(data),
-        "grouping changed a scalar map inside a reduction",
-    )
+def test_rank_and_modifier_binding() raises:
+    var x = Noun(List[Int]([1, 2, 3, 4]))
+    var y = Noun(List[Int]([7, 5, 3, 2]))
+    assert_equal(Expr["*/ @: +"].dyad(x, y).as_float(), 2016.0)
+    vector(Expr["*/ @ +"].dyad(x, y), [8.0, 7.0, 6.0, 6.0])
+    assert_equal(Expr["*/ @ +"].describe(), Expr["times insert atop plus"].describe())
+    assert_equal(Expr["*:@(+/)"].reduce([1.0, 2.0, 3.0, 4.0]), 100.0)
+    assert_equal(Expr["*:@+/"].reduce([1.0, 2.0, 3.0, 4.0]), 6770404.0)
+    assert_true(Expr["*:@(+/)"].describe() != Expr["*:@+/"].describe())
+    with assert_raises():
+        _ = Expr["+"].dyad(Noun(List[Int]([1, 2])), Noun(List[Int]([1])))
+    with assert_raises():
+        _ = Expr["*:"].dyad(Noun(1), Noun(1))
 
 
-def test_mixed_spelling_and_ascii_whitespace() raises:
-    comptime WordRMS = Expr["sqrt of mean of square"]
-    comptime MixedRMS = Expr["sqrt\t of\n (+/\r % #)\n of *:"]
-    comptime AtRMS = Expr["%: @: ((+/ % #) @: *:)"]
-
-    var data: List[Float64] = [2.0, -1.0, 4.0]
-    assert_close(
-        MixedRMS.reduce(data),
-        WordRMS.reduce(data),
-        "mixed word and symbol spelling changed the result",
-    )
-    assert_equal(
-        MixedRMS.describe(),
-        WordRMS.describe(),
-        "ASCII tabs/newlines changed the expression description",
-    )
-    assert_close(
-        AtRMS.reduce(data),
-        WordRMS.reduce(data),
-        "@: composition changed the mixed symbolic reduction",
-    )
-    assert_equal(
-        AtRMS.describe(),
-        WordRMS.describe(),
-        "@: composition changed the expression description",
-    )
+def test_domains_and_reuse() raises:
+    assert_equal(Expr["0 % 0"].value().as_float(), 0.0)
+    with assert_raises():
+        _ = Expr["%:"].apply(-1.0)
+    var short: List[Float64] = [1.0, -2.0]
+    var longer: List[Float64] = [1.0, -2.0, 3.0, -4.0, 5.0]
+    var output = Expr["double of square"].map(short)
+    assert_equal(output[0], 2.0)
+    assert_equal(output[1], 8.0)
+    output[0] = 999.0
+    assert_equal(short[0], 1.0)
+    assert_equal(Expr["double of square"].map(longer)[4], 50.0)
+    assert_equal(Expr["double of square"].map(short)[0], 2.0)
+    assert_equal(Expr["mean"].reduce(short), -0.5)
+    assert_equal(Expr["mean"].reduce(longer), 0.6)
+    assert_equal(Expr["mean"].reduce(short), -0.5)
+    # Consumers check result rank rather than pretending all verbs are maps.
+    with assert_raises():
+        _ = Expr["sum"].map(short)
+    with assert_raises():
+        _ = Expr["square"].reduce(short)
 
 
-def test_runtime_reuse_and_source_preservation() raises:
-    comptime Pipeline = Expr["double of negate"]
-    comptime SumPlan = Expr["sum"]
-    comptime MeanPlan = Expr["mean"]
-    comptime RMSPlan = Expr["sqrt of mean of square"]
-
-    var short_data: List[Float64] = [1.0, -2.0]
-    var long_data: List[Float64] = [-3.0, 0.0, 4.0, 5.0, -1.0]
-    var short_before: List[Float64] = [1.0, -2.0]
-    var long_before: List[Float64] = [-3.0, 0.0, 4.0, 5.0, -1.0]
-
-    var short_output = Pipeline.map(short_data)
-    var long_output = Pipeline.map(long_data)
-    var short_expected: List[Float64] = [-2.0, 4.0]
-    var long_expected: List[Float64] = [6.0, 0.0, -8.0, -10.0, 2.0]
-    assert_list_close(
-        short_output,
-        short_expected,
-        "the compiled scalar plan failed for the short list",
-    )
-    assert_list_close(
-        long_output,
-        long_expected,
-        "the compiled scalar plan failed for the long list",
-    )
-
-    # Mapping must return fresh storage and leave both borrowed sources intact.
-    short_output[0] = 999.0
-    long_output[0] = 999.0
-    assert_list_close(
-        short_data,
-        short_before,
-        "mapping mutated the short source list",
-    )
-    assert_list_close(
-        long_data,
-        long_before,
-        "mapping mutated the long source list",
-    )
-
-    var reused_output = Pipeline.map(short_data)
-    assert_list_close(
-        reused_output,
-        short_expected,
-        "reusing a compile-time plan after output mutation failed",
-    )
-
-    # Reductions reuse the same compile-time plans across runtime lengths too.
-    assert_equal(SumPlan.reduce(short_data), -1.0)
-    assert_equal(SumPlan.reduce(long_data), 5.0)
-    assert_equal(MeanPlan.reduce(short_data), -0.5)
-    assert_equal(MeanPlan.reduce(long_data), 1.0)
-    assert_close(
-        RMSPlan.reduce(short_data),
-        sqrt(2.5),
-        "RMS plan failed for the short list",
-    )
-    assert_close(
-        RMSPlan.reduce(long_data),
-        sqrt(51.0 / 5.0),
-        "RMS plan failed for the long list",
-    )
+def test_exact_nouns() raises:
+    assert_equal(Expr["9007199254740993"].value().as_int(), 9007199254740993)
+    assert_equal(Expr["9007199254740993 + 2"].value().as_int(), 9007199254740995)
+    assert_equal(Expr["9223372036854775807"].value().as_int(), 9223372036854775807)
+    assert_equal(Expr["_9223372036854775808"].value().as_int(), -9223372036854775808)
+    assert_equal(Expr["# 1 2 3"].value().as_int(), 3)
+    assert_equal(Expr["# 5"].value().as_int(), 1)
+    assert_equal(Expr["1"].value().as_bool(), True)
+    assert_equal(Expr["0 1 1"].value().as_bools()[0], False)
+    # Materialize vector literals from the compile-time AST without losing dtype.
+    assert_equal(Expr["9007199254740993 2"].value().as_ints()[0], 9007199254740993)
+    vector(Expr["1 2.5 _3"].value(), [1.0, 2.5, -3.0])
+    comptime integer_description = Expr["9007199254740993 2"].describe()
+    comptime boolean_description = Expr["0 1 1"].describe()
+    comptime float_description = Expr["1 2.5 _3"].describe()
+    assert_equal(integer_description, "9007199254740993 2")
+    assert_equal(boolean_description, "0 1 1")
+    assert_equal(float_description, "1 2.5 -3")
+    with assert_raises():
+        _ = Expr["9223372036854775807 + 1"].value()
+    with assert_raises():
+        _ = Expr["- _9223372036854775808"].value()
+    # Whole-noun rank of a bound verb must survive atop composition.
+    assert_equal(Expr["*/ @ (10&+)"].reduce([1.0, 2.0, 3.0]), 1716.0)
 
 
-def test_empty_reductions() raises:
-    comptime EmptySum = Expr["sum"]
-    comptime EmptyMean = Expr["mean"]
-    comptime EmptyRMS = Expr["sqrt of mean of square"]
-    comptime EmptyMap = Expr["square"]
-
-    var empty: List[Float64] = []
-    var mapped = EmptyMap.map(empty)
-    assert_equal(len(mapped), 0)
-    assert_equal(EmptySum.reduce(empty), 0.0)
-    with assert_raises(contains="mean requires nonempty input"):
-        _ = EmptyMean.reduce(empty)
-    with assert_raises(contains="mean requires nonempty input"):
-        _ = EmptyRMS.reduce(empty)
-
-
-def test_exact_compiletime_descriptions() raises:
-    comptime StringIdentity = Expr["identity"].describe()
-    comptime StringDouble = Expr["double"].describe()
-    comptime StringSquare = Expr["square"].describe()
-    comptime StringSumSquares = Expr["sum of square"].describe()
-    comptime StringSquareOfSum = Expr["square of sum"].describe()
-    comptime StringRMS = Expr["sqrt of mean of square"].describe()
-    comptime StringNegatedSquareMean = Expr[
-        "mean of (negate of square)"
-    ].describe()
-
-    comptime TypedSumSquares = Sum[Map[Square]]
-    comptime TypedSquareOfSum = After[Square, Sum[]]
-    comptime TypedRMS = After[Sqrt, Mean[Map[Square]]]
-    comptime TypedNegatedSquareMean = Mean[
-        Map[Compose[Negate, Square]]
-    ]
-
-    assert_equal(StringIdentity, "identity")
-    assert_equal(StringIdentity, Expr["identity"].describe())
-    assert_equal(StringDouble, Scale[2].describe())
-    assert_equal(StringDouble, "scale[2]")
-    assert_equal(StringSquare, Square.describe())
-    assert_equal(StringSquare, "square")
-    assert_equal(StringSumSquares, TypedSumSquares.describe())
-    assert_equal(StringSumSquares, "sum(map(square, input))")
-    assert_equal(StringSquareOfSum, TypedSquareOfSum.describe())
-    assert_equal(StringSquareOfSum, "after(square, sum(input))")
-    assert_equal(StringRMS, TypedRMS.describe())
-    assert_equal(StringRMS, "after(sqrt, mean(map(square, input)))")
-    assert_equal(
-        StringNegatedSquareMean,
-        TypedNegatedSquareMean.describe(),
-    )
-    assert_equal(
-        StringNegatedSquareMean,
-        "mean(map(compose(negate, square), input))",
-    )
-
-
-def test_whitespace_composition() raises:
-    comptime Phrase = Expr["sqrt mean square"]
-    comptime Explicit = Expr["sqrt of mean of square"]
-    var data: List[Float64] = [3.0, 4.0]
-    assert_close(Phrase.reduce(data), sqrt(12.5), "bare phrase RMS")
-    assert_equal(Phrase.describe(), Explicit.describe())
-    assert_equal(Expr["double square"].apply(3.0), 18.0)
-    assert_equal(Expr["square double"].apply(3.0), 36.0)
-    # Numerical function composition is associative; description checks the
-    # authored parse tree, which must still associate to the right.
-    assert_equal(
-        Expr["negate double square"].describe(),
-        "compose(negate, compose(scale[2], square))",
-    )
-    assert_equal(
-        Expr["(negate double) square"].describe(),
-        "compose(compose(negate, scale[2]), square)",
-    )
+def test_aliases() raises:
+    assert_equal(Expr["identity"].describe(), Expr["]"].describe())
+    assert_equal(Expr["left"].describe(), Expr["["].describe())
+    assert_equal(Expr["negate"].describe(), Expr["minus"].describe())
+    assert_equal(Expr["sqrt"].describe(), Expr["%:"].describe())
+    assert_equal(Expr["double"].describe(), Expr["+:"].describe())
+    assert_equal(Expr["square"].describe(), Expr["*:"].describe())
+    assert_equal(Expr["tally"].describe(), Expr["#"].describe())
+    assert_equal(Expr["sum"].describe(), Expr["plus insert"].describe())
     assert_equal(Expr["  square \t\r\n"].apply(3.0), 9.0)
-    assert_equal(Expr["square\tdouble\r\nnegate"].apply(3.0), 36.0)
-    assert_equal(Expr["negate of double square"].apply(3.0), -18.0)
-    assert_equal(Expr["negate double @: square"].apply(3.0), -18.0)
-    assert_equal(Expr["- +: *:"].apply(3.0), -18.0)
-    assert_equal(
-        Expr["group sqrt mean end square"].reduce(data), Phrase.reduce(data)
-    )
-    assert_equal(
-        Expr["(sqrt mean ) square"].describe(), Phrase.describe()
-    )
-    assert_equal(
-        Expr["group group negate end double end square"].apply(3.0), -18.0
-    )
+    assert_equal(Expr["group minus square end"].describe(), Expr["(- *:)"].describe())
 
 
 def main() raises:
-    var groups: Int = 0
-    test_primitive_words_and_symbols()
-    groups += 1
-    test_scalar_order_and_map()
-    groups += 1
-    test_reduction_compositions()
-    groups += 1
-    test_grouping_equivalence()
-    groups += 1
-    test_mixed_spelling_and_ascii_whitespace()
-    groups += 1
-    test_runtime_reuse_and_source_preservation()
-    groups += 1
-    test_empty_reductions()
-    groups += 1
-    test_exact_compiletime_descriptions()
-    groups += 1
-    test_whitespace_composition()
-    groups += 1
-    print("PASS test_strings: ", groups, " test groups")
-    print(
-        "RESULT: grammar primitives, composition categories, grouping, "
-        "runtime reuse, empty reductions, and exact descriptions passed"
-    )
+    test_trains_and_composition()
+    test_reductions_and_rms()
+    test_binding_and_sentences()
+    test_rank_and_modifier_binding()
+    test_domains_and_reuse()
+    test_aliases()
+    test_exact_nouns()
+    print("PASS test_strings: 7 J semantic test groups")

@@ -10,7 +10,8 @@ mojo = "==1.1.0"
 python = ">=3.11,<4"
 
 [tasks]
-test = { depends-on = ["test-core", "test-strings", "test-syntax"] }
+test = { depends-on = ["test-core", "test-verbs", "test-strings", "test-syntax"] }
+test-verbs = "mojo run --fp-mode contract=off -I src tests/test_verbs.mojo"
 test-core = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
 test-strings = "mojo run --fp-mode contract=off -I src tests/test_strings.mojo"
 test-syntax = "python3 tests/check_syntax.py"

@@ -26,6 +26,8 @@ def _fixture(source: str, entrypoint: str) -> str:
     literal = json.dumps(source, ensure_ascii=False)
     if entrypoint == "describe":
         operation = f"    comptime description = Candidate.describe()\n    print(description)"
+    elif entrypoint == "value":
+        operation = "    print(Candidate.value().as_float())"
     elif entrypoint == "apply":
         operation = "    var value = Candidate.apply(2.0)\n    print(value)"
     elif entrypoint == "map":
@@ -155,38 +157,39 @@ def _negative_cases() -> list[tuple[str, str, str, str]]:
     if len(balanced.encode("utf-8")) > 512:
         raise AssertionError("node-limit fixture must stay within 512 bytes")
 
-    return [
+    cases = [
         ("empty", "", "describe", "Mojj syntax at byte 0:"),
         ("unknown-word", "mystery", "apply", "Mojj syntax at byte 0:"),
         ("trailing-junk", "square ?", "map", "Mojj syntax at byte 7:"),
-        ("dangling-of", "square of", "reduce", "Mojj syntax at byte 9:"),
-        ("dangling-at-colon", "square @:", "describe", "Mojj syntax at byte 9:"),
-        ("wrong-parentheses", "(square", "apply", "Mojj syntax at byte"),
-        ("wrong-parentheses-closing", "square)", "apply", "Mojj syntax at byte"),
-        ("wrong-group-closing", "group square", "map", "Mojj syntax at byte"),
-        ("mismatched-group-closing", "group square)", "map", "Mojj syntax at byte"),
-        ("extra-group-end", "group square end end", "describe", "Mojj syntax at byte"),
-        ("standalone-percent", "%", "apply", "Mojj syntax at byte 0:"),
+        ("dangling-of", "square of", "reduce", "Mojj syntax at byte"),
+        ("dangling-at-colon", "square @:", "describe", "Mojj syntax at byte"),
+        ("unclosed-group", "group square", "map", "unclosed group"),
+        ("extra-group-end", "group square end end", "describe", "unexpected closing group"),
         ("non-ascii", "squär", "reduce", "Mojj syntax at byte 3:"),
-        (
-            "reducer-after-reducer",
-            "sum of mean",
-            "reduce",
-            "Mojj category at byte",
-        ),
-        ("reduce-scalar", "square", "reduce", "Mojj category at byte"),
-        ("apply-reducer", "sum", "apply", "Mojj category at byte"),
-        ("map-reducer", "mean", "map", "Mojj category at byte"),
-        ("over-512-bytes", oversized, "describe", "Mojj syntax at byte 512: source exceeds 512 bytes"),
+        ("noun-consumer", "1 + 2", "apply", "Mojj consumer: monad requires a verb"),
+        ("verb-consumer", "square", "value", "Mojj consumer: value requires a noun sentence"),
+        ("over-512-bytes", oversized, "describe", "expression exceeds 512 ASCII bytes"),
         ("over-16-depth", nested, "describe", "expression nesting exceeds 16 levels"),
         ("over-64-nodes", balanced, "describe", "expression exceeds 64 AST nodes"),
-        ("describe-validation", "unknown", "describe", "Mojj syntax at byte 0:"),
-        ("implicit-reducers", "sum mean", "reduce", "Mojj category at byte 4:"),
-        ("implicit-unknown", "square mystery", "apply", "Mojj syntax at byte 7:"),
+        ("composition-depth", "]@:" * 18 + "]", "describe", "expression nesting exceeds 16 levels"),
         ("merged-words", "squaresquare", "apply", "Mojj syntax at byte 0:"),
-        ("missing-separator", "square(square)", "apply", "Mojj syntax at byte 6:"),
-        ("implicit-depth", " ".join(["square"] * 18), "describe", "expression nesting exceeds 16 levels"),
+        ("bare-cap", "[:", "describe", "cap is only supported"),
+        ("hook-cap", "[: +", "describe", "cap is only supported"),
+        ("fork-middle-cap", "+ [: -", "describe", "cap is only supported"),
+        ("apply-cap", "[: 1", "describe", "cap is only supported"),
+        ("noun-insert", "3/", "describe", "insertion requires a supported verb"),
+        ("verb-bond", "+&-", "describe", "binding requires one noun and one verb"),
+        ("noun-bond", "3&4", "describe", "binding requires one noun and one verb"),
+        ("noun-compose", "3 @: +", "describe", "composition requires two verbs"),
+        ("overflow-integer", "9223372036854775808", "describe", "integer literal exceeds Int64 range"),
+        ("underflow-integer", "_9223372036854775809", "describe", "integer literal exceeds Int64 range"),
+        ("overflow-exponent", "1e309", "describe", "numeric exponent must be"),
+        ("missing-exponent", "1e", "describe", "numeric exponent must be"),
+        ("unsupported-primitive", "i.", "describe", "Mojj syntax at byte"),
     ]
+    for index, source in enumerate(["(", "(-", "(- @", "(- @:", "(- @: *:", "10&", "1 +", "()"]):
+        cases.append((f"truncated-{index}", source, "describe", "Mojj syntax at byte"))
+    return cases
 
 
 def main() -> int:

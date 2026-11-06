@@ -1,4 +1,4 @@
-"""Public typed, lazy Float64 composition API."""
+"""Typed numerical expressions and bounded J phrases."""
 
 from .core import (
     Add, After, Compose, Identity, Input, Map, Mean, Negate,
@@ -6,3 +6,5 @@ from .core import (
     evaluate, materialize,
 )
 from .strings import Expr
+
+from .nouns import Noun

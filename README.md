@@ -33,28 +33,29 @@ var output = jj.materialize[Pipeline](data)  # (x + 2) * 3
 
 `materialize` creates a fresh result list. The source list is not changed.
 
-## Compiled phrases
+## Compiled J phrases
 
-`Expr` accepts a compile-time string literal. Words and selected J-inspired
-symbols share one grammar and lower to the same numerical operations:
+Readable words and J symbols share one bounded grammar and typed verb model:
 
 ```mojo
-comptime Words = jj.Expr["sqrt mean square"]
-comptime Symbols = jj.Expr["%: @: ((+/ % #) @: *:)"]
-var words = Words.reduce(data)
-var symbols = Symbols.reduce(data)
+comptime Words = jj.Expr["sqrt of mean of square"]
+comptime Symbols = jj.Expr["%: @: (+/ % #) @: *:"]
+var rms = Words.reduce(data)
 ```
 
-Whitespace composes operations from right to left. `of` is optional:
-`sqrt mean square` and `sqrt of mean of square` mean the same thing.
+Bare verb sequences form J trains. `Expr["minus square"].apply(3.0)` is -6;
+`Expr["minus of square"].apply(3.0)` is -9. Composition requires `of` or `@:`.
+Mean is the derived fork `(+/ % #)`, and its empty-vector result is zero.
 
-Scalar expressions offer `apply(value)` and `map(data)`; reductions offer
-`reduce(data)`. Both expose `describe()`, which also works at compile time.
-For example, `Expr["negate square"].apply(3.0)` is `-9.0`.
+Use `monad(Noun)` or `dyad(Noun, Noun)` for verb application, and `value()`
+for a complete noun sentence such as `10 divide 3 plus 2`. Nouns distinguish
+scalars from vectors and Boolean, integer, and real storage. The Float64
+convenience consumers are `apply`, `map`, and `reduce`. All expose inspectable
+structure through `describe()`.
 
-Malformed syntax and wrong-category calls fail at compile time when an entrypoint
-is used. An unused type alias alone is not a validation check. See the bounded
-[grammar and diagnostics](docs/SYNTAX.md).
+See [syntax and migration](docs/SYNTAX.md) for the breaking changes from the
+prototype and [compatibility](docs/COMPATIBILITY.md) for supported valences,
+numerical policies, reference evidence, and limits.
 
 ## Run locally
 
@@ -101,16 +102,16 @@ traversal interface whose index must already be valid.
 
 ## Scope and numerical behavior
 
-Reductions accumulate left to right with ordinary Float64 arithmetic. There
+The legacy typed reductions below accumulate left to right with ordinary Float64 arithmetic. There
 is no compensated summation, overflow protection, algebraic rewrite engine,
 or general automatic fusion pass. The tasks disable floating-point contraction;
 this is not a guarantee of bitwise portability. No speedup or compiler-level
 allocation claim is made without measurements.
 
-This version does not yet include forks, strides, windows, rank operations,
-GPU execution, or Python/NumPy integration.
-Those belong to the separate `project-planning` branch. Numerical tests use
-finite inputs; exhaustive IEEE special-value behavior is not established.
+The J verb API supports hooks, forks, and scalar/vector rank agreement. General
+shaped arrays, strides, windows, explicit rank operators, GPU execution, and
+Python/NumPy integration remain outside this version.
+Those belong to the separate `project-planning` branch. Exhaustive IEEE special-value behavior is not established.
 
 The manifest targets macOS arm64 and Linux x86-64. Initial local validation is
 on macOS arm64; a resolved Linux lockfile is not evidence of Linux execution.
