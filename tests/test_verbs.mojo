@@ -161,6 +161,53 @@ def test_hooks_forks_composition_and_reductions() raises:
         _ = Tally.dyad(Noun(1), Noun(1))
 
 
+def test_float64_kernel_fast_paths() raises:
+    """The unboxed Float64 kernels must match the generic path exactly."""
+    var values: List[Float64] = [1.0, -2.0, 0.0, 4.0]
+    assert_float_vector(
+        Doubled.monad(Noun(values)), List[Float64]([2.0, -4.0, 0.0, 8.0])
+    )
+    assert_float_vector(
+        Squared.monad(Noun(values)), List[Float64]([1.0, 4.0, 0.0, 16.0])
+    )
+    assert_float_vector(
+        Minus.monad(Noun(values)), List[Float64]([-1.0, 2.0, 0.0, -4.0])
+    )
+    assert_float_vector(
+        Times.monad(Noun(values)), List[Float64]([1.0, -1.0, 0.0, 1.0])
+    )
+
+    var quotients: List[Float64] = [2.0, -4.0, 0.5]
+    assert_float_vector(
+        Divide.monad(Noun(quotients)), List[Float64]([0.5, -0.25, 2.0])
+    )
+    var squares: List[Float64] = [1.0, 4.0, 0.0]
+    assert_float_vector(Root.monad(Noun(squares)), List[Float64]([1.0, 2.0, 0.0]))
+    with assert_raises(contains="negative real"):
+        _ = Root.monad(Noun(values))
+
+    # Reduction keeps the documented right fold and the exact Float64 order.
+    var three: List[Float64] = [1.0, 2.0, 3.0]
+    assert_float_scalar(Insert[Minus].monad(Noun(three)), 2.0)
+    var halving: List[Float64] = [1.0, 2.0, 4.0]
+    assert_float_scalar(Insert[Divide].monad(Noun(halving)), 2.0)
+    var cancel: List[Float64] = [1.0, 1e16, -1e16, 1.0]
+    assert_float_scalar(Insert[Plus].monad(Noun(cancel)), 1.0)
+    var singleton: List[Float64] = [3.5]
+    assert_float_scalar(Insert[Plus].monad(Noun(singleton)), 3.5)
+    assert_float_scalar(Insert[Plus].monad(Noun(List[Float64]())), 0.0)
+
+    # Atop maps the per-cell kernel over a Float64 result vector.
+    assert_float_vector(
+        Atop[Squared, Doubled].monad(Noun(three)),
+        List[Float64]([4.0, 16.0, 36.0]),
+    )
+    var empty_atop = Atop[Squared, Doubled].monad(Noun(List[Float64]()))
+    assert_equal(empty_atop.rank, VECTOR_RANK)
+    assert_true(empty_atop.dtype == NounDType.FLOAT64)
+    assert_equal(empty_atop.length(), 0)
+
+
 def test_atop_vs_compose_and_bound_ranks() raises:
     var x: List[Int] = [1, 2, 3, 4]
     var y: List[Int] = [7, 5, 3, 2]
@@ -226,6 +273,8 @@ def main() raises:
     test_numeric_bool_promotion_and_agreement()
     groups += 1
     test_hooks_forks_composition_and_reductions()
+    groups += 1
+    test_float64_kernel_fast_paths()
     groups += 1
     test_atop_vs_compose_and_bound_ranks()
     groups += 1

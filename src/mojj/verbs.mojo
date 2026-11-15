@@ -49,6 +49,26 @@ trait Verb:
     def insert_identity(dtype: NounDType) raises -> Noun:
         raise Error("Insert identity is unsupported for this verb in P1")
 
+    # Optional Float64 fast-path kernels.  The defaults declare that a verb has
+    # no kernel, so evaluators fall back to the generic Noun path, which remains
+    # the reference implementation and oracle.  A verb that overrides these must
+    # reproduce its generic Float64 behavior exactly, including error messages.
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return False
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        raise Error("this verb has no Float64 monad kernel")
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        return False
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        raise Error("this verb has no Float64 dyad kernel")
+
 
 def _require_numeric(noun: Noun, operation: String) raises:
     """Validate the currently supported numeric dtype domain."""
@@ -111,6 +131,24 @@ def _float_divide(numerator: Float64, denominator: Float64) -> Float64:
     return numerator / denominator
 
 
+def _map_float64_vector[Op: Verb](values: List[Float64]) raises -> Noun:
+    """Apply a verb's Float64 monad kernel to each element.
+
+    Equivalent to mapping ``Op.monad`` over scalar cells, but without building a
+    scalar Noun per cell.  Only verbs that advertise ``has_float64_monad`` reach
+    this path.
+    """
+    var length = len(values)
+    var result = List[Float64](length=length, fill=0.0)
+    var source = values.unsafe_ptr()
+    var target = result.unsafe_ptr()
+    for index in range(length):
+        target[unsafe_offset=index] = Op.float64_monad(
+            source[unsafe_offset=index]
+        )
+    return Noun.from_owned_float64(result^)
+
+
 struct Plus(Verb):
     """Conjugate/plus: identity as a monad and checked addition as a dyad."""
 
@@ -168,6 +206,22 @@ struct Plus(Verb):
             return Noun(0.0)
         raise Error("Plus insert identity received an unsupported dtype")
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        return value
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        return left + right
+
 
 struct Minus(Verb):
     """Negate as a monad and checked subtraction as a dyad."""
@@ -184,10 +238,7 @@ struct Minus(Verb):
             for index in range(y.length()):
                 result[index] = _checked_neg(_numeric_int(y.at(index)))
             return Noun(result)
-        var float_result = List[Float64](length=y.length(), fill=0.0)
-        for index in range(y.length()):
-            float_result[index] = -y.at(index).as_float()
-        return Noun(float_result)
+        return _map_float64_vector[Minus](y.float_values)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -238,6 +289,22 @@ struct Minus(Verb):
             return Noun(0.0)
         raise Error("Minus insert identity received an unsupported dtype")
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        return -value
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        return left - right
+
 
 struct Times(Verb):
     """Signum as a monad and checked multiplication as a dyad."""
@@ -270,16 +337,7 @@ struct Times(Verb):
                 else:
                     int_result[index] = 1
             return Noun(int_result)
-        var float_result = List[Float64](length=y.length(), fill=0.0)
-        for index in range(y.length()):
-            var value = y.at(index).as_float()
-            if value < 0.0:
-                float_result[index] = -1.0
-            elif value == 0.0:
-                float_result[index] = 0.0
-            else:
-                float_result[index] = 1.0
-        return Noun(float_result)
+        return _map_float64_vector[Times](y.float_values)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -330,6 +388,26 @@ struct Times(Verb):
             return Noun(1.0)
         raise Error("Times insert identity received an unsupported dtype")
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        if value < 0.0:
+            return -1.0
+        if value == 0.0:
+            return 0.0
+        return 1.0
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        return left * right
+
 
 struct Divide(Verb):
     """Reciprocal as a monad and J-compatible real division as a dyad."""
@@ -339,6 +417,8 @@ struct Divide(Verb):
         _require_numeric(y, "Divide monad")
         if y.rank == SCALAR_RANK:
             return Noun(_float_divide(1.0, y.as_float()))
+        if y.dtype == NounDType.FLOAT64:
+            return _map_float64_vector[Divide](y.float_values)
         var result = List[Float64](length=y.length(), fill=0.0)
         for index in range(y.length()):
             result[index] = _float_divide(1.0, y.at(index).as_float())
@@ -382,6 +462,22 @@ struct Divide(Verb):
             return Noun(1.0)
         raise Error("Divide insert identity received an unsupported dtype")
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        return _float_divide(1.0, value)
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        return _float_divide(left, right)
+
 
 struct Squared(Verb):
     """The monadic square verb; its Boolean dyad is intentionally deferred."""
@@ -400,11 +496,7 @@ struct Squared(Verb):
                 var value = _numeric_int(y.at(index))
                 result[index] = _checked_mul(value, value, "square")
             return Noun(result)
-        var float_result = List[Float64](length=y.length(), fill=0.0)
-        for index in range(y.length()):
-            var value = y.at(index).as_float()
-            float_result[index] = value * value
-        return Noun(float_result)
+        return _map_float64_vector[Squared](y.float_values)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -426,6 +518,14 @@ struct Squared(Verb):
     def right_rank() -> Int:
         return ATOM_RANK
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        return value * value
+
 
 struct Doubled(Verb):
     """The monadic double verb; its Boolean dyad is intentionally deferred."""
@@ -444,11 +544,7 @@ struct Doubled(Verb):
                 var value = _numeric_int(y.at(index))
                 result[index] = _checked_add(value, value, "double")
             return Noun(result)
-        var float_result = List[Float64](length=y.length(), fill=0.0)
-        for index in range(y.length()):
-            var value = y.at(index).as_float()
-            float_result[index] = value + value
-        return Noun(float_result)
+        return _map_float64_vector[Doubled](y.float_values)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -470,6 +566,14 @@ struct Doubled(Verb):
     def right_rank() -> Int:
         return ATOM_RANK
 
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        return value + value
+
 
 struct Root(Verb):
     """Real square root; negative and root-degree cases are explicit errors."""
@@ -482,6 +586,8 @@ struct Root(Verb):
             if value < 0.0:
                 raise Error("Root monad rejects negative real values without Complex")
             return Noun(sqrt(value))
+        if y.dtype == NounDType.FLOAT64:
+            return _map_float64_vector[Root](y.float_values)
         var result = List[Float64](length=y.length(), fill=0.0)
         for index in range(y.length()):
             var value = y.at(index).as_float()
@@ -509,6 +615,16 @@ struct Root(Verb):
     @staticmethod
     def right_rank() -> Int:
         return ATOM_RANK
+
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        return True
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        if value < 0.0:
+            raise Error("Root monad rejects negative real values without Complex")
+        return sqrt(value)
 
 
 struct Left(Verb):
@@ -664,6 +780,9 @@ def _map_monad_per_cell[Op: Verb](value: Noun) raises -> Noun:
         if value.dtype == NounDType.FLOAT64:
             return _empty_mapped_vector[Op](Noun(0.0))
         return _empty_mapped_vector[Op](Noun(False))
+
+    if value.dtype == NounDType.FLOAT64 and Op.has_float64_monad():
+        return _map_float64_vector[Op](value.float_values)
 
     var first = Op.monad(value.at(0))
     if first.rank != SCALAR_RANK:

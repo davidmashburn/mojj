@@ -171,6 +171,82 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
         else:
             raise Error("Mojj internal: unsupported verb node")
 
+    # Fast-path capability forwarding.  The expression wrapper is what the
+    # benchmark exercises, so it must advertise the kernel of the concrete verb
+    # it dispatches to; otherwise every Expr phrase would stay on the generic
+    # Noun path.
+    @staticmethod
+    def has_float64_monad() -> Bool:
+        comptime ast = _Syntax[Self.source].ast
+        comptime current = ast.nodes[Self.node]
+        comptime if current.kind == Kind.PLUS:
+            return Plus.has_float64_monad()
+        elif current.kind == Kind.MINUS:
+            return Minus.has_float64_monad()
+        elif current.kind == Kind.TIMES:
+            return Times.has_float64_monad()
+        elif current.kind == Kind.DIVIDE:
+            return Divide.has_float64_monad()
+        elif current.kind == Kind.SQUARE:
+            return Squared.has_float64_monad()
+        elif current.kind == Kind.DOUBLE:
+            return Doubled.has_float64_monad()
+        elif current.kind == Kind.SQRT:
+            return Root.has_float64_monad()
+        else:
+            return False
+
+    @staticmethod
+    def float64_monad(value: Float64) raises -> Float64:
+        comptime ast = _Syntax[Self.source].ast
+        comptime current = ast.nodes[Self.node]
+        comptime if current.kind == Kind.PLUS:
+            return Plus.float64_monad(value)
+        elif current.kind == Kind.MINUS:
+            return Minus.float64_monad(value)
+        elif current.kind == Kind.TIMES:
+            return Times.float64_monad(value)
+        elif current.kind == Kind.DIVIDE:
+            return Divide.float64_monad(value)
+        elif current.kind == Kind.SQUARE:
+            return Squared.float64_monad(value)
+        elif current.kind == Kind.DOUBLE:
+            return Doubled.float64_monad(value)
+        elif current.kind == Kind.SQRT:
+            return Root.float64_monad(value)
+        else:
+            raise Error("this verb has no Float64 monad kernel")
+
+    @staticmethod
+    def has_float64_dyad() -> Bool:
+        comptime ast = _Syntax[Self.source].ast
+        comptime current = ast.nodes[Self.node]
+        comptime if current.kind == Kind.PLUS:
+            return Plus.has_float64_dyad()
+        elif current.kind == Kind.MINUS:
+            return Minus.has_float64_dyad()
+        elif current.kind == Kind.TIMES:
+            return Times.has_float64_dyad()
+        elif current.kind == Kind.DIVIDE:
+            return Divide.has_float64_dyad()
+        else:
+            return False
+
+    @staticmethod
+    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
+        comptime ast = _Syntax[Self.source].ast
+        comptime current = ast.nodes[Self.node]
+        comptime if current.kind == Kind.PLUS:
+            return Plus.float64_dyad(left, right)
+        elif current.kind == Kind.MINUS:
+            return Minus.float64_dyad(left, right)
+        elif current.kind == Kind.TIMES:
+            return Times.float64_dyad(left, right)
+        elif current.kind == Kind.DIVIDE:
+            return Divide.float64_dyad(left, right)
+        else:
+            raise Error("this verb has no Float64 dyad kernel")
+
     @staticmethod
     def describe() -> String:
         comptime ast = _Syntax[Self.source].ast
