@@ -5,9 +5,21 @@ proposals and design reasoning only; never merge it into implementation history.
 
 ## Active plan
 
-Next proposed step (2026-11-06): **measure and reduce compiled `Expr` overhead**.
-See the [performance tuning plan](plans/expression-performance.md) for prioritized
-hypotheses, a bounded first slice and correctness gates.
+Next proposed step (2026-11-15): **remove the measured per-element `Noun` tax in
+the compiled `Expr` paths, then decide the reduction-order contract.** See the
+[performance tuning plan](plans/expression-performance.md) and its
+[measured baseline](plans/evidence/performance-baseline.md).
+
+The baseline rerun reproduced the comparison on this host (33/33 conformance
+expectations, nine benchmarks) and attributed the 17–177× gap by controlled
+experiment: boxing each cell in a `Noun` costs 13× on maps and 16–23× on
+reductions, while a strict floating-point fold has a hardware floor around
+1 ns/element. Removing the boxing is semantics-preserving and is the first
+implementation slice. Matching J's sum timings additionally requires abandoning
+the strict fold, because J reassociates float reductions; that is a documented
+API decision, not tuning. The plan recommends a separately named blocked
+reduction and leaves the strict fold as the default and oracle.
+
 
 The original reference-fixture next step has landed in
 [`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13):
@@ -17,7 +29,9 @@ full subset parity. The vocabulary roadmap below retains its original baseline
 and proposal history, with current status reconciled against code and tests.
 
 - [Expr performance tuning](plans/expression-performance.md) — current next step;
-  measure first, then optimize one demonstrated cost at a time.
+  measured attribution, then one demonstrated cost per slice.
+  [Baseline evidence](plans/evidence/performance-baseline.md) records the probes,
+  the same-host J rerun and the reduction-order finding.
 - [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — bounded P0/P1
   implemented; P2 partial, P3 proposed. Full subset parity remains unverified.
 - [Build a small compositional numerical library](plans/foundation.md) — foundation
