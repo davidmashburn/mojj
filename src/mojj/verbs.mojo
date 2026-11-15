@@ -725,6 +725,18 @@ struct Insert[Op: Verb](Verb):
             return y.copy()
         if y.length() == 0:
             return Self.Op.insert_identity(y.dtype)
+        if y.dtype == NounDType.FLOAT64 and Self.Op.has_float64_dyad():
+            # Same right fold as the generic path, but over unboxed elements.
+            var length = y.length()
+            var values = y.float_values.unsafe_ptr()
+            var accumulator = values[unsafe_offset=length - 1]
+            var index = length - 1
+            while index > 0:
+                index -= 1
+                accumulator = Self.Op.float64_dyad(
+                    values[unsafe_offset=index], accumulator
+                )
+            return Noun(accumulator)
         var result = y.at(y.length() - 1)
         var index = y.length() - 1
         while index > 0:
