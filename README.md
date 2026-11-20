@@ -7,8 +7,9 @@ proposals and design reasoning only; never merge it into implementation history.
 
 All 28 vocabulary families marked Include through P3 have shipped within their
 documented scope. The [vocabulary roadmap](plans/j-vocabulary.md) records the
-deferred families. The original [expression grammar](plans/expression-strings.md)
-was superseded by J train semantics.
+deferred families. [Bounded verb repetition](plans/j-vocabulary.md#post-p3-milestone-bounded-repetition)
+shipped after P3 in [`d303a52`](https://github.com/davidmashburn/mojj/commit/d303a52).
+The original [expression grammar](plans/expression-strings.md) was superseded by J train semantics.
 
 - [Foundation](plans/foundation.md) and [streaming reductions](plans/streaming-reductions.md).
   Borrowed strided input, one-pass population moments and explicit paired folds
@@ -51,10 +52,10 @@ Further implementation depends on what a caller needs:
 - Revisit square SIMD if profiling identifies large square maps or RMS as a bottleneck.
   The separate pipeline syntax remains an optional language-design idea.
 
-Verified against clean published `main` at [`db73eba`](https://github.com/davidmashburn/mojj/commit/db73eba)
-on 2026-11-20. The [Linux checks](https://github.com/davidmashburn/mojj/actions/runs/44816759533)
-passed at that revision. This planning update inspected the source and recorded
-results without rerunning tests or benchmarks.
+The [Linux checks for bounded repetition](https://github.com/davidmashburn/mojj/actions/runs/44835665390)
+passed the full suite, demo, package smoke and pinned J comparison on `d303a52`.
+On macOS arm64 the pinned J comparison also passed all 142 expectations,
+including the 14 repetition fixtures.
 
 ## Ideas
 

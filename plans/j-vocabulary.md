@@ -12,14 +12,14 @@ The [planning index](../README.md#remaining-work) tracks follow-ups.
 
 ## Post-P3 milestone: bounded repetition
 
-Implement `u ^: n` and its word spelling `u repeat n` for one literal integer
-from 0 through 1024. This per-operator bound is a Mojj design choice.
-Evaluate a loop over the current noun. Zero returns the right argument,
-and each dyadic iteration reuses the original left argument. Keep the derived
-verb visible in descriptions and compare its rank behavior with pinned J.
-Check zero, one, multiple applications, shape changes, operand errors,
-and rejection of unsupported counts. Inverse powers, convergence and
-arrays of powers remain deferred.
+Shipped on main in [`d303a52`](https://github.com/davidmashburn/mojj/commit/d303a52).
+The symbol `u ^: n`, word spelling `u repeat n` and typed `Repeat[Op, n]`
+share an implementation. Mojj accepts one literal integer from 0 through 1024
+per operator. Each dyadic step reuses the original left argument. Zero returns
+the right argument. One preserves the operand’s ranks and empty-insert identity.
+Other counts use whole arguments. The [J reference fixtures](https://github.com/davidmashburn/mojj/blob/d303a52/tests/reference/cases.json)
+cover shape changes, both valences, composition and operand errors. Inverse
+powers, convergence and arrays of powers remain deferred.
 
 ## Historical phase status — 2026-11-06
 
