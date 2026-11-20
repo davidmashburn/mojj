@@ -269,12 +269,16 @@ regressions and repeat on native Linux before generalizing the timing claim.
 
 ### Result
 
-Both specializations shipped. The [row change](https://github.com/davidmashburn/mojj/commit/a2d0754) and [column change](https://github.com/davidmashburn/mojj/commit/629bb89) keep the ordinary reduction and supply its full product noun in typed storage. Both met the predetermined gate for each shape on the M4 and in two independent eight-block runs on Linux x86-64. The controls varied, particularly on the loaded M4. [Raw timings, methods and reproduction](https://github.com/davidmashburn/mojj/blob/fb88d67/tests/perf/dot/rectangular.md).
+The [retained implementation](https://github.com/davidmashburn/mojj/commit/c06d309) collects Float64 products directly for matrix × vector and preserves ordinary reduction. The opposite orientation retains generic product assembly. Initial prototypes passed both M4 and Linux gates. Review uncovered an observable bounds error when callers shorten a matrix's public storage. The guarded candidates received a final isolated comparison. Matrix × vector won 8/8 pairs on both M4 shapes. Vector × matrix won 8/8 tall and 6/8 wide, below the seven-win requirement. The retained row change also won 8/8 on each shape in both Linux repeats. Its tall reverse-orientation control was 5.4–5.7% slower there. Measure an application’s mix of directions and shapes before assuming an overall benefit. Keep the column candidate for a quieter-host study if a representative workload needs it. [Final results and raw samples](https://github.com/davidmashburn/mojj/blob/94df95e/tests/perf/dot/rectangular.md).
 
 The [regressions](https://github.com/davidmashburn/mojj/blob/7f41bee/tests/test_dot_float64.mojo) cover shape and dtype for a custom reduction, strict cancellation, signed zero, empty axes and the order of competing cell errors. Three new pinned-J cases exercise the public expression.
 
-A further vector-by-matrix experiment needs a profile that separates product construction from first-axis reduction. Both are still present in the measured public call. Higher ranks and matrix-by-matrix products need their own representative shapes before selecting an optimization.
+Higher ranks and matrix-by-matrix products need their own representative shapes before selecting an optimization.
 
 ### Follow-up trial for row extraction
 
 Profile vector × matrix on the same two shapes. Test whether directly copying a contiguous Float64 row into the noun supplied to the reducer improves the public call. Limit the candidate to rank two and keep the operator invocation and strict right-fold sequence. Retain this change only if the profile implicates row extraction or first-axis reduction, both target shapes meet the same paired gate, and a Linux repeat confirms the improvement. Check zero-width rows, singleton rows and caller-owned inputs.
+
+### Row extraction decision
+
+The M4 profile of the typed product-matrix candidate implicated first-axis reduction. Direct product construction took about 20–35 µs per call, while reduction of a preconstructed product matrix took about 615–773 µs. A prototype copied Float64 rows directly, leaving the dyadic reducer intact. With bounds handling restored, it won 7/8 tall pairs and 5/8 wide on M4. Both Linux repeats qualified, but the wide M4 result fell short. The [revert](https://github.com/davidmashburn/mojj/commit/150197d) keeps the new semantic tests. Reconsider the experiment with a representative application shape and a quiet M4 host. A fused reduction would additionally need an explicit contract for custom verbs that process an entire row.
