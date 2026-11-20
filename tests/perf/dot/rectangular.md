@@ -76,6 +76,8 @@ A follow-up candidate at `8bc5f7b` copied each Float64 matrix row directly for t
 
 [M4 samples](row-copy-m4.csv) · [Linux first](row-copy-linux-first.csv) · [Linux repeat](row-copy-linux-repeat.csv)
 
+The [mixed operand-order comparison](mixed.md) measures the retained row implementation with both directions interleaved.
+
 ## Reproduction
 
 To reproduce, set `BASE_SRC` and `CANDIDATE_SRC` to the source directories containing `mojj/` and choose a fresh output path.
