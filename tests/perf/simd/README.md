@@ -6,6 +6,8 @@ including input copying, output allocation and destruction. Width four won
 eight of eight paired blocks at 100,000 elements. Its median paired speedup
 was 1.63×. Small vectors showed no consistent advantage.
 
+The [square SIMD trial](square/README.md) records the separate decision for Float64 square on Apple Silicon and Linux x86-64.
+
 ## Ten comparisons
 
 Speedup is baseline time divided by candidate time **within each block**,
