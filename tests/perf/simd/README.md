@@ -63,3 +63,10 @@ each block and length. The raw columns come from the baseline binary, where
 all four raw loops were timed in the same process. The reproduction command
 also emits all individual samples, candidate/reference time ratios and a
 summary. In that diagnostic summary a ratio below one is faster.
+
+A second execution of the reproduction command rebuilt all four binaries.
+Width four again cleared the selection rule, with a 1.19× median paired
+speedup and seven wins at 100,000 elements. Widths two and eight each won
+six blocks and neither cleared the consistency threshold. The smaller gain
+on repetition limits the precision of any single speedup figure.
+[Replication measurements](replication.csv).
