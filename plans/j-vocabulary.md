@@ -10,6 +10,17 @@ defines the supported surface. The [array modifiers](https://github.com/davidmas
 implement rank, prefix, suffix and dot, with [focused tests](https://github.com/davidmashburn/mojj/blob/db73eba/tests/test_array_modifiers.mojo).
 The [planning index](../README.md#remaining-work) tracks follow-ups.
 
+## Post-P3 milestone: bounded repetition
+
+Implement `u ^: n` and its word spelling `u repeat n` for one literal integer
+from 0 through 1024. This per-operator bound is a Mojj design choice.
+Evaluate a loop over the current noun. Zero returns the right argument,
+and each dyadic iteration reuses the original left argument. Keep the derived
+verb visible in descriptions and compare its rank behavior with pinned J.
+Check zero, one, multiple applications, shape changes, operand errors,
+and rejection of unsupported counts. Inverse powers, convergence and
+arrays of powers remain deferred.
+
 ## Historical phase status — 2026-11-06
 
 Status: bounded P0/P1 foundation implemented; P2 partial and P3 still proposed.
