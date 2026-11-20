@@ -292,3 +292,5 @@ matrix × vector calls, interleaved with vector × matrix calls. Keep the two
 matrix shapes separate. Report all eight paired ratios through their median
 and win count, with two Linux runs. These mixes test sensitivity to operand
 order. An application-level prediction still requires its actual call mix.
+
+The [mixed benchmark and samples](https://github.com/davidmashburn/mojj/blob/db73eba/tests/perf/dot/mixed.md) are complete. Five matrix × vector calls per 100 was the smallest tested share that won seven of eight pairs on both shapes in both Linux runs. At an even split, median elapsed time fell by 37–38%. The loaded M4 produced no seven-win result. Keep the retained implementation. Resume tuning when an application supplies representative shapes and call counts or when a quiet M4 is available to repeat this comparison.

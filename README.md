@@ -22,6 +22,9 @@ was superseded by J train semantics.
   [Rectangular Float64 dot](https://github.com/davidmashburn/mojj/blob/94df95e/tests/perf/dot/rectangular.md)
   uses typed product storage for matrix × vector. The vector × matrix and
   reduction-row candidates missed the wide-matrix M4 selection gate.
+  In [mixed batches](https://github.com/davidmashburn/mojj/blob/db73eba/tests/perf/dot/mixed.md),
+  five matrix × vector calls per hundred won seven of eight pairs on both shapes
+  in both Linux runs. A quiet M4 repeat and application call counts remain open.
   A separately named blocked sum needs a workload with an explicit rounding tolerance.
 - [Portability and compatibility](plans/streaming-reductions.md#implementation-evidence).
   Native Ubuntu CI runs the full suite, demo, package smoke and the pinned J
