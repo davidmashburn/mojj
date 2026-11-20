@@ -1,6 +1,8 @@
 from std.collections import List
 from std.testing import assert_equal, assert_raises, assert_true
 
+from mojj.arrays import Take
+from mojj.modifiers import Reflex
 from mojj.array_modifiers import Dot, Prefix, Rank, Suffix, Table
 from mojj.nouns import Noun
 from mojj.verbs import Atop, Insert, Minus, Plus, Right, Times
@@ -26,6 +28,19 @@ def _test_rank() raises:
     _assert_int_array(added, [2, 3], [11, 12, 13, 24, 25, 26])
     var empty = Noun(List[Int]()).with_shape([0, 3])
     _assert_int_array(Rank[Insert[Plus], 1].monad(empty), [0], [])
+    _assert_int_array(Rank[Take, 0, 0, 1].dyad(Noun(3), empty), [0, 3], [])
+    _assert_int_array(Rank[Reflex[Take], 0, 1, 0].dyad(empty, Noun(3)), [0, 3], [])
+    var count_cells = Noun(List[Int]([2, 3]))
+    var nested_empty = Noun(List[Int]()).with_shape([2, 0, 0])
+    _assert_int_array(Rank[Take, 0, 0, 1].dyad(count_cells, nested_empty), [2, 0, 2], [])
+    # The shorter frame has cells of zero atoms, even when its axis product
+    # exceeds Int. Only the empty backing lists need storage.
+    var huge = Noun(List[Int]()).with_shape([Int.MAX, Int.MAX, 0])
+    var huge_empty = Noun(List[Int]()).with_shape([Int.MAX, Int.MAX, 0, 0])
+    _assert_int_array(
+        Rank[Right, 0, 1, 1].dyad(huge, huge_empty),
+        [Int.MAX, Int.MAX, 0, 0], [],
+    )
     with assert_raises(contains="rank frame agreement failed"):
         _ = Rank[Plus, 0, 0, 1].dyad(Noun(List[Int]([1, 2, 3])), matrix)
 

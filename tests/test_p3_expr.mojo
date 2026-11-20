@@ -70,6 +70,9 @@ def test_rank() raises:
         [2, 3],
         [1, 1, 1, 1, 1, 1],
     )
+    check_array(Expr['3 {."0 1 i.0 4'].value(), [0, 3], [])
+    check_array(Expr['(i.0 4) ({.~)"1 0 (3)'].value(), [0, 3], [])
+    check_array(Expr['2 3 {."0 1 i.2 0 0'].value(), [2, 0, 2], [])
     assert_equal(Expr['(#"_) i.2 3'].value().as_int(), 2)
 
 

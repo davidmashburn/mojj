@@ -51,6 +51,14 @@ def _cell(noun: Noun, start: Int, dims: List[Int]) raises -> Noun:
     return result^
 
 
+def _prototype_cell(noun: Noun, frame_rank: Int, cell_dims: List[Int]) raises -> Noun:
+    # Even a zero-atom cell exists if every axis in its frame is nonempty.
+    for axis in range(frame_rank):
+        if noun.axis_length(axis) == 0:
+            return _fill(noun.dtype, cell_dims)
+    return _cell(noun, 0, cell_dims)
+
+
 def _assemble(
     frame: List[Int], cells: List[Noun], prototype: Noun
 ) raises -> Noun:
@@ -146,7 +154,10 @@ def rank_dyad[Op: Verb](
     var count = shape_size(frame)
     var cells = List[Noun]()
     if count == 0:
-        var prototype = Op.dyad(_fill(x.dtype, left_cell), _fill(y.dtype, right_cell))
+        var prototype = Op.dyad(
+            _prototype_cell(x, left_frame_rank, left_cell),
+            _prototype_cell(y, right_frame_rank, right_cell),
+        )
         return _assemble(frame, cells, prototype)
 
     var left_repeat = shape_size(_axes(frame, left_frame_rank, len(frame)))

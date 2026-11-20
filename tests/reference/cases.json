@@ -1192,5 +1192,29 @@
     "expected": "match",
     "j_status": "error",
     "mojj_status": "error"
+  },
+  {
+    "id": "rank-empty-left-cell",
+    "expression": "3 {.\"0 1 i.0 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-empty-right-cell",
+    "expression": "(i.0 4) ({.~)\"1 0 (3)",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-empty-shorter-frame",
+    "expression": "2 3 {.\"0 1 i.2 0 0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
   }
 ]
