@@ -1311,5 +1311,147 @@
     "y": {"dtype": "Float64", "rank": 1, "values": []},
     "j_status": "value",
     "mojj_status": "value"
+  },
+  {
+    "id": "repeat-monad",
+    "expression": "+: ^: 3",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 0, "values": [3]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-dyad",
+    "expression": "- ^: 3",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Int", "rank": 0, "values": [9]},
+    "y": {"dtype": "Int", "rank": 0, "values": [2]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-monad-zero",
+    "expression": "%: ^: 0",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 0, "values": [-9]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-dyad-zero",
+    "expression": "- ^: 0",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Int", "rank": 0, "values": [9]},
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 0], "values": []},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-shape-change",
+    "expression": "+/ ^: 2",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 3], "values": [1, 2, 3, 4, 5, 6]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-shaped-dyad",
+    "expression": "+ ^: 3",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Int", "rank": 2, "shape": [2, 3], "values": [1, 2, 3, 4, 5, 6]},
+    "y": {"dtype": "Int", "rank": 0, "values": [2]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-compose",
+    "expression": "- @: +: ^: 2",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 0, "values": [3]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-train",
+    "expression": "+ ^: 2 *:",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 0, "values": [3]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-chained",
+    "expression": "+: ^: 2 ^: 3",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 0, "values": [3]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-zero-rank",
+    "expression": "# @ ((#\"1) ^: 0)",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 3], "values": [1, 2, 3, 4, 5, 6]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-one-rank",
+    "expression": "# @ ((#\"1) ^: 1)",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 3], "values": [1, 2, 3, 4, 5, 6]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-multiple-rank",
+    "expression": "# @ ((#\"1) ^: 2)",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 3], "values": [1, 2, 3, 4, 5, 6]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "repeat-one-empty-insert",
+    "expression": "(* ^: 1)/",
+    "mode": "monad",
+    "expected": "match",
+    "y": {"dtype": "Float64", "rank": 1, "values": []},
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "repeat-operand-error",
+    "expression": "+ ^: 2",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Int", "rank": 1, "values": [1, 2]},
+    "y": {"dtype": "Int", "rank": 1, "values": [3, 4, 5]},
+    "j_status": "error",
+    "mojj_status": "error"
   }
 ]

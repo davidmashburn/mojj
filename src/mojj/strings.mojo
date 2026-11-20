@@ -7,7 +7,7 @@ from .arrays import (
     Drop, Curtail, ReverseRotate, Transpose,
 )
 from .circle import Circle
-from .modifiers import BondVerbs, Reflex
+from .modifiers import BondVerbs, Reflex, Repeat
 from .nouns import Noun, NounDType, NounProvider
 from .predicates import (
     Equal, Unequal, Less, Greater, LessEqual, GreaterEqual, MatchHalve,
@@ -104,6 +104,7 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
     comptime ast = _Syntax[Self.source].ast
     comptime current = Self.ast.nodes[Self.node]
     comptime rank_operand = Self.current.b if Self.current.kind == Kind.RANK else 0
+    comptime repeat_count = Self.ast.repeat_count(Self.current.b) if Self.current.kind == Kind.REPEAT else 0
     # Match Kind's indices. Parser-only kinds occupy slots but never execute as
     # verbs. Each selected type keeps its own ranks, kernels, and description.
     comptime Implementation = _VerbAt[
@@ -170,6 +171,7 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
         Prefix[_Verb[Self.source, Self.current.a]],
         Suffix[_Verb[Self.source, Self.current.a]],
         Dot[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Repeat[_Verb[Self.source, Self.current.a], Self.repeat_count],
     ].Type
 
     @staticmethod

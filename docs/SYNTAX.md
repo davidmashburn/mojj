@@ -89,12 +89,23 @@ A train used in a sentence needs grouping: `(- *:) 3` is -6, while `- *: 3` is -
 | `atop` | `@` | Composition at the right verb's ranks |
 | `insert` | `/` | Right-grouped reduction or dyadic table |
 | `bind` | `&` | Bind a noun, or apply the right verb to each argument of the left verb |
+| `repeat` | `^:` | Apply a verb a fixed number of times |
 | `reflex` | `~` | Apply a dyad to the same argument twice, or swap its arguments |
 | `rank` | `"` | Apply a verb to cells of specified ranks |
 | `prefix` | `\` | Prefixes, sliding windows, or disjoint blocks |
 | `suffix` | `\.` | Suffixes or complements of windows |
 | `dot` | `+/ . *` | Contract the last left and first right axes |
 | `group … end` | `( … )` | Group a phrase |
+
+Use `u ^: n`, `u repeat n`, or the typed `jj.Repeat[Op, n]` for a literal integer
+from 0 through 1024. Each step uses the noun produced by the previous step.
+For example, `(+: ^: 3) 2` doubles three times and returns 16.
+With two arguments, each step keeps the original left argument, so
+`2 (+ ^: 3) 10` returns 16. At count zero either valence returns the right
+argument without invoking the verb. The limit applies to each repetition
+operator. Nested operators can do more work. At count one, the derived verb
+retains the operand’s ranks. At zero and at counts above one it has infinite
+rank in each argument. This matters when composing with rank-sensitive `@`.
 
 Rank accepts one, two, or three literal integers. One sets all ranks. Two specify left and right ranks, and the monad uses the right rank. Three specify monad, left, and right in order. A negative rank counts back from the argument rank, and `_` selects the whole argument.
 

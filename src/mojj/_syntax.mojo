@@ -7,6 +7,7 @@ from std.collections import List
 from std.math import isinf, round
 from std.memory import bitcast
 
+from .modifiers import MAX_REPEAT_COUNT
 from .predicates import tolerant_equal
 
 
@@ -94,6 +95,7 @@ struct Kind(ImplicitlyCopyable, Equatable):
     comptime PREFIX = Self(54)
     comptime SUFFIX = Self(55)
     comptime DOT = Self(56)
+    comptime REPEAT = Self(57)
 
     def __eq__(self, other: Self) -> Bool:
         return self.code == other.code
@@ -444,6 +446,11 @@ struct Syntax:
                         Term(Part.CONJUNCTION, start, kind=Kind.RANK)
                     )
                     continue
+                elif word == "repeat":
+                    self.tokens.append(
+                        Term(Part.CONJUNCTION, start, kind=Kind.REPEAT)
+                    )
+                    continue
                 elif word == "prefix" or word == "infix" or word == "scan":
                     self.tokens.append(
                         Term(Part.ADVERB, start, kind=Kind.PREFIX)
@@ -596,6 +603,11 @@ struct Syntax:
             elif ch == 34:
                 self.tokens.append(
                     Term(Part.CONJUNCTION, start, kind=Kind.RANK)
+                )
+            elif ch == 94 and self.byte(self.position) == 58:
+                self.position += 1
+                self.tokens.append(
+                    Term(Part.CONJUNCTION, start, kind=Kind.REPEAT)
                 )
             elif ch == 46:
                 self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.DOT))
@@ -760,6 +772,14 @@ struct Syntax:
             return Int(nearest)
         return 0
 
+    def repeat_count(self, literal_node: Int) -> Int:
+        var literal = self.nodes[literal_node]
+        if literal.kind == Kind.LITERAL and literal.b == 1:
+            var number = self.numbers[literal.a]
+            if number.kind != NumberKind.REAL:
+                return number.integer
+        return -1
+
     def supported_dot(self, left: Term, right: Term) -> Bool:
         if left.part != Part.VERB or right.part != Part.VERB:
             return False
@@ -846,6 +866,14 @@ struct Syntax:
                             "rank requires a verb and one to three integer rank"
                             " literals"
                         ),
+                    )
+            elif kind == Kind.REPEAT:
+                var count = self.repeat_count(s.node)
+                if q.part != Part.VERB or count < 0 or count > MAX_REPEAT_COUNT:
+                    self.fail(
+                        r.position,
+                        "repeat requires a verb and a nonnegative integer literal"
+                        " count at most " + String(MAX_REPEAT_COUNT),
                     )
             elif kind == Kind.DOT:
                 if not self.supported_dot(q, s):

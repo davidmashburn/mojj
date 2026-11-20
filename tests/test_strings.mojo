@@ -3,6 +3,7 @@ from std.collections import List
 from std.math import abs, sqrt
 from std.memory import bitcast
 from std.testing import assert_equal, assert_true, assert_raises
+from mojj.modifiers import Repeat
 from mojj.strings import Expr
 from mojj.nouns import Noun
 from mojj.verbs import (
@@ -256,6 +257,19 @@ def test_aliases() raises:
     assert_equal(Expr["group minus square end"].describe(), Expr["(- *:)"].describe())
 
 
+def test_repeat() raises:
+    assert_equal(Expr["+:^:3"].describe(), Repeat[Doubled, 3].describe())
+    assert_equal(Expr["double repeat 3"].describe(), Expr["+:^:3"].describe())
+    assert_equal(Expr["+:^:3"].apply(2.0), 16.0)
+    assert_equal(Expr["+:^:0"].apply(2.0), 2.0)
+    assert_equal(Expr["+:^:1"].apply(2.0), 4.0)
+    assert_equal(Expr["3 +^:(4) 2"].value().as_int(), 14)
+    assert_equal(Expr["(1&+)^:1024"].monad(Noun(0)).as_int(), 1024)
+    assert_equal(Expr["+/@:(+:^:3)"].reduce([1.0, 2.0, 3.0]), 48.0)
+    close(Expr["2 ^ 3"].value().as_float(), 8.0)
+    close(Expr["2 ^. 8"].value().as_float(), 3.0)
+
+
 def main() raises:
     test_trains_and_composition()
     test_reductions_and_rms()
@@ -263,8 +277,9 @@ def main() raises:
     test_rank_and_modifier_binding()
     test_domains_and_reuse()
     test_aliases()
+    test_repeat()
     test_exact_nouns()
     test_double_map_bits()
     test_owned_consumers()
     test_owned_identity()
-    print("PASS test_strings: 10 J semantic test groups")
+    print("PASS test_strings: 11 J semantic test groups")

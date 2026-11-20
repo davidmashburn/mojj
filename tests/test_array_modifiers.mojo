@@ -1,11 +1,12 @@
 from std.collections import List
 from std.testing import assert_equal, assert_raises, assert_true
 
+from mojj import Repeat
 from mojj.arrays import Take
-from mojj.modifiers import Reflex
+from mojj.modifiers import MAX_REPEAT_COUNT, Reflex
 from mojj.array_modifiers import Dot, Prefix, Rank, Suffix, Table
 from mojj.nouns import Noun
-from mojj.verbs import Atop, Insert, Minus, Plus, Right, Times
+from mojj.verbs import Atop, Doubled, Insert, Minus, Plus, Right, Times
 
 
 def _assert_int_array(noun: Noun, dims: List[Int], values: List[Int]) raises:
@@ -14,6 +15,32 @@ def _assert_int_array(noun: Noun, dims: List[Int], values: List[Int]) raises:
     assert_equal(noun.length(), len(values))
     for index in range(len(values)):
         assert_equal(noun.at(index).as_int(), values[index])
+
+
+def _test_repeat() raises:
+    var matrix = Noun(List[Int]([1, 2, 3, 4])).with_shape([2, 2])
+    _assert_int_array(Repeat[Doubled, 2].monad(matrix), [2, 2], [4, 8, 12, 16])
+    _assert_int_array(matrix, [2, 2], [1, 2, 3, 4])
+    assert_equal(Repeat[Minus, 2].dyad(Noun(10), Noun(3)).as_int(), 3)
+    assert_equal(Repeat[Plus, MAX_REPEAT_COUNT].dyad(Noun(1), Noun(0)).as_int(), MAX_REPEAT_COUNT)
+    var empty = Noun(List[Bool]()).with_shape([2, 0])
+    var unchanged = Repeat[Take, 0].dyad(Noun(2.5), empty)
+    assert_true(unchanged.is_bool())
+    assert_true(unchanged.dims() == empty.dims())
+    assert_equal(Repeat[Doubled, 2].describe(), "repeat(+:, 2)")
+    assert_equal(Repeat[Plus, 0].monad_cell_rank(3), 3)
+    assert_equal(Repeat[Plus, 2].left_cell_rank(3), 3)
+    assert_equal(Repeat[Rank[Plus, 1, 0, 2], 1].monad_cell_rank(3), 1)
+    assert_equal(Repeat[Rank[Plus, 1, 0, 2], 1].left_cell_rank(3), 0)
+    assert_equal(Repeat[Rank[Plus, 1, 0, 2], 1].right_cell_rank(3), 2)
+    var no_ints = Noun(List[Int]())
+    assert_equal(Insert[Repeat[Plus, 1]].monad(no_ints).as_int(), 0)
+    with assert_raises(contains="Insert identity"):
+        _ = Insert[Repeat[Plus, 0]].monad(no_ints)
+    with assert_raises(contains="Insert identity"):
+        _ = Insert[Repeat[Plus, 2]].monad(no_ints)
+    with assert_raises(contains="overflow"):
+        _ = Repeat[Doubled, 2].monad(Noun(Int.MAX // 2))
 
 
 def _test_rank() raises:
@@ -105,6 +132,7 @@ def _test_table_and_dot() raises:
 
 
 def main() raises:
+    _test_repeat()
     _test_rank()
     _test_segments()
     _test_table_and_dot()
