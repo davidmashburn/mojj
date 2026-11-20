@@ -19,6 +19,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 BUILD = ROOT / "build" / "reference"
+DEFAULT_TIMEOUT_SECONDS = 180
 SAMPLES = 5
 TARGET_NS = 50_000_000
 MAX_REPETITIONS = 65_536
@@ -58,9 +59,10 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def run(argv: list[str], *, input: str | None = None) -> str:
+def run(argv: list[str], *, input: str | None = None,
+        timeout: int = DEFAULT_TIMEOUT_SECONDS) -> str:
     result = subprocess.run(argv, input=input, text=True, capture_output=True,
-                            cwd=ROOT, timeout=180, check=False)
+                            cwd=ROOT, timeout=timeout, check=False)
     if result.returncode:
         raise RuntimeError(f"Command failed ({result.returncode}): {argv[0]}\n"
                            + result.stdout[-6000:] + result.stderr[-6000:])
@@ -107,12 +109,12 @@ def j_run(executable: Path, source: str, name: str) -> str:
     return output
 
 
-def mojo_build(source: str, name: str) -> Path:
+def mojo_build(source: str, name: str, timeout: int) -> Path:
     path = BUILD / (name + ".mojo")
     path.write_text(source)
     binary = BUILD / name
     run(["pixi", "run", "mojo", "build", "--fp-mode", "contract=off",
-         "-I", "src", str(path), "-o", str(binary)])
+         "-I", "src", str(path), "-o", str(binary)], timeout=timeout)
     return binary
 
 
@@ -283,7 +285,7 @@ def expectation_met(case: dict, jr: dict, mr: dict) -> bool:
             and (not case.get("require_dtype_match", False) or jr.get("dtype") == mr.get("dtype")))
 
 
-def conformance(jconsole: Path, pin: dict) -> list[dict]:
+def conformance(jconsole: Path, pin: dict, compile_timeout: int = DEFAULT_TIMEOUT_SECONDS) -> list[dict]:
     cases = json.loads((HERE / "cases.json").read_text())
     mojo = MOJO_HEADER + "\ndef main() raises:\n"
     j = J_HEADER + "cases=: 3 : 0\n"
@@ -305,7 +307,7 @@ def conformance(jconsole: Path, pin: dict) -> list[dict]:
     j_output = j_run(jconsole, j, "conformance")
     if "VERSION|" + pin["version"] not in j_output.splitlines():
         raise RuntimeError("J reported an unexpected version")
-    mojo_output = run([str(mojo_build(mojo, "conformance"))])
+    mojo_output = run([str(mojo_build(mojo, "conformance", compile_timeout))])
     (BUILD / "conformance-j.txt").write_text(j_output)
     (BUILD / "conformance-mojj.txt").write_text(mojo_output)
     j_results, mojo_results = parse_results(j_output, True), parse_results(mojo_output, False)
@@ -407,7 +409,7 @@ def output_summary(result: dict) -> dict:
     return {"dtype": result["dtype"], "rank": result["rank"], "length": len(result["values"])}
 
 
-def benchmarks(jconsole: Path) -> list[dict]:
+def benchmarks(jconsole: Path, compile_timeout: int = DEFAULT_TIMEOUT_SECONDS) -> list[dict]:
     mojo_bench = MOJO_BENCH.replace("TARGET_NS", str(TARGET_NS)).replace(
         "MAX_REPETITIONS", str(MAX_REPETITIONS)).replace("SAMPLES", str(SAMPLES))
     j_bench = J_BENCH.replace("TARGET_SECONDS", str(TARGET_NS / 1e9)).replace(
@@ -419,7 +421,7 @@ def benchmarks(jconsole: Path) -> list[dict]:
         for size in SIZES:
             mojo += f'    bench[{json.dumps(expression)}]("{name}", {size})\n'
             j += f"'{name}' bench {size}\n"
-    binary = mojo_build(mojo, "benchmarks")
+    binary = mojo_build(mojo, "benchmarks", compile_timeout)
     # No concurrent benchmarking; compilation and process launch are outside timers.
     mo = run([str(binary)])
     jo = j_run(jconsole, j, "benchmarks")
@@ -468,12 +470,16 @@ def main() -> None:
     parser.add_argument("--jconsole", type=Path, help="Existing matching pinned J executable")
     parser.add_argument("--conformance-only", action="store_true", help="Check live J results and skip timings")
     parser.add_argument("--output", type=Path, default=BUILD / "results.json")
+    parser.add_argument("--compile-timeout-seconds", type=int, default=DEFAULT_TIMEOUT_SECONDS,
+                        help="Time limit for each Mojo build in seconds (default: %(default)s)")
     args = parser.parse_args()
+    if args.compile_timeout_seconds < 1:
+        parser.error("--compile-timeout-seconds must be a positive integer")
     BUILD.mkdir(parents=True, exist_ok=True)
     executable, pin = runtime(args.fetch_j, args.jconsole)
     load_before = os.getloadavg()
-    cases = conformance(executable, pin)
-    bench = [] if args.conformance_only else benchmarks(executable)
+    cases = conformance(executable, pin, args.compile_timeout_seconds)
+    bench = [] if args.conformance_only else benchmarks(executable, args.compile_timeout_seconds)
     load_after = os.getloadavg()
     source_files = sorted((ROOT / "src/mojj").glob("*.mojo"))
     harness_files = [HERE / name for name in ("compare.py", "test_compare.py", "cases.json", "runtime.json")]

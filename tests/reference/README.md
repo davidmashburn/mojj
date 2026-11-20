@@ -15,6 +15,9 @@ pixi run test-reference-harness
 pixi run compare-j --fetch-j --output build/reference/results.json
 ```
 
+For slower builds, add `--compile-timeout-seconds 600` to the comparison command.
+The option sets the time limit for each Mojo compilation and defaults to 180 seconds.
+
 The checked-in final report is `tests/reference/results.json`. The command above
 writes a fresh result under `build/` so it does not silently replace that report.
 
