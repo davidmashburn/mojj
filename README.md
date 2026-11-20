@@ -73,6 +73,9 @@ pixi run strings-demo
 pixi run package-smoke
 ```
 
+On a minimal Ubuntu installation, install `gcc` and `libc6-dev` for the
+syntax suite, which links a control executable.
+
 The toolchain is pinned to Mojo 1.1.0. `package-smoke` precompiles
 `src/mojj` into `build/mojj.mojoc` and runs the example using that compiled
 package, then runs the expression tests against that package. Python is installed
@@ -99,6 +102,22 @@ repository's `src` or precompiled `build` directory to Mojo's import path with `
 Use `Sum[]` or `Mean[]` to bind their default `Input` source, for example
 `jj.evaluate[jj.Sum[]](data)`.
 
+To compute a mean and population variance over the same source, use
+`jj.PopulationMoments[Source].evaluate(data)`. For example:
+
+```mojo
+comptime Stats = jj.PopulationMoments[jj.Map[jj.Square]]
+var data: List[Float64] = [-1.0, 1.0, -3.0, 3.0]
+var result = Stats.evaluate(data)
+print(result.mean, result.variance)  # 5.0, 16.0
+```
+
+`PopulationMoments[]` reads the input directly. It uses Welford's online
+recurrence with a compensated mean update and divides by the population size. A finite singleton has zero
+variance. Empty input, nonfinite mapped values, and overflow of the running
+accumulators raise. Its online mean can round differently from `Mean[]`.
+`Stats.describe()` retains the mapped expression.
+
 Built-in operations are pure. Extension traits are `ScalarOp`, `SeriesExpr`,
 and `ReductionExpr`; custom implementations must preserve the documented
 input length and lazy evaluation contract. `SeriesExpr.read` is an internal
@@ -112,13 +131,14 @@ or general automatic fusion pass. The tasks disable floating-point contraction;
 this is not a guarantee of bitwise portability. No speedup or compiler-level
 allocation claim is made without measurements.
 
-The J verb API supports hooks, forks, and scalar/vector rank agreement. General
-shaped arrays, strides, windows, explicit rank operators, GPU execution, and
-Python/NumPy integration remain outside this version.
-Those belong to the separate `project-planning` branch. Exhaustive IEEE special-value behavior is not established.
+The J verb API supports hooks, forks, shaped numeric arrays, rank agreement,
+and windows. Shaped results own their storage. See the
+[compatibility ledger](docs/COMPATIBILITY.md) for supported domains and limits.
 
-The manifest targets macOS arm64 and Linux x86-64. Initial local validation is
-on macOS arm64; a resolved Linux lockfile is not evidence of Linux execution.
+The full test suite, demo, and compiled-package smoke tests passed on macOS
+arm64 and Ubuntu 24.04 x86-64 under Docker Desktop emulation on Apple M4.
+The [performance report](tests/perf/README.md#shared-mean-and-population-variance)
+uses macOS arm64 timings.
 
 ## License
 

@@ -1,7 +1,7 @@
 """Typed numerical expressions and bounded J phrases."""
 
 from .core import (
-    Add, After, Compose, Identity, Input, Map, Mean, Negate,
+    Add, After, Compose, Identity, Input, Map, Mean, Moments, Negate, PopulationMoments,
     ReductionExpr, ScalarOp, Scale, SeriesExpr, Sqrt, Square, Sum,
     evaluate, materialize,
 )

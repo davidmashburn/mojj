@@ -12,8 +12,9 @@ python = ">=3.11,<4"
 [tasks]
 compare-j = "python3 tests/reference/compare.py"
 test-reference-harness = "python3 -m unittest discover -s tests/reference -p 'test_*.py'"
+perf-moments = "mojo run --fp-mode contract=off -I src tests/test_moments.mojo && mojo run --fp-mode contract=off -I src tests/perf/moments.mojo"
 perf-probes = "sh tests/perf/run-probes.sh"
-test = { depends-on = ["test-core", "test-verbs", "test-vocabulary", "test-strings", "test-syntax", "test-reference-harness"] }
+test = { depends-on = ["test-core", "test-moments", "test-verbs", "test-vocabulary", "test-strings", "test-syntax", "test-reference-harness"] }
 test-vocabulary = { depends-on = ["test-circle", "test-predicates", "test-real-verbs", "test-p2-expr", "test-shapes", "test-arrays", "test-array-modifiers", "test-p3-expr"] }
 test-circle = "mojo run --fp-mode contract=off -I src tests/test_circle.mojo"
 test-predicates = "mojo run --fp-mode contract=off -I src tests/test_predicates.mojo"
@@ -24,6 +25,7 @@ test-arrays = "mojo run --fp-mode contract=off -I src tests/test_arrays.mojo"
 test-array-modifiers = "mojo run --fp-mode contract=off -I src tests/test_array_modifiers.mojo"
 test-p3-expr = "mojo run --fp-mode contract=off -I src tests/test_p3_expr.mojo"
 test-verbs = "mojo run --fp-mode contract=off -I src tests/test_verbs.mojo"
+test-moments = "mojo run --fp-mode contract=off -I src tests/test_moments.mojo"
 test-core = "mojo run --fp-mode contract=off -I src tests/test_core.mojo"
 test-strings = "mojo run --fp-mode contract=off -I src tests/test_strings.mojo"
 test-syntax = "python3 tests/check_syntax.py"
@@ -31,5 +33,5 @@ demo = "mojo run --fp-mode contract=off -I src examples/rms.mojo"
 strings-demo = "mojo run --fp-mode contract=off -I src examples/strings.mojo"
 package = "mkdir -p build && mojo precompile src/mojj -o build/mojj.mojoc"
 package-smoke = { depends-on = ["package-core-smoke", "package-strings-smoke"] }
-package-core-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo", depends-on = ["package"] }
+package-core-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo && mojo run --fp-mode contract=off -I build tests/test_moments.mojo", depends-on = ["package"] }
 package-strings-smoke = { cmd = "mojo run --fp-mode contract=off -I build tests/test_strings.mojo && mojo run --fp-mode contract=off -I build tests/test_p2_expr.mojo && mojo run --fp-mode contract=off -I build tests/test_p3_expr.mojo", depends-on = ["package"] }

@@ -6,7 +6,7 @@ not allocate mapped temporaries.
 """
 
 from std.collections import List
-from std.math import sqrt
+from std.math import isfinite, sqrt
 
 
 trait ScalarOp:
@@ -184,6 +184,45 @@ struct Mean[Source: SeriesExpr = Input](ReductionExpr):
     @staticmethod
     def describe() -> String:
         return "mean(" + Self.Source.describe() + ")"
+
+
+@fieldwise_init
+struct Moments(ImplicitlyCopyable):
+    """Mean and population variance from one evaluation."""
+
+    var mean: Float64
+    var variance: Float64
+
+
+struct PopulationMoments[Source: SeriesExpr = Input]:
+    """Evaluate Welford's running mean and population variance in one pass."""
+
+    @staticmethod
+    def evaluate(data: List[Float64]) raises -> Moments:
+        if len(data) == 0:
+            raise Error("population moments require at least one value")
+
+        var mean = Self.Source.read(data, 0)
+        var mean_residual: Float64 = 0.0
+        var m2: Float64 = 0.0
+        for index in range(1, len(data)):
+            var value = Self.Source.read(data, index)
+            var delta = (value - mean) - mean_residual
+            var increment = mean_residual + delta / Float64(index + 1)
+            var next_mean = mean + increment
+            # TwoSum retains the part of the updated mean below one Float64
+            # ulp. It matters for variance even when the returned mean rounds.
+            var applied = next_mean - mean
+            mean_residual = (mean - (next_mean - applied)) + (increment - applied)
+            mean = next_mean
+            m2 += delta * ((value - mean) - mean_residual)
+        if not isfinite(mean) or not isfinite(m2):
+            raise Error("population moments require finite values and intermediates")
+        return Moments(mean, m2 / Float64(len(data)))
+
+    @staticmethod
+    def describe() -> String:
+        return "population_moments(" + Self.Source.describe() + ")"
 
 
 struct After[Op: ScalarOp, Source: ReductionExpr](ReductionExpr):

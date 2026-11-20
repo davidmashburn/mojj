@@ -55,9 +55,7 @@ Real circular and hyperbolic verbs use Float64 LLVM intrinsics and platform math
 
 Rank and window operations infer empty result shapes by evaluating a representative fill cell. Its evaluation can report a domain error. Shaped results own their storage, and windows can materialize intermediate cells. Dyadic dot supports rank-zero cell verbs, including multiplication for vector and matrix products. The determinant monad is outside the supported subset.
 
-Validation runs on macOS arm64 with the manifest-pinned Mojo toolchain. Linux
-execution, remote CI, and performance comparisons are not implied by the lockfile
-or these fixtures.
+The locked Mojo 1.1.0 toolchain passed the full test suite, demo, and compiled-package smoke tests on macOS arm64 and in Ubuntu 24.04 x86-64 under Docker Desktop emulation on Apple M4. The Linux run included the linked parser control and 46 expected compilation failures. Native x86-64 performance and remote CI remain unverified.
 
 ## Reference execution
 

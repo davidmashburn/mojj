@@ -157,3 +157,40 @@ map API. The J comparison calls the noun API directly.
 [Ten matched comparisons](simd/README.md) cover raw kernels, the public map
 boundary, scalar tails and width selection on an Apple M4. The report includes
 the selection rule, paired measurements and reproduction command.
+
+## Shared mean and population variance
+
+Run `pixi run perf-moments` to check numerical fixtures and time three ways
+to compute the mean and population variance of a lazy Float64 square map.
+
+- **Independent** runs the existing left-to-right `Mean`, then reads the source again for the variance from `PopulationMoments`.
+- **Shared** calls the public `PopulationMoments[Source].evaluate(data)` once. Welford's recurrence retains the rounding residual of each mean update. For adjacent values `1e16` and `1e16 + 2`, the returned mean rounds to `1e16` and the variance is exactly one.
+- **Corrected two-pass** calls the existing `Mean`, then sums squared deviations and residuals in a second pass. Subtracting the squared average residual corrects the variance around the rounded mean. The method is a benchmark control. Its subtraction can lose precision when the variance is small relative to the correction.
+
+All three read the same inputs and return both outputs. The independent and
+two-pass means match the existing `Mean` rounding. For `[1e16, 1, 1]`, that
+mean is `3333333333333333.5` and the shared mean is `3333333333333334.0`.
+The benchmark checks a shifted reference and analytical constant, cluster and
+outlier fixtures. Each timed call perturbs one input and consumes both outputs.
+Each size has 12 matched samples covering all six orders twice.
+
+Median microseconds per call on Apple M4, macOS 27.2 arm64, Mojo 1.1.0
+(8189361e), main at `7233ced` plus these changes, with contraction disabled:
+
+| Run (seed) | Elements | Independent | Shared | Corrected two-pass |
+| --- | ---: | ---: | ---: | ---: |
+| A (906) | 1,000 | 11.55 | 10.15 | 2.37 |
+| A (906) | 100,000 | 1,160.63 | 1,001.14 | 231.01 |
+| B (81) | 1,000 | 11.84 | 10.19 | 2.22 |
+| B (81) | 100,000 | 1,373.33 | 1,170.88 | 311.30 |
+
+The two-pass control beat the shared kernel in all 48 matched samples. Its
+median paired speedup ranged from 3.80× to 4.56× across runs and sizes. The
+public one-pass operation suits callers who need exactly one source evaluation
+per element. A more expensive map changes the cost of that second evaluation.
+[Run A samples](moments-samples.csv) and [run B samples](moments-repeat.csv)
+include order and checksums.
+
+The [original prototype experiment](moments-prototype-samples.csv) compared an
+uncompensated online mean with independent reductions (seed 652). Its 1.18× and
+1.16× speedups predate the adjacent-value fix and the two-pass control.
