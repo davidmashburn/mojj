@@ -9,3 +9,4 @@ from .strings import Expr
 
 from .nouns import Noun
 from .views import StridedView
+from .reductions import MeanFold, SharedReduce, StreamingFold, SumFold

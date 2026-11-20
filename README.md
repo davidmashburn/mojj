@@ -113,6 +113,24 @@ after the list shrinks past it raises an error.
 Use `Sum[]` or `Mean[]` to bind their default `Input` source, for example
 `jj.evaluate[jj.Sum[]](data)`.
 
+To compute two reductions from the same transformed input, pass a list or a
+view to `SharedReduce`. For example, this computes the sum and mean square of
+every other sample after adding one to each selected value.
+
+```mojo
+comptime Pair = jj.SharedReduce[jj.SumFold[], jj.MeanFold[jj.Square], jj.Add[1]]
+var samples: List[Float64] = [2., 10., 4.]
+var selected = jj.StridedView(samples, 0, 2, 2)
+var pair = Pair.evaluate(selected)
+print(pair[0], pair[1])  # 8.0, 17.0
+```
+
+`SharedReduce` applies the shared transform once per input, then updates the
+left and right folds in order. Each evaluation starts with fresh state.
+Implement `StreamingFold` to supply a custom accumulator. Errors propagate
+from the first failing update or finish. J expression forks continue to use
+their ordinary branch evaluation rules.
+
 To compute a mean and population variance over the same source, use
 `jj.PopulationMoments[Source].evaluate(data)`. For example:
 
