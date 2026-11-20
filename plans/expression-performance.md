@@ -294,3 +294,5 @@ and win count, with two Linux runs. These mixes test sensitivity to operand
 order. An application-level prediction still requires its actual call mix.
 
 The [mixed benchmark and samples](https://github.com/davidmashburn/mojj/blob/db73eba/tests/perf/dot/mixed.md) are complete. Five matrix × vector calls per 100 was the smallest tested share that won seven of eight pairs on both shapes in both Linux runs. At an even split, median elapsed time fell by 37–38%. The loaded M4 produced no seven-win result. Keep the retained implementation. Resume tuning when an application supplies representative shapes and call counts or when a quiet M4 is available to repeat this comparison.
+
+On 2026-11-20 the M4 repeat was postponed. Across three consecutive five-second samples, the ten-core host had 0.1–1.9% idle CPU and a one-minute load average of 207–215. No new benchmark timings were collected. A search of local Mojo project sources found no direct Mojj importer outside the library and planning checkouts from which to obtain an application call mix. External callers were not surveyed.
