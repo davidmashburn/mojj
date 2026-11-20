@@ -194,6 +194,20 @@ def test_float64_kernel_fast_paths() raises:
     assert_float_scalar(Insert[Plus].monad(Noun(singleton)), 3.5)
     assert_float_scalar(Insert[Plus].monad(Noun(List[Float64]())), 0.0)
 
+    var row = Noun(List[Float64]([3.5])).with_shape([1, 1])
+    var extracted = Insert[Plus].monad(row)
+    assert_float_vector(extracted, List[Float64]([3.5]))
+    extracted.float_values[0] = 9.0
+    assert_equal(row.float_values[0], 3.5)
+    var no_columns = Noun(List[Float64]()).with_shape([2, 0])
+    assert_float_vector(Insert[Plus].monad(no_columns), List[Float64]())
+    var matrix = Noun(List[Float64]([9., 1., 4., 7., 2., 3.])).with_shape([3, 2])
+    assert_float_vector(Insert[Minus].monad(matrix), List[Float64]([7., -3.]))
+
+    _ = matrix.float_values.pop()
+    with assert_raises(contains="noun index out of range"):
+        _ = Insert[Plus].monad(matrix)
+
     # Atop maps the per-cell kernel over a Float64 result vector.
     assert_float_vector(
         Atop[Squared, Doubled].monad(Noun(three)),

@@ -650,9 +650,15 @@ struct Tally(Verb):
 
 
 def _row(y: Noun, index: Int, shape: List[Int], width: Int) raises -> Noun:
+    var start = index * width
+    if y.rank == 2 and y.is_float64() and start + width <= len(y.float_values):
+        var values = List[Float64](capacity=width)
+        for offset in range(width):
+            values.append(y.float_values[start + offset])
+        return Noun.from_owned_float64(values^)
     var cell = _empty(y.dtype)
     for offset in range(width):
-        _append(cell, y.at(index * width + offset))
+        _append(cell, y.at(start + offset))
     cell.set_shape(shape)
     return cell^
 
