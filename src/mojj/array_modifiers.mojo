@@ -391,12 +391,12 @@ def _dot_cell[Reduction: Verb, Cell: Verb](
     x: Noun, y: Noun, left_start: Int, width: Int, right_shape: List[Int]
 ) raises -> Noun:
     if (
-        Cell.has_float64_dyad() and x.is_vector() and y.is_vector()
+        Cell.has_float64_dyad() and (x.is_vector() or x.rank == 2) and y.is_vector()
         and x.is_float64() and y.is_float64() and width > 0
     ):
         var values = List[Float64](capacity=width)
         for index in range(width):
-            values.append(Cell.float64_dyad(x.float_values[index], y.float_values[index]))
+            values.append(Cell.float64_dyad(x.float_values[left_start + index], y.float_values[index]))
         return Reduction.monad(Noun.from_owned_float64(values^))
     var count = shape_size(right_shape)
     var products = List[Noun]()
