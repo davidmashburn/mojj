@@ -8,3 +8,4 @@ from .core import (
 from .strings import Expr
 
 from .nouns import Noun
+from .views import StridedView

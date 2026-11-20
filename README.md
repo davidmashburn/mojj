@@ -103,6 +103,13 @@ repository's `src` or precompiled `build` directory to Mojo's import path with `
 - Descriptions retain the authored tree. They do not reflect arbitrary Mojo
   function bodies or represent a runtime-editable graph.
 
+Use `StridedView(data, start, count, stride)` to borrow selected elements of a
+Float64 list. For example, `jj.StridedView(data, 4, 3, -2)` selects indices
+4, 2 and 0. Index the view directly or call `view.materialize[jj.Square]()`
+for an owned list of squared elements. A zero stride repeats one element.
+A view observes edits and growth of its owner. Reading a selected position
+after the list shrinks past it raises an error.
+
 Use `Sum[]` or `Mean[]` to bind their default `Input` source, for example
 `jj.evaluate[jj.Sum[]](data)`.
 
