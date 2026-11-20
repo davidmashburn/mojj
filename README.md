@@ -5,21 +5,17 @@ proposals and design reasoning only; never merge it into implementation history.
 
 ## Active plan
 
-Next proposed step (2026-11-15): **remove the measured per-element `Noun` tax in
-the compiled `Expr` paths, then decide the reduction-order contract.** See the
-[performance tuning plan](plans/expression-performance.md) and its
-[measured baseline](plans/evidence/performance-baseline.md).
+As of 2026-11-20, performance slices 1–3 have shipped on `main`. The
+[November 15 post-change report](https://github.com/davidmashburn/mojj/blob/13336b8/tests/perf/README.md)
+records 33/33 conformance expectations and nine benchmark output checks after
+the unboxed Float64 maps and strict right fold landed.
 
-The baseline rerun reproduced the comparison on this host (33/33 conformance
-expectations, nine benchmarks) and attributed the 17–177× gap by controlled
-experiment: boxing each cell in a `Noun` costs 13× on maps and 16–23× on
-reductions, while a strict floating-point fold has a hardware floor around
-1 ns/element. Removing the boxing is semantics-preserving and is the first
-implementation slice. Matching J's sum timings additionally requires abandoning
-the strict fold, because J reassociates float reductions; that is a documented
-API decision, not tuning. The plan recommends a separately named blocked
-reduction and leaves the strict fold as the default and oracle.
-
+[The ownership change](https://github.com/davidmashburn/mojj/commit/1e042d2) removes the measured Float64 output copy
+at the public `Expr.map` list boundary. Caller-owned input still copies on
+entry. The next planned kernel experiment is elementwise SIMD, with a
+matched scalar control and a bit-identical output check. A separately
+named blocked sum remains a proposal for workloads that can accept different
+rounding. See the [performance tuning plan](plans/expression-performance.md).
 
 The original reference-fixture next step has landed in
 [`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13):

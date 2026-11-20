@@ -1,9 +1,20 @@
 # Expr performance tuning
 
-Status: proposed 2026-11-06; baseline measured 2026-11-15. No optimization is
-implemented by this plan.
-Implementation baseline: [`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13).
-Keep this proposal on `project-planning`; implement accepted slices from `main`.
+Reviewed 2026-11-20 against [main at 13336b8](https://github.com/davidmashburn/mojj/tree/13336b8).
+Slices 1–3 landed in `5dc7477`, `f0b7994` and `7bc6930`. The
+[post-change measurements](https://github.com/davidmashburn/mojj/blob/13336b8/tests/perf/README.md)
+include the pinned J rerun. At 100,000 elements, the recorded Mojj/J ratios
+fell to 2.10× for double, 9.44× for strict sum and 3.97× for RMS.
+
+Slice 4 is partially implemented. The typed map already moves its result list
+into a noun. [The ownership change](https://github.com/davidmashburn/mojj/commit/1e042d2) also transfers that list out of `Expr.map`. On an M4 the
+matched 100k-element double fell from 492 µs to 91 µs per call (three runs).
+See the [matched measurements](https://github.com/davidmashburn/mojj/blob/1e042d2/tests/perf/README.md#public-float64-map-boundary-2026-11-20) for the method.
+The input list constructor and identity verbs still copy caller-owned or
+borrowed data. Any change there needs its own measured workload and
+independence checks. The [original
+baseline](evidence/performance-baseline.md) and projections below describe
+the implementation before slices 1–3.
 
 ## Aim and evidence
 
