@@ -1279,5 +1279,37 @@
     "y": {"dtype": "Int", "rank": 2, "shape": [2, 0], "values": []},
     "j_status": "value",
     "mojj_status": "value"
+  },
+  {
+    "id": "dot-float-matrix-vector",
+    "expression": "+/ . *",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Float64", "rank": 2, "shape": [2, 3], "values": [0.25, -2.0, 3.0, 4.0, 0.5, -1.0]},
+    "y": {"dtype": "Float64", "rank": 1, "values": [2.0, 4.0, -0.5]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "dot-float-vector-matrix",
+    "expression": "+/ . *",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Float64", "rank": 1, "values": [1.5, -2.0]},
+    "y": {"dtype": "Float64", "rank": 2, "shape": [2, 3], "values": [0.25, -2.0, 3.0, 4.0, 0.5, -1.0]},
+    "j_status": "value",
+    "mojj_status": "value",
+    "require_dtype_match": true
+  },
+  {
+    "id": "dot-float-matrix-zero-columns",
+    "expression": "+/ . *",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {"dtype": "Float64", "rank": 2, "shape": [2, 0], "values": []},
+    "y": {"dtype": "Float64", "rank": 1, "values": []},
+    "j_status": "value",
+    "mojj_status": "value"
   }
 ]

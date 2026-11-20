@@ -33,7 +33,7 @@ other development dependencies resolve through `pixi.lock`.
 
 ## Conformance scope
 
-`cases.json` contains 125 expectations covering trains, scalar and shaped arithmetic, comparisons, Boolean operations, rank, segment operators, tables, and dot products. The corpus includes deliberate domain differences for checked integer overflow and complex-producing square root. The original 33-case report remains available in [results.json](results.json). Run the command above to verify the current corpus.
+`cases.json` contains 128 expectations covering trains, scalar and shaped arithmetic, comparisons, Boolean operations, rank, segment operators, tables, and dot products. The corpus includes deliberate domain differences for checked integer overflow and complex-producing square root. The original 33-case report remains available in [results.json](results.json). Run the command above to verify the current corpus.
 
 Three identity fixtures require identical storage dtype in both runtimes for integer inputs containing only zero and one, including an empty matrix.
 

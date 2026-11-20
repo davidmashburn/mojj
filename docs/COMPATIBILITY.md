@@ -59,6 +59,6 @@ The locked Mojo 1.1.0 toolchain passed the full test suite, demo, and compiled-p
 
 ## Reference execution
 
-The current suite has 125 expectations against pinned J 9.6.3 for macOS arm64 and Linux x86-64. It compares every result axis, checks integer and Boolean values exactly, and records dtype differences separately. It exercises vector and matrix products, zero-length axes, negative windows, prefix frame agreement, and shape errors. Two expected differences cover checked integer overflow and complex-producing square root. See the [cases and reproduction command](../tests/reference/README.md).
+The current suite has 128 expectations against pinned J 9.6.3 for macOS arm64 and Linux x86-64. It compares every result axis, checks integer and Boolean values exactly, and records dtype differences separately. It exercises vector and matrix products, zero-length axes, negative windows, prefix frame agreement, and shape errors. Two expected differences cover checked integer overflow and complex-producing square root. See the [cases and reproduction command](../tests/reference/README.md).
 
 The [historical performance report](../tests/reference/RESULTS.md) used the original 33 fixtures. J is a development reference and is independent of the library runtime.
