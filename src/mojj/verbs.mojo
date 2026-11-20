@@ -544,7 +544,22 @@ struct Doubled(Verb):
                 var value = _numeric_int(y.at(index))
                 result[index] = _checked_add(value, value, "double")
             return Noun(result)
-        return _map_float64_vector[Doubled](y.float_values)
+        comptime width = 4
+        var length = len(y.float_values)
+        var result = List[Float64](length=length, fill=0.0)
+        var source = y.float_values.unsafe_ptr()
+        var target = result.unsafe_ptr()
+        var index = 0
+        var vector_end = length - length % width
+        while index < vector_end:
+            var values = source.unsafe_load[width=width](index)
+            target.unsafe_store[width=width](index, values + values)
+            index += width
+        while index < length:
+            var value = source[unsafe_offset=index]
+            target[unsafe_offset=index] = value + value
+            index += 1
+        return Noun.from_owned_float64(result^)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:

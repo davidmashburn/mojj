@@ -1,6 +1,7 @@
 """J semantic fixtures through the public compile-time string facade."""
 from std.collections import List
 from std.math import abs, sqrt
+from std.memory import bitcast
 from std.testing import assert_equal, assert_true, assert_raises
 from mojj.strings import Expr
 from mojj.nouns import Noun
@@ -121,6 +122,51 @@ def test_domains_and_reuse() raises:
         _ = Expr["square"].reduce(short)
 
 
+def test_double_map_bits() raises:
+    var samples: List[UInt64] = [
+        0x0000000000000000,  # positive zero
+        0x8000000000000000,  # negative zero
+        0x0000000000000001,  # smallest positive subnormal
+        0x8000000000000001,  # smallest negative subnormal
+        0x000fffffffffffff,  # largest positive subnormal
+        0x800fffffffffffff,  # largest negative subnormal
+        0x0010000000000000,  # smallest positive normal
+        0x8010000000000000,  # smallest negative normal
+        0x7fefffffffffffff,  # largest positive finite value
+        0xffefffffffffffff,  # largest negative finite magnitude
+        0x7ff0000000000000,  # positive infinity
+        0xfff0000000000000,  # negative infinity
+        0x7ff8000000000123,  # positive quiet NaN with payload
+        0xfff8000000000456,  # negative quiet NaN with payload
+        0x7ff0000000000789,  # positive signaling NaN with payload
+        0xfff0000000000abc,  # negative signaling NaN with payload
+        0x3ff0000000000000,  # 1.0
+        0xbff4000000000000,  # -1.25
+    ]
+    # Include empty and short vectors, then every tail for widths 2, 4 and 8.
+    for length in range(len(samples) + 8):
+        var data = List[Float64](length=length, fill=0.0)
+        for index in range(length):
+            data[index] = bitcast[DType.float64](samples[index % len(samples)])
+
+        var result = Expr["+:"].map(data)
+        assert_equal(len(result), length)
+        for index in range(length):
+            var bits = samples[index % len(samples)]
+            var expected = Expr["+:"].apply(bitcast[DType.float64](bits))
+            assert_equal(
+                bitcast[DType.uint64](result[index]),
+                bitcast[DType.uint64](expected),
+            )
+            assert_equal(bitcast[DType.uint64](data[index]), bits)
+
+        if length > 0:
+            result[0] = 123.0
+            assert_equal(bitcast[DType.uint64](data[0]), samples[0])
+            data[0] = 42.0
+            assert_equal(result[0], 123.0)
+
+
 def test_exact_nouns() raises:
     assert_equal(Expr["9007199254740993"].value().as_int(), 9007199254740993)
     assert_equal(Expr["9007199254740993 + 2"].value().as_int(), 9007199254740995)
@@ -168,4 +214,5 @@ def main() raises:
     test_domains_and_reuse()
     test_aliases()
     test_exact_nouns()
-    print("PASS test_strings: 7 J semantic test groups")
+    test_double_map_bits()
+    print("PASS test_strings: 8 J semantic test groups")
