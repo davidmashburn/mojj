@@ -1,0 +1,39 @@
+name: Square SIMD comparison
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/square-comparison.yml
+      - tests/perf/simd/square/build.sh
+      - tests/perf/simd/square/trials.mojo
+      - tests/perf/simd/run.py
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # The trial builds candidates from a pinned historical commit.
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+        with:
+          pixi-version: v0.81.0
+          locked: true
+      - run: sh tests/perf/simd/square/build.sh build-square
+      - name: Compare four public implementations
+        run: |
+          python3 tests/perf/simd/run.py build-square/{baseline,width2,width4,width8}/trials --mode public --output-dir timings
+          lscpu > timings/cpu.txt
+          pixi run mojo --version > timings/mojo.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: square-simd-linux-x86-64
+          path: timings/
+          if-no-files-found: error
