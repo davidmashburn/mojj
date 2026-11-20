@@ -30,6 +30,13 @@ jobs:
           - artifact: rectangular-column-linux-x86-64
             revision: 629bb8991902ed02796a4bac86a9892421df1951
             benchmark: rectangular
+          - artifact: rectangular-guarded-dot-linux-x86-64
+            baseline: 15a1b77a299590a915359bb5b872788ea63834a9
+            revision: ec76c110b144f53cfa05e6a05e551c35b69bd12e
+            benchmark: rectangular
+          - artifact: rectangular-reduction-linux-x86-64
+            revision: 8bc5f7b43fadb9c90a37f1e4a61740fd48aeb300
+            benchmark: rectangular
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -39,15 +46,16 @@ jobs:
         with:
           pixi-version: v0.81.0
           locked: true
-      - name: Compare the dot change with its parent
+      - name: Compare archived dot implementations
         env:
+          baseline: ${{ matrix.baseline }}
           revision: ${{ matrix.revision }}
           benchmark: ${{ matrix.benchmark }}
         run: |
           args=()
           if [[ "$benchmark" == rectangular ]]; then args+=(--rectangular); fi
           mkdir -p build/dot/{baseline,candidate,results}
-          git archive "$revision^" src | tar -xf - -C build/dot/baseline
+          git archive "${baseline:-$revision^}" src | tar -xf - -C build/dot/baseline
           git archive "$revision" src | tar -xf - -C build/dot/candidate
           for edition in baseline candidate; do
             dir=build/dot/$edition
