@@ -19,6 +19,9 @@ was superseded by J train semantics.
   stays scalar after the M4 repeat and the native Linux comparison. [Float64 vector
   dot](https://github.com/davidmashburn/mojj/blob/cafdc9c/tests/perf/dot/README.md)
   now collects typed cells. It won 79/80 matched M4 timings and 80/80 on native x86-64.
+  [Rectangular Float64 dot](https://github.com/davidmashburn/mojj/blob/fb88d67/tests/perf/dot/rectangular.md)
+  also ships in both operand orders. Tall and wide matrices passed the paired
+  timing gate on the M4 and in both Linux repeats.
   A separately named blocked sum needs a workload with an explicit rounding tolerance.
 - [Portability and compatibility](plans/streaming-reductions.md#implementation-evidence).
   Native Ubuntu CI runs the full suite, demo, package smoke and the pinned J

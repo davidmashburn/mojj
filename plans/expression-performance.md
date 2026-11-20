@@ -49,9 +49,6 @@ zero, error order, mixed types and generic reductions. The optimization won
 
 ## Candidates requiring new evidence
 
-- A matrix/vector dot specialization would need representative rectangular
-  workloads. Measure row and column access separately, including the cost of
-  producing a shaped result. The existing vector timings cover neither.
 - Eliminating the product vector would require proving that cell effects,
   errors and strict right-fold rounding stay in order. Start only with a
   measured workload where that intermediate matters.
@@ -269,3 +266,11 @@ product matrix when the right operand is shaped. Keep each candidate only if
 both target shapes win at least seven of eight paired blocks with a median
 candidate/baseline time of at most 0.90. Inspect the reverse orientation for
 regressions and repeat on native Linux before generalizing the timing claim.
+
+### Result
+
+Both specializations shipped. The [row change](https://github.com/davidmashburn/mojj/commit/a2d0754) and [column change](https://github.com/davidmashburn/mojj/commit/629bb89) keep the ordinary reduction and supply its full product noun in typed storage. Both met the predetermined gate for each shape on the M4 and in two independent eight-block runs on Linux x86-64. The controls varied, particularly on the loaded M4. [Raw timings, methods and reproduction](https://github.com/davidmashburn/mojj/blob/fb88d67/tests/perf/dot/rectangular.md).
+
+The [regressions](https://github.com/davidmashburn/mojj/blob/7f41bee/tests/test_dot_float64.mojo) cover shape and dtype for a custom reduction, strict cancellation, signed zero, empty axes and the order of competing cell errors. Three new pinned-J cases exercise the public expression.
+
+A further vector-by-matrix experiment needs a profile that separates product construction from first-axis reduction. Both are still present in the measured public call. Higher ranks and matrix-by-matrix products need their own representative shapes before selecting an optimization.
