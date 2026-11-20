@@ -274,3 +274,7 @@ Both specializations shipped. The [row change](https://github.com/davidmashburn/
 The [regressions](https://github.com/davidmashburn/mojj/blob/7f41bee/tests/test_dot_float64.mojo) cover shape and dtype for a custom reduction, strict cancellation, signed zero, empty axes and the order of competing cell errors. Three new pinned-J cases exercise the public expression.
 
 A further vector-by-matrix experiment needs a profile that separates product construction from first-axis reduction. Both are still present in the measured public call. Higher ranks and matrix-by-matrix products need their own representative shapes before selecting an optimization.
+
+### Follow-up trial for row extraction
+
+Profile vector × matrix on the same two shapes. Test whether directly copying a contiguous Float64 row into the noun supplied to the reducer improves the public call. Limit the candidate to rank two and keep the operator invocation and strict right-fold sequence. Retain this change only if the profile implicates row extraction or first-axis reduction, both target shapes meet the same paired gate, and a Linux repeat confirms the improvement. Check zero-width rows, singleton rows and caller-owned inputs.
