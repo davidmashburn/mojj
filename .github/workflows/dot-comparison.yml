@@ -25,13 +25,11 @@ jobs:
             revision: cabe6f5875f91ec01ede33ac91a4aaaed499a307
             benchmark: dot
           - artifact: rectangular-row-linux-x86-64
-            revision: a2d075404a45ab847103a066110af69ce134b650
+            baseline: 15a1b77a299590a915359bb5b872788ea63834a9
+            revision: c06d309dbaaaf2e83c548ae868d3172c4b78f58b
             benchmark: rectangular
           - artifact: rectangular-column-linux-x86-64
-            revision: 629bb8991902ed02796a4bac86a9892421df1951
-            benchmark: rectangular
-          - artifact: rectangular-guarded-dot-linux-x86-64
-            baseline: 15a1b77a299590a915359bb5b872788ea63834a9
+            baseline: c06d309dbaaaf2e83c548ae868d3172c4b78f58b
             revision: ec76c110b144f53cfa05e6a05e551c35b69bd12e
             benchmark: rectangular
           - artifact: rectangular-reduction-linux-x86-64
