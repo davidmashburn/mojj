@@ -257,3 +257,15 @@ and reran the existing test suite. No library source was changed, no profiler or
 assembly audit was performed, and no Linux or CI result exists. Projections in
 the implementation order are derived from measured raw-loop floors and are not
 performance claims.
+
+## Rectangular dot experiment
+
+Compare the public `+/ . *` call on 128×32 and 32×128 Float64 matrices in
+both operand orders. Fix each case at 4,096 matrix elements, include constructing
+the shaped result, and verify the complete output against a strict scalar
+oracle. First test collecting a row into a typed product vector while keeping
+the opposite orientation as a control. Separately test building a typed
+product matrix when the right operand is shaped. Keep each candidate only if
+both target shapes win at least seven of eight paired blocks with a median
+candidate/baseline time of at most 0.90. Inspect the reverse orientation for
+regressions and repeat on native Linux before generalizing the timing claim.
