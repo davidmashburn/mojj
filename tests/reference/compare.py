@@ -22,6 +22,8 @@ BUILD = ROOT / "build" / "reference"
 SAMPLES = 5
 TARGET_NS = 50_000_000
 MAX_REPETITIONS = 65_536
+INT64_MIN = -(1 << 63)
+INT64_MAX = (1 << 63) - 1
 SIZES = (1_000, 10_000, 100_000)
 WORKLOADS = {"double": "+:", "sum": "+/", "rms": "%: @: (+/ % #) @: *:"}
 
@@ -114,26 +116,80 @@ def mojo_build(source: str, name: str) -> Path:
     return binary
 
 
+def _input_shape(noun: dict) -> list[int]:
+    rank = noun["rank"]
+    if type(rank) is not int or rank < 0:
+        raise ValueError("input noun rank must be a nonnegative integer")
+    length = len(noun["values"])
+    if "shape" in noun:
+        shape = noun["shape"]
+    elif rank == 0:
+        shape = []
+    elif rank == 1:
+        shape = [length]
+    else:
+        shape = None
+    if not isinstance(shape, list) or len(shape) != rank:
+        raise ValueError(f"input noun shape must contain {rank} axes")
+    if any(type(axis) is not int or not 0 <= axis <= INT64_MAX for axis in shape):
+        raise ValueError("input noun shape axes must be nonnegative Int64 integers")
+    if math.prod(shape) != length:
+        raise ValueError("input noun shape atom count must match the number of values")
+    return shape
+
+
+def _input_values(noun: dict, dtype: DType) -> list:
+    values = noun["values"]
+    if dtype == DType.INT:
+        if any(type(value) is not int or not INT64_MIN <= value <= INT64_MAX for value in values):
+            raise ValueError("Int input noun values must be Int64 integers")
+    elif dtype == DType.BOOL:
+        if any(type(value) not in (bool, int) or value not in (0, 1) for value in values):
+            raise ValueError("Bool input noun values must be booleans or 0/1 integers")
+    elif dtype == DType.FLOAT:
+        try:
+            finite = all(type(value) in (int, float) and math.isfinite(value) for value in values)
+        except OverflowError:
+            finite = False
+        if not finite:
+            raise ValueError("Float64 input noun values must be finite numbers")
+        return [float(value) for value in values]
+    return values
+
+
 def mojo_noun(noun: dict) -> str:
+    shape = _input_shape(noun)
     dtype = DType(noun["dtype"])
-    values = [str(v) if dtype == DType.BOOL else repr(v) for v in noun["values"]]
-    if noun["rank"] == 0:
+    values = [repr(v) for v in _input_values(noun, dtype)]
+    if not shape:
         return f"Noun({dtype}({values[0]}))"
-    if not values:
-        return f"Noun(List[{dtype}]())"
-    values = [f"{dtype}({value})" for value in values]
-    return f"Noun(List[{dtype}]([{', '.join(values)}]))"
+    atoms = ", ".join(f"{dtype}({value})" for value in values)
+    list_arg = f"[{atoms}]" if values else ""
+    expression = f"Noun(List[{dtype}]({list_arg}))"
+    return f"{expression}.with_shape({shape})" if len(shape) > 1 else expression
 
 
 def j_noun(noun: dict) -> str:
+    shape = _input_shape(noun)
     dtype = DType(noun["dtype"])
-    if not noun["values"]:
-        return "(0$0.0)" if dtype == DType.FLOAT else "(0$0)"
+    atoms = _input_values(noun, dtype)
     values = [str(int(v)) if dtype == DType.BOOL else
-              repr(float(v) if dtype == DType.FLOAT else v).replace("-", "_")
-              for v in noun["values"]]
+              repr(v).replace("e+", "e").replace("-", "_")
+              for v in atoms]
     phrase = " ".join(values)
-    return f"(,{phrase})" if noun["rank"] == 1 else f"({phrase})"
+    if len(shape) > 1 or not values:
+        axes = " ".join(str(axis) for axis in shape)
+        seed = "0.0" if dtype == DType.FLOAT else "0"
+        expression = f"({axes}${phrase or seed})"
+    elif shape:
+        expression = f"(,{phrase})"
+    else:
+        expression = f"({phrase})"
+    # J infers Bool when a literal contains only 0 and 1. Integer addition
+    # keeps the atoms and shape, including when reshaped from a Boolean seed.
+    if dtype == DType.INT and all(value in (0, 1) for value in atoms):
+        return f"(0+{expression})"
+    return expression
 
 
 J_HEADER = """output=: 1!:2&2
@@ -223,7 +279,8 @@ def equal_values(left: dict, right: dict) -> bool:
 def expectation_met(case: dict, jr: dict, mr: dict) -> bool:
     return (equal_values(jr, mr) == (Expectation(case["expected"]) == Expectation.MATCH)
             and jr["status"] == Status(case["j_status"])
-            and mr["status"] == Status(case["mojj_status"]))
+            and mr["status"] == Status(case["mojj_status"])
+            and (not case.get("require_dtype_match", False) or jr.get("dtype") == mr.get("dtype")))
 
 
 def conformance(jconsole: Path, pin: dict) -> list[dict]:
@@ -433,7 +490,7 @@ def main() -> None:
                          "timed": "batch loop, first-cell update, operation, first-result-cell consumption, allocation and destruction",
                          "excluded": "compilation, process startup, initial input construction, output serialization",
                          "order": "all Mojj workloads, then all J workloads; single process per runtime; no parallel runs",
-                         "comparison": "exact values whenever either storage dtype is integer/Boolean; otherwise float abs/relative tolerance 1e-12; shape, rank and length; dtype recorded separately for conformance and required equal for benchmarks"},
+                         "comparison": "exact values whenever either storage dtype is integer/Boolean; otherwise float abs/relative tolerance 1e-12; shape, rank and length; dtype equality required for flagged conformance cases and benchmarks"},
               "conformance": cases, "benchmarks": bench}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")

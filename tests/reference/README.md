@@ -1,7 +1,7 @@
 # Bounded comparison with J
 
 This corpus compares Mojj's compiled `Expr` API against a checksum-pinned J
-9.6.3 runtime. It establishes agreement on selected scalar/vector examples,
+9.6.3 runtime. It establishes agreement on selected scalar, vector and higher-rank examples,
 not parity with the J language or every input in the supported grammar.
 J remains a development-only reference; library consumers do not need it.
 
@@ -25,7 +25,7 @@ executable and both libraries match `runtime.json`. A Java `jconsole` is not
 suitable. The archive URL uses a mutable release tag, so both the archive and
 individual files are checked against SHA-256 pins; changed downloads fail closed.
 Each platform has a separate archive, executable and library digests, and runtime version string.
-Use `--conformance-only` to check the corpus without collecting benchmark timings.
+Use `--conformance-only` to check the corpus without collecting benchmark timings. Each Linux CI run retains its JSON comparison as the `j-conformance-linux-x86-64` artifact.
 
 The default `pixi run test` runs the Python harness checks without downloading
 or executing J. The live comparison is an explicit task. Python, Mojo, and
@@ -33,7 +33,11 @@ other development dependencies resolve through `pixi.lock`.
 
 ## Conformance scope
 
-`cases.json` contains 120 expectations covering trains, scalar and shaped arithmetic, comparisons, Boolean operations, rank, segment operators, tables, and dot products. The corpus includes deliberate domain differences for checked integer overflow and complex-producing square root. The original 33-case report remains available in [results.json](results.json). Run the command above to verify the current corpus.
+`cases.json` contains 125 expectations covering trains, scalar and shaped arithmetic, comparisons, Boolean operations, rank, segment operators, tables, and dot products. The corpus includes deliberate domain differences for checked integer overflow and complex-producing square root. The original 33-case report remains available in [results.json](results.json). Run the command above to verify the current corpus.
+
+Three identity fixtures require identical storage dtype in both runtimes for integer inputs containing only zero and one, including an empty matrix.
+
+For rank two and above, input fixtures supply every axis in `shape` and list the atoms in row-major order. For example, `{"dtype": "Float64", "rank": 2, "shape": [2, 0], "values": []}` represents a matrix with two empty rows.
 
 Values compare exactly whenever either output uses integer or Boolean storage,
 including cross-dtype comparisons. Otherwise floating values use absolute and

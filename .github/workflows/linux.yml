@@ -25,3 +25,9 @@ jobs:
       - run: pixi run demo
       - run: pixi run package-smoke
       - run: pixi run compare-j --fetch-j --conformance-only
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() && hashFiles('build/reference/results.json') != '' }}
+        with:
+          name: j-conformance-linux-x86-64
+          path: build/reference/results.json
+          if-no-files-found: error

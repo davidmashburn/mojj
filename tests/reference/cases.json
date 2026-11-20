@@ -1216,5 +1216,68 @@
     "expected": "match",
     "j_status": "value",
     "mojj_status": "value"
+  },
+  {
+    "id": "explicit-matrix-prefix-broadcast",
+    "expression": "+",
+    "mode": "dyad",
+    "expected": "match",
+    "x": {
+      "dtype": "Int",
+      "rank": 1,
+      "values": [10, 20]
+    },
+    "y": {
+      "dtype": "Int",
+      "rank": 2,
+      "shape": [2, 3],
+      "values": [1, 2, 3, 4, 5, 6]
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "explicit-empty-matrix-rank",
+    "expression": "#\"1",
+    "mode": "monad",
+    "expected": "match",
+    "y": {
+      "dtype": "Float64",
+      "rank": 2,
+      "shape": [2, 0],
+      "values": []
+    },
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "explicit-integer-scalar-one",
+    "expression": "]",
+    "mode": "monad",
+    "expected": "match",
+    "require_dtype_match": true,
+    "y": {"dtype": "Int", "rank": 0, "shape": [], "values": [1]},
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "explicit-integer-binary-matrix",
+    "expression": "]",
+    "mode": "monad",
+    "expected": "match",
+    "require_dtype_match": true,
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 2], "values": [0, 1, 1, 0]},
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "explicit-empty-integer-matrix",
+    "expression": "]",
+    "mode": "monad",
+    "expected": "match",
+    "require_dtype_match": true,
+    "y": {"dtype": "Int", "rank": 2, "shape": [2, 0], "values": []},
+    "j_status": "value",
+    "mojj_status": "value"
   }
 ]
