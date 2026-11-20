@@ -13,7 +13,11 @@ population variance read each mapped value once. Arbitrary forks still evaluate
 their branches independently. The three-method benchmark in
 `tests/perf/moments.mojo` compares this public path with independent reductions
 and a corrected two-pass control. The [active index](../README.md) records the
-current status. Strided views and general sharing across fork branches remain open.
+current status. [StridedView](https://github.com/davidmashburn/mojj/commit/7446ed3)
+borrows a one-dimensional Float64 list, including reverse and repeated selections.
+[SharedReduce](https://github.com/davidmashburn/mojj/commit/dcd7562)
+evaluates two streaming folds with one shared scalar transform per selected input.
+Automatic sharing in arbitrary forks remains deferred until a caller needs it.
 
 ## November 6 reconciliation
 

@@ -6,13 +6,11 @@ Slices 1–3 landed in `5dc7477`, `f0b7994` and `7bc6930`. The
 include the pinned J rerun. At 100,000 elements, the recorded Mojj/J ratios
 fell to 2.10× for double, 9.44× for strict sum and 3.97× for RMS.
 
-Slice 4 is partially implemented. The typed map already moves its result list
+Slice 4 covers both the ordinary result transfer and opt-in input transfer. The typed map already moves its result list
 into a noun. [The ownership change](https://github.com/davidmashburn/mojj/commit/1e042d2) also transfers that list out of `Expr.map`. On an M4 the
 matched 100k-element double fell from 492 µs to 91 µs per call (three runs).
 See the [matched measurements](https://github.com/davidmashburn/mojj/blob/1e042d2/tests/perf/README.md#public-float64-map-boundary-2026-11-20) for the method.
-The input list constructor and identity verbs still copy caller-owned or
-borrowed data. Any change there needs its own measured workload and
-independence checks. The [original
+Borrowing entry points preserve caller-owned data. The opt-in transfer path and its identity measurements are described below. The [original
 baseline](evidence/performance-baseline.md) and projections below describe
 the implementation before slices 1–3.
 
@@ -25,17 +23,26 @@ Width eight won three of eight head-to-head comparisons with width four.
 Further kernel proposals need an end-to-end workload and per-verb contract
 checks. Fast reduction remains contingent on a workload and a rounding decision.
 
-## Input transfer and the next SIMD trial
+## Input transfer and square SIMD results
 
 [Owned Float64 map and reduce](https://github.com/davidmashburn/mojj/commit/c2d75a2)
 accept a moved input list. The arm64 public-wrapper assembly shows the entry
 payload copy disappears. Existing borrowing consumers preserve input ownership.
-Measure direct identity separately because its monad still copies its result.
+[Direct owned identity](https://github.com/davidmashburn/mojj/commit/eb4b89a)
+also returns the original allocation. Identity won all 16 matched timed batches
+at 100,000 elements on an M4. The benchmark excludes preparation of the consumed input.
 
 [The square trial](https://github.com/davidmashburn/mojj/commit/444db48)
-compares four builds through public square and RMS calls. Require repeatable
-paired evidence and check the Linux timing run before selecting a production
-width. Keep native x86-64 and Apple Silicon findings separate.
+compares four builds through public square and RMS calls. The
+[three runs](https://github.com/davidmashburn/mojj/blob/acbf0ad/tests/perf/simd/square/README.md)
+support keeping scalar square. Width four won five of eight primary comparisons
+on the loaded M4 repeat. Linux won eight of eight with a median of 1.093×
+against a 1.10× threshold. A quiet M4 repeat could clarify the RMS regressions.
+
+The next bounded candidate is the Float64 vector dot cell. Measure scalar
+boxing against a typed product vector at the public API, including strict
+right-fold order and exceptional values. Keep promotion and empty identities
+on the generic path unless independent tests establish equivalence.
 
 ## Aim and evidence
 

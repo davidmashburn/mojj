@@ -42,5 +42,12 @@ Check each later revision independently.
 The Linux reference runner now has a [pinned J
 distribution](https://github.com/davidmashburn/mojj/commit/97327cd). A live
 J probe during the empty-frame review exposed an incorrect output shape when
-one argument to a ranked dyad still had a real cell. Add the three reproducers
-to the cross-platform corpus with the fix.
+one argument to a ranked dyad still had a real cell. The
+[rank fix and three regression fixtures](https://github.com/davidmashburn/mojj/commit/5f160a4)
+cover both argument orders and nested frames.
+
+[SharedReduce, SumFold and MeanFold](https://github.com/davidmashburn/mojj/commit/dcd7562)
+implement the second step. Typed tests exercise lists, live views, custom folds,
+fresh state on reuse, error ordering and observable source evaluation count.
+The package smoke compiles and runs a consumer using borrowed input. Additional
+arity and implicit fork sharing remain conditional on an actual caller.

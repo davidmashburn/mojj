@@ -3,48 +3,26 @@
 Implementation branch: `main`. This orphan `project-planning` branch contains
 proposals and design reasoning only; never merge it into implementation history.
 
-## Active plan
+## Current plan
 
-As of 2026-11-20, performance slices 1–3 have shipped on `main`. The
-[November 15 post-change report](https://github.com/davidmashburn/mojj/blob/13336b8/tests/perf/README.md)
-records 33/33 conformance expectations and nine benchmark output checks after
-the unboxed Float64 maps and strict right fold landed.
+All 28 vocabulary families marked Include through P3 have shipped within their
+documented scope. The [vocabulary roadmap](plans/j-vocabulary.md) records the
+deferred families. The original [expression grammar](plans/expression-strings.md)
+was superseded by J train semantics.
 
-[The ownership change](https://github.com/davidmashburn/mojj/commit/1e042d2) removes the measured Float64 output copy
-at the public `Expr.map` list boundary. The [owned-input API](https://github.com/davidmashburn/mojj/commit/c2d75a2)
-now lets callers transfer disposable Float64 lists. The [ten SIMD experiments](https://github.com/davidmashburn/mojj/blob/f4467f1/tests/perf/simd/README.md)
-selected four-wide SIMD for Float64 vector double (1.63× and 1.19× median paired
-speedups in two M4 runs at 100,000 elements). Extending SIMD to another verb
-requires its own matched public benchmark. A separately
-named blocked sum remains a proposal for workloads that can accept different
-rounding. See the [performance tuning plan](plans/expression-performance.md).
-
-[The P3 vocabulary change](https://github.com/davidmashburn/mojj/commit/7233ced0d7ab8828bb02e51c79c6d5476c451bcb)
-shipped the supported subsets of all 28 Include families. Its reference run met
-117/117 expectations, including two documented differences from J. Array and
-window results currently own their storage.
-
-- [Shared reductions and stable moments](plans/foundation.md#slice-3-shared-reductions)
-  — [The implementation](https://github.com/davidmashburn/mojj/commit/03a4576a0c8b609a05b998cc2a3514ae8fa5e6df) exposes the opt-in one-pass
-  `PopulationMoments[Source]`. The corrected two-pass benchmark was faster in all
-  48 matched square-map samples on M4. Source read cost and mean rounding
-  matter when choosing a method. General sharing across arbitrary fork branches
-  remains proposed.
-- [Expr performance tuning](plans/expression-performance.md) — remaining candidates
-  include identity copies, additional measured SIMD kernels, and an
-  opt-in blocked sum if a workload justifies different rounding.
-- [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — the Include list
-  through P3 has shipped. Items marked “Skip for now” remain deferred.
-- [Views and portability](plans/foundation.md#slice-4-views-windows-and-evidence)
-  — windows, shaped results and [borrowed strided views](https://github.com/davidmashburn/mojj/commit/7446ed3)
-  have shipped. The [first hosted Ubuntu run](https://github.com/davidmashburn/mojj/actions/runs/44793497240)
-  passed the suite, demo and compiled-package smoke. Native x86-64 SIMD
-  measurements and cross-platform J comparison are in progress.
-- [Compile expression strings](plans/expression-strings.md) — historical prototype
-  shipped, then superseded by J train semantics; current migration links included.
-
-[Streaming reductions over borrowed input](plans/streaming-reductions.md) sets the
-acceptance criteria for the next foundation slices.
+- [Foundation](plans/foundation.md) and [streaming reductions](plans/streaming-reductions.md).
+  Borrowed strided input, one-pass population moments and explicit paired folds
+  are available. General recognition of shared work in arbitrary J forks would
+  require a concrete caller and a design for evaluation and error order.
+- [Expression performance](plans/expression-performance.md). Direct identity
+  can return a transferred Float64 list. Double uses four-wide SIMD. Square
+  stays scalar after the M4 repeat and the native Linux comparison. The next
+  experiment measures per-element boxing in Float64 vector dot products.
+  A separately named blocked sum needs a workload with an explicit rounding tolerance.
+- [Portability and compatibility](plans/streaming-reductions.md#implementation-evidence).
+  Native Ubuntu CI runs the full suite, demo, package smoke and the pinned J
+  corpus. Empty-frame rank now uses an available real cell. Explicit matrix
+  inputs and dtype-sensitive fixture generation are under verification.
 
 ## Ideas
 
