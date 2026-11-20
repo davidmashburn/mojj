@@ -41,3 +41,5 @@ sooner in all 80 matched comparisons and produced the same result checksums.
 
 [Hosted run](https://github.com/davidmashburn/mojj/actions/runs/44795992027),
 [first samples](linux-x86_64.csv) and [repeat samples](linux-x86_64-repeat.csv).
+
+See [rectangular dot measurements](rectangular.md) for matrix/vector calls in both operand orders.

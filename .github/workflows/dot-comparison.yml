@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/dot-comparison.yml
+      - tests/perf/dot/rectangular.mojo
       - tests/perf/dot/dot.mojo
       - tests/perf/dot/compare.py
 
@@ -16,6 +17,19 @@ jobs:
   compare:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact: float64-dot-linux-x86-64
+            revision: cabe6f5875f91ec01ede33ac91a4aaaed499a307
+            benchmark: dot
+          - artifact: rectangular-row-linux-x86-64
+            revision: a2d075404a45ab847103a066110af69ce134b650
+            benchmark: rectangular
+          - artifact: rectangular-column-linux-x86-64
+            revision: 629bb8991902ed02796a4bac86a9892421df1951
+            benchmark: rectangular
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,22 +40,26 @@ jobs:
           pixi-version: v0.81.0
           locked: true
       - name: Compare the dot change with its parent
+        env:
+          revision: ${{ matrix.revision }}
+          benchmark: ${{ matrix.benchmark }}
         run: |
-          revision=cabe6f5875f91ec01ede33ac91a4aaaed499a307
+          args=()
+          if [[ "$benchmark" == rectangular ]]; then args+=(--rectangular); fi
           mkdir -p build/dot/{baseline,candidate,results}
           git archive "$revision^" src | tar -xf - -C build/dot/baseline
           git archive "$revision" src | tar -xf - -C build/dot/candidate
           for edition in baseline candidate; do
             dir=build/dot/$edition
-            pixi run mojo build --fp-mode contract=off -I "$dir/src" tests/perf/dot/dot.mojo -o "$dir/trial"
+            pixi run mojo build --fp-mode contract=off -I "$dir/src" "tests/perf/dot/$benchmark.mojo" -o "$dir/trial"
           done
           for sample in first repeat; do
-            python3 tests/perf/dot/compare.py build/dot/{baseline,candidate}/trial "build/dot/results/$sample.csv"
+            python3 tests/perf/dot/compare.py "${args[@]}" build/dot/{baseline,candidate}/trial "build/dot/results/$sample.csv"
           done
           lscpu > build/dot/results/cpu.txt
           pixi run mojo --version > build/dot/results/mojo.txt
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: float64-dot-linux-x86-64
+          name: ${{ matrix.artifact }}
           path: build/dot/results/
           if-no-files-found: error

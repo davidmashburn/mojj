@@ -6,8 +6,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-baseline_binary, candidate_binary, destination = map(Path, sys.argv[1:])
-sizes = (1, 8, 128, 4096, 32768)
+rectangular = sys.argv[1:2] == ["--rectangular"]
+baseline_binary, candidate_binary, destination = map(Path, sys.argv[2:] if rectangular else sys.argv[1:])
+if rectangular:
+    sizes = ("mv-128x32", "mv-32x128", "vm-128x32", "vm-32x128")
+else:
+    sizes = ("1", "8", "128", "4096", "32768")
 records = []
 for trial in range(8):
     builds = [("baseline", baseline_binary), ("candidate", candidate_binary)]
@@ -16,14 +20,14 @@ for trial in range(8):
     for position, (name, binary) in enumerate(builds):
         output = subprocess.check_output([binary.resolve()], text=True)
         rows = list(csv.reader(io.StringIO(output)))
-        if tuple(int(row[0]) for row in rows) != sizes:
+        if tuple(row[0] for row in rows) != sizes:
             raise ValueError(f"Unexpected size sequence from {name} in trial {trial}")
         for size, reps, elapsed, sink in rows:
-            records.append((trial, position, name, int(size), int(reps), int(elapsed), float(sink)))
+            records.append((trial, position, name, size, int(reps), int(elapsed), float(sink)))
 
 with destination.open("x", newline="") as stream:
     writer = csv.writer(stream, lineterminator="\n")
-    writer.writerow(("trial", "position", "build", "size", "reps", "elapsed_ns", "sink"))
+    writer.writerow(("trial", "position", "build", "case" if rectangular else "size", "reps", "elapsed_ns", "sink"))
     writer.writerows(records)
 
 for size in sizes:
