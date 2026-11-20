@@ -42,6 +42,9 @@ window results currently own their storage.
 - [Compile expression strings](plans/expression-strings.md) — historical prototype
   shipped, then superseded by J train semantics; current migration links included.
 
+[Streaming reductions over borrowed input](plans/streaming-reductions.md) sets the
+acceptance criteria for the next foundation slices.
+
 ## Ideas
 
 - [One expression, two textual forms](ideas/expression-frontends.md) — shared
