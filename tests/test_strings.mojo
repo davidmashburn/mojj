@@ -169,8 +169,6 @@ def test_double_map_bits() raises:
 def test_owned_consumers() raises:
     var data: List[Float64] = [1.0, -2.0, 3.0, -4.0, 5.0]
     assert_equal(Expr["+:"].map_owned(data^), [2.0, -4.0, 6.0, -8.0, 10.0])
-    assert_equal(Expr["]"].map_owned([1.0, 2.0]), [1.0, 2.0])
-    assert_equal(Expr["]"].map_owned(List[Float64]()), List[Float64]())
     assert_equal(Expr["2 3 & ["].map_owned([7.0]), [2.0, 3.0])
 
     # Compare bits on a cancellation-sensitive input to check the strict fold.
@@ -181,10 +179,42 @@ def test_owned_consumers() raises:
 
     with assert_raises(contains="Expr.map requires a vector result"):
         _ = Expr["sum"].map_owned([1.0, 2.0])
-    with assert_raises():
+    with assert_raises(contains="as_float requires a scalar noun"):
         _ = Expr["square"].reduce_owned([1.0, 2.0])
-    with assert_raises():
+    with assert_raises(contains="Root monad rejects negative real values"):
         _ = Expr["%:"].map_owned([-1.0])
+
+
+def check_owned_identity[source: StringLiteral]() raises:
+    var negative_zero = UInt64(0x8000000000000000)
+    var nan_payload = UInt64(0x7ff8000000000123)
+    var input: List[Float64] = [
+        bitcast[DType.float64](negative_zero),
+        bitcast[DType.float64](nan_payload),
+    ]
+    var transferred = input.copy()
+    var original_address = UInt(transferred.unsafe_ptr())
+    var moved = Expr[source].map_owned(transferred^)
+    assert_equal(UInt(moved.unsafe_ptr()), original_address)
+
+    var output = Expr[source].map_owned(input.copy())
+    assert_equal(len(output), 2)
+    assert_equal(bitcast[DType.uint64](output[0]), negative_zero)
+    assert_equal(bitcast[DType.uint64](output[1]), nan_payload)
+    input[0] = 1.0
+    assert_equal(bitcast[DType.uint64](output[0]), negative_zero)
+    output[1] = 2.0
+    assert_equal(bitcast[DType.uint64](input[1]), nan_payload)
+    assert_equal(len(Expr[source].map_owned(List[Float64]())), 0)
+
+
+def test_owned_identity() raises:
+    check_owned_identity["]"]()
+    check_owned_identity["["]()
+    check_owned_identity["identity"]()
+    check_owned_identity["right"]()
+    check_owned_identity["left"]()
+    check_owned_identity["(])"]()
 
 
 def test_exact_nouns() raises:
@@ -236,4 +266,5 @@ def main() raises:
     test_exact_nouns()
     test_double_map_bits()
     test_owned_consumers()
-    print("PASS test_strings: 9 J semantic test groups")
+    test_owned_identity()
+    print("PASS test_strings: 10 J semantic test groups")

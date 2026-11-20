@@ -292,6 +292,10 @@ struct Expr[source: StringLiteral]:
     @staticmethod
     def map_owned(var data: List[Float64]) raises -> List[Float64]:
         """Map a transferred Float64 list without copying it on entry."""
+        comptime if Self.ast.error == "" and Self.ast.part == Part.VERB:
+            comptime kind = Self.ast.nodes[Self.ast.root].kind
+            comptime if kind == Kind.LEFT or kind == Kind.RIGHT:
+                return data^
         return Self._map(Noun.from_owned_float64(data^))
 
     @staticmethod
