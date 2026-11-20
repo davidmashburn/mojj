@@ -194,3 +194,5 @@ include order and checksums.
 The [original prototype experiment](moments-prototype-samples.csv) compared an
 uncompensated online mean with independent reductions (seed 652). Its 1.18× and
 1.16× speedups predate the adjacent-value fix and the two-pass control.
+
+The [Float64 vector dot report](dot/README.md) measures public dot products with a typed intermediate and includes the paired samples and reproduction commands.

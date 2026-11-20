@@ -15,7 +15,7 @@ test-reference-harness = "python3 -m unittest discover -s tests/reference -p 'te
 perf-moments = "mojo run --fp-mode contract=off -I src tests/test_moments.mojo && mojo run --fp-mode contract=off -I src tests/perf/moments.mojo"
 perf-probes = "sh tests/perf/run-probes.sh"
 test = { depends-on = ["test-core", "test-views", "test-shared-reduce", "test-moments", "test-verbs", "test-vocabulary", "test-strings", "test-syntax", "test-reference-harness"] }
-test-vocabulary = { depends-on = ["test-circle", "test-predicates", "test-real-verbs", "test-p2-expr", "test-shapes", "test-arrays", "test-array-modifiers", "test-p3-expr"] }
+test-vocabulary = { depends-on = ["test-circle", "test-predicates", "test-real-verbs", "test-p2-expr", "test-shapes", "test-arrays", "test-array-modifiers", "test-dot-float64", "test-p3-expr"] }
 test-circle = "mojo run --fp-mode contract=off -I src tests/test_circle.mojo"
 test-predicates = "mojo run --fp-mode contract=off -I src tests/test_predicates.mojo"
 test-real-verbs = "mojo run --fp-mode contract=off -I src tests/test_real_verbs.mojo"
@@ -23,6 +23,7 @@ test-p2-expr = "mojo run --fp-mode contract=off -I src tests/test_p2_expr.mojo"
 test-shapes = "mojo run --fp-mode contract=off -I src tests/test_shapes.mojo"
 test-arrays = "mojo run --fp-mode contract=off -I src tests/test_arrays.mojo"
 test-array-modifiers = "mojo run --fp-mode contract=off -I src tests/test_array_modifiers.mojo"
+test-dot-float64 = "mojo run --fp-mode contract=off -I src tests/test_dot_float64.mojo"
 test-p3-expr = "mojo run --fp-mode contract=off -I src tests/test_p3_expr.mojo"
 test-verbs = "mojo run --fp-mode contract=off -I src tests/test_verbs.mojo"
 test-moments = "mojo run --fp-mode contract=off -I src tests/test_moments.mojo"
