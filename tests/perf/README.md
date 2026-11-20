@@ -151,3 +151,9 @@ calls and each large-vector batch used 100. At 100,000 elements the six copy
 batches ranged from 377–519 µs and the six transfer batches from 72–116 µs.
 Short-vector timings were noisier. These results apply to the list-returning
 map API. The J comparison calls the noun API directly.
+
+## Float64 double SIMD trials
+
+[Ten matched comparisons](simd/README.md) cover raw kernels, the public map
+boundary, scalar tails and width selection on an Apple M4. The report includes
+the selection rule, paired measurements and reproduction command.
