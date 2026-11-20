@@ -33,12 +33,6 @@ for trial in range(8):
         for size, reps, elapsed, sink in rows:
             records.append((trial, position, name, size, int(reps), int(elapsed), float(sink)))
 
-with args.destination.open("x", newline="") as stream:
-    writer = csv.writer(stream, lineterminator="\n")
-    case_column = "case" if args.rectangular or args.mixed else "size"
-    writer.writerow(("trial", "position", "build", case_column, "reps", "elapsed_ns", "sink"))
-    writer.writerows(records)
-
 for size in sizes:
     ratios = []
     for trial in range(8):
@@ -49,3 +43,9 @@ for size in sizes:
         ratios.append(candidate[5] / baseline[5])
     print(size, round(statistics.median(ratios), 4), min(ratios), max(ratios),
           sum(ratio < 1 for ratio in ratios))
+
+with args.destination.open("x", newline="") as stream:
+    writer = csv.writer(stream, lineterminator="\n")
+    case_column = "case" if args.rectangular or args.mixed else "size"
+    writer.writerow(("trial", "position", "build", case_column, "reps", "elapsed_ns", "sink"))
+    writer.writerows(records)
