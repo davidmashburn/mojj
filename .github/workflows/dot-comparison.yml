@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/dot-comparison.yml
+      - tests/perf/dot/mixed.mojo
       - tests/perf/dot/rectangular.mojo
       - tests/perf/dot/dot.mojo
       - tests/perf/dot/compare.py
@@ -28,6 +29,10 @@ jobs:
             baseline: 15a1b77a299590a915359bb5b872788ea63834a9
             revision: c06d309dbaaaf2e83c548ae868d3172c4b78f58b
             benchmark: rectangular
+          - artifact: mixed-dot-linux-x86-64
+            baseline: 15a1b77a299590a915359bb5b872788ea63834a9
+            revision: c06d309dbaaaf2e83c548ae868d3172c4b78f58b
+            benchmark: mixed
           - artifact: rectangular-column-linux-x86-64
             baseline: c06d309dbaaaf2e83c548ae868d3172c4b78f58b
             revision: ec76c110b144f53cfa05e6a05e551c35b69bd12e
@@ -51,7 +56,7 @@ jobs:
           benchmark: ${{ matrix.benchmark }}
         run: |
           args=()
-          if [[ "$benchmark" == rectangular ]]; then args+=(--rectangular); fi
+          if [[ "$benchmark" != dot ]]; then args+=("--$benchmark"); fi
           mkdir -p build/dot/{baseline,candidate,results}
           git archive "${baseline:-$revision^}" src | tar -xf - -C build/dot/baseline
           git archive "$revision" src | tar -xf - -C build/dot/candidate

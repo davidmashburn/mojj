@@ -1,20 +1,28 @@
 """Alternate two dot benchmark binaries and save their matched elapsed times."""
+import argparse
 import csv
 import io
 import statistics
 import subprocess
-import sys
 from pathlib import Path
 
-rectangular = sys.argv[1:2] == ["--rectangular"]
-baseline_binary, candidate_binary, destination = map(Path, sys.argv[2:] if rectangular else sys.argv[1:])
-if rectangular:
+parser = argparse.ArgumentParser(description=__doc__)
+modes = parser.add_mutually_exclusive_group()
+modes.add_argument("--rectangular", action="store_true")
+modes.add_argument("--mixed", action="store_true")
+parser.add_argument("baseline_binary", type=Path)
+parser.add_argument("candidate_binary", type=Path)
+parser.add_argument("destination", type=Path)
+args = parser.parse_args()
+if args.mixed:
+    sizes = tuple(f"{shape}-{percent}" for shape in ("tall", "wide") for percent in (0, 5, 10, 50))
+elif args.rectangular:
     sizes = ("mv-128x32", "mv-32x128", "vm-128x32", "vm-32x128")
 else:
     sizes = ("1", "8", "128", "4096", "32768")
 records = []
 for trial in range(8):
-    builds = [("baseline", baseline_binary), ("candidate", candidate_binary)]
+    builds = [("baseline", args.baseline_binary), ("candidate", args.candidate_binary)]
     if trial % 2:
         builds.reverse()
     for position, (name, binary) in enumerate(builds):
@@ -25,9 +33,10 @@ for trial in range(8):
         for size, reps, elapsed, sink in rows:
             records.append((trial, position, name, size, int(reps), int(elapsed), float(sink)))
 
-with destination.open("x", newline="") as stream:
+with args.destination.open("x", newline="") as stream:
     writer = csv.writer(stream, lineterminator="\n")
-    writer.writerow(("trial", "position", "build", "case" if rectangular else "size", "reps", "elapsed_ns", "sink"))
+    case_column = "case" if args.rectangular or args.mixed else "size"
+    writer.writerow(("trial", "position", "build", case_column, "reps", "elapsed_ns", "sink"))
     writer.writerows(records)
 
 for size in sizes:
