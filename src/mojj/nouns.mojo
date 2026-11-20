@@ -116,12 +116,7 @@ struct Noun:
 
     @staticmethod
     def from_owned_float64(var values: List[Float64]) -> Noun:
-        """Build a Float64 vector noun from a freshly built list without copying.
-
-        This is an internal convenience for evaluators that have just filled a
-        result list.  It is not a public ownership escape hatch: callers pass a
-        local they no longer use, and the list contents are not shared.
-        """
+        """Wrap a transferred Float64 vector, taking ownership of its storage."""
         var noun = Noun(0.0)
         noun.rank = VECTOR_RANK
         noun.float_values = values^

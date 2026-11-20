@@ -52,8 +52,12 @@ for a complete noun sentence such as `10 divide 3 plus 2`. Nouns distinguish
 atoms, vectors, and higher-rank arrays with Boolean, integer, or real storage.
 For example, `Expr["3 | 10"].value()` computes a residue, and
 `Expr["3 -~ 10"].value()` subtracts 3 from 10. The Float64
-convenience consumers are `apply`, `map`, and `reduce`. All expose inspectable
-structure through `describe()`.
+convenience consumers are `apply`, `map`, and `reduce`. When the input list
+is disposable, `Expr["+:"].map_owned(data^)` or `Expr["+/"].reduce_owned(data^)`
+transfers its storage into evaluation. Pass a temporary directly, or use
+`map(data)` and `reduce(data)` to keep a named input. The phrase retains its
+inspectable structure through `describe()`. See the
+[input ownership probe](tests/perf/ownership.md).
 
 See [syntax and migration](docs/SYNTAX.md) for the breaking changes from the
 prototype and [compatibility](docs/COMPATIBILITY.md) for supported valences,

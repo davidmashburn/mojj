@@ -166,6 +166,27 @@ def test_double_map_bits() raises:
             assert_equal(result[0], 123.0)
 
 
+def test_owned_consumers() raises:
+    var data: List[Float64] = [1.0, -2.0, 3.0, -4.0, 5.0]
+    assert_equal(Expr["+:"].map_owned(data^), [2.0, -4.0, 6.0, -8.0, 10.0])
+    assert_equal(Expr["]"].map_owned([1.0, 2.0]), [1.0, 2.0])
+    assert_equal(Expr["]"].map_owned(List[Float64]()), List[Float64]())
+    assert_equal(Expr["2 3 & ["].map_owned([7.0]), [2.0, 3.0])
+
+    # Compare bits on a cancellation-sensitive input to check the strict fold.
+    var cancellation: List[Float64] = [1.0e16, -1.0e16, 1.0]
+    var expected = bitcast[DType.uint64](Expr["+/"].reduce(cancellation))
+    assert_equal(bitcast[DType.uint64](Expr["+/"].reduce_owned(cancellation^)), expected)
+    assert_equal(Expr["+/"].reduce_owned(List[Float64]()), 0.0)
+
+    with assert_raises(contains="Expr.map requires a vector result"):
+        _ = Expr["sum"].map_owned([1.0, 2.0])
+    with assert_raises():
+        _ = Expr["square"].reduce_owned([1.0, 2.0])
+    with assert_raises():
+        _ = Expr["%:"].map_owned([-1.0])
+
+
 def test_exact_nouns() raises:
     assert_equal(Expr["9007199254740993"].value().as_int(), 9007199254740993)
     assert_equal(Expr["9007199254740993 + 2"].value().as_int(), 9007199254740995)
@@ -214,4 +235,5 @@ def main() raises:
     test_aliases()
     test_exact_nouns()
     test_double_map_bits()
-    print("PASS test_strings: 8 J semantic test groups")
+    test_owned_consumers()
+    print("PASS test_strings: 9 J semantic test groups")

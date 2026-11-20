@@ -234,6 +234,7 @@ struct Expr[source: StringLiteral]:
 
     Use monad/dyad with explicit Nouns, or value for a complete sentence.
     apply/map/reduce are Float64 convenience consumers with checked result rank.
+    map_owned/reduce_owned accept a transferred Float64 list.
     """
     comptime ast = _Syntax[Self.source].ast
 
@@ -286,7 +287,16 @@ struct Expr[source: StringLiteral]:
 
     @staticmethod
     def map(data: List[Float64]) raises -> List[Float64]:
-        var result = Self.monad(Noun(data))
+        return Self._map(Noun(data))
+
+    @staticmethod
+    def map_owned(var data: List[Float64]) raises -> List[Float64]:
+        """Map a transferred Float64 list without copying it on entry."""
+        return Self._map(Noun.from_owned_float64(data^))
+
+    @staticmethod
+    def _map(data: Noun) raises -> List[Float64]:
+        var result = Self.monad(data)
         if not result.is_vector():
             raise Error("Expr.map requires a vector result")
         if result.dtype == NounDType.FLOAT64:
@@ -298,3 +308,8 @@ struct Expr[source: StringLiteral]:
     @staticmethod
     def reduce(data: List[Float64]) raises -> Float64:
         return Self.monad(Noun(data)).as_float()
+
+    @staticmethod
+    def reduce_owned(var data: List[Float64]) raises -> Float64:
+        """Reduce a transferred Float64 list without copying it on entry."""
+        return Self.monad(Noun.from_owned_float64(data^)).as_float()
