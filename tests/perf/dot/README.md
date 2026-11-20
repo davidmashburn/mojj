@@ -23,3 +23,21 @@ pixi run mojo build --fp-mode contract=off -I "$BASE_SRC" tests/perf/dot/dot.moj
 pixi run mojo build --fp-mode contract=off -I "$CANDIDATE_SRC" tests/perf/dot/dot.mojo -o /tmp/mojj-dot-candidate
 python3 tests/perf/dot/compare.py /tmp/mojj-dot-baseline /tmp/mojj-dot-candidate /tmp/mojj-dot-samples.csv
 ```
+
+## Native Linux repeat
+
+A hosted Ubuntu x86-64 runner with an AMD EPYC 9V74 and Mojo 1.1.0 (8189361e)
+compared the production change in `cabe6f5` with its immediate parent. Both
+eight-block runs used the same two binaries. The typed implementation finished
+sooner in all 80 matched comparisons and produced the same result checksums.
+
+| Vector length | First median candidate / baseline | Repeat median candidate / baseline |
+| ---: | ---: | ---: |
+| 1 | 0.373 | 0.363 |
+| 8 | 0.110 | 0.118 |
+| 128 | 0.043 | 0.041 |
+| 4,096 | 0.035 | 0.034 |
+| 32,768 | 0.044 | 0.040 |
+
+[Hosted run](https://github.com/davidmashburn/mojj/actions/runs/44795992027),
+[first samples](linux-x86_64.csv) and [repeat samples](linux-x86_64-repeat.csv).
