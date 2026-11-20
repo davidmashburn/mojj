@@ -390,9 +390,12 @@ struct Table[Op: Verb](Verb):
 def _dot_cell[Reduction: Verb, Cell: Verb](
     x: Noun, y: Noun, left_start: Int, width: Int, right_shape: List[Int]
 ) raises -> Noun:
+    # Shaped nouns can have shortened storage. The generic path checks each
+    # access in order, which also preserves any earlier cell error.
     if (
-        Cell.has_float64_dyad() and (x.is_vector() or x.rank == 2) and y.is_vector()
+        Cell.has_float64_dyad() and y.is_vector()
         and x.is_float64() and y.is_float64() and width > 0
+        and (x.is_vector() or (x.rank == 2 and left_start + width <= len(x.float_values)))
     ):
         var values = List[Float64](capacity=width)
         for index in range(width):
@@ -402,6 +405,7 @@ def _dot_cell[Reduction: Verb, Cell: Verb](
     if (
         Cell.has_float64_dyad() and x.is_vector() and y.rank == 2
         and x.is_float64() and y.is_float64() and count > 0
+        and count <= len(y.float_values)
     ):
         var values = List[Float64](capacity=count)
         var index = 0

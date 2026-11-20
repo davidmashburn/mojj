@@ -88,6 +88,23 @@ def _test_vector_matrix_dot() raises:
         _ = Dot[Insert[Plus], _OrderedCell].dyad(ordered_left, ordered_right)
 
 
+def _test_shortened_matrix_storage() raises:
+    var vector = Noun(List[Float64]([1., 1.]))
+    var matrix = Noun(List[Float64]([1., -1., 2., 4.])).with_shape([2, 2])
+    _ = matrix.float_values.pop()
+
+    with assert_raises(contains="noun index out of range"):
+        _ = Expr["+/ . *"].dyad(matrix, vector)
+    with assert_raises(contains="noun index out of range"):
+        _ = Expr["+/ . *"].dyad(vector, matrix)
+
+    # In each orientation a custom cell error precedes the missing atom.
+    with assert_raises(contains="second cell failed"):
+        _ = Dot[Insert[Plus], _OrderedCell].dyad(matrix, vector)
+    with assert_raises(contains="negative right cell failed"):
+        _ = Dot[Insert[Plus], _OrderedCell].dyad(vector, matrix)
+
+
 def main() raises:
     var x = Noun(List[Float64]([1.0e16, -1.0e16, 1.0]))
     var ones = Noun(List[Float64]([1.0, 1.0, 1.0]))
@@ -136,4 +153,5 @@ def main() raises:
     with assert_raises(contains="third cell failed"):
         _ = Dot[Insert[Plus], _OrderedCell].dyad(row_errors, Noun(List[Float64]([1., 1.])))
     _test_vector_matrix_dot()
+    _test_shortened_matrix_storage()
     print("PASS Float64 vector and matrix dot")
