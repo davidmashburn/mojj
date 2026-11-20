@@ -19,21 +19,26 @@ requires its own matched public benchmark. A separately
 named blocked sum remains a proposal for workloads that can accept different
 rounding. See the [performance tuning plan](plans/expression-performance.md).
 
-The original reference-fixture next step has landed in
-[`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13):
-33 selected conformance expectations passed, with documented differences from J,
-and nine provisional performance comparisons were recorded. This does not prove
-full subset parity. The vocabulary roadmap below retains its original baseline
-and proposal history, with current status reconciled against code and tests.
+[The P3 vocabulary change](https://github.com/davidmashburn/mojj/commit/7233ced0d7ab8828bb02e51c79c6d5476c451bcb)
+shipped the supported subsets of all 28 Include families. Its reference run met
+117/117 expectations, including two documented differences from J. Array and
+window results currently own their storage.
 
-- [Expr performance tuning](plans/expression-performance.md) — current next step;
-  measured attribution, then one demonstrated cost per slice.
-  [Baseline evidence](plans/evidence/performance-baseline.md) records the probes,
-  the same-host J rerun and the reduction-order finding.
-- [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — bounded P0/P1
-  implemented; P2 partial, P3 proposed. Full subset parity remains unverified.
-- [Build a small compositional numerical library](plans/foundation.md) — foundation
-  shipped; shared traversal/stable moments and views/windows remain open.
+- [Shared reductions and stable moments](plans/foundation.md#slice-3-shared-reductions)
+  — [The implementation](https://github.com/davidmashburn/mojj/commit/03a4576a0c8b609a05b998cc2a3514ae8fa5e6df) exposes the opt-in one-pass
+  `PopulationMoments[Source]`. The corrected two-pass benchmark was faster in all
+  48 matched square-map samples on M4. Source read cost and mean rounding
+  matter when choosing a method. General sharing across arbitrary fork branches
+  remains proposed.
+- [Expr performance tuning](plans/expression-performance.md) — remaining candidates
+  include input and identity copies, additional measured SIMD kernels, and an
+  opt-in blocked sum if a workload justifies different rounding.
+- [J vocabulary and semantics roadmap](plans/j-vocabulary.md) — the Include list
+  through P3 has shipped. Items marked “Skip for now” remain deferred.
+- [Views and portability](plans/foundation.md#slice-4-views-windows-and-evidence)
+  — windows and shaped results have shipped. Strided views remain proposed. The locked test suite, demo,
+  and package smoke passed on emulated Ubuntu x86-64. Native x86-64 performance
+  and hosted Linux CI remain unverified.
 - [Compile expression strings](plans/expression-strings.md) — historical prototype
   shipped, then superseded by J train semantics; current migration links included.
 

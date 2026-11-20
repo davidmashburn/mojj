@@ -1,5 +1,22 @@
 # Build a small compositional numerical library
 
+## Current implementation
+
+The foundation and typed expression-string front end shipped on `main`. The
+[shared J vocabulary](https://github.com/davidmashburn/mojj/commit/7233ced0d7ab8828bb02e51c79c6d5476c451bcb)
+includes shaped arrays and windows. Those results currently own their storage.
+The original foundation proposal and its dated verification notes follow below.
+
+[The implementation](https://github.com/davidmashburn/mojj/commit/03a4576a0c8b609a05b998cc2a3514ae8fa5e6df) includes the typed
+`PopulationMoments[Source]` expression. Its compensated running mean and
+population variance read each mapped value once. Arbitrary forks still evaluate
+their branches independently. The three-method benchmark in
+`tests/perf/moments.mojo` compares this public path with independent reductions
+and a corrected two-pass control. The [active index](../README.md) records the
+current status. Strided views and general sharing across fork branches remain open.
+
+## November 6 reconciliation
+
 Status: slices 1–2 implemented; slice 2's original grammar superseded. Slice 3
 is partial; slice 4 remains proposed apart from initial benchmark evidence.
 Reconciled 2026-11-06 against published `main` at
