@@ -34,6 +34,12 @@ Each cell reports the median candidate/baseline elapsed-time ratio and the numbe
 
 On Linux, five matrix × vector calls per hundred was the smallest tested share with seven faster pairs on both shapes in both runs. At zero the median moved across parity between runs. The measured batches therefore do not establish an exact crossover. At an even split the Linux median time fell by 37–38% on both shapes. No M4 mix reached seven faster pairs. An application estimate needs its observed shape and operand-order frequencies, and an M4 estimate needs a quieter repeat.
 
+## Linux replication
+
+A [second hosted run](https://github.com/davidmashburn/mojj/actions/runs/44831504715) used the same archived implementations and driver after the comparison runner began validating pairs before saving them. At five matrix × vector calls per hundred, both shapes won 8/8 in the first sample. In the repeat the tall shape won 8/8 and the wide shape won 6/8. At ten and fifty calls both shapes won 8/8 in both samples. Across all four Linux samples, ten was the smallest tested share that won at least seven pairs on both shapes every time. The exact crossover between tested shares remains unknown.
+
+[Replication first](mixed-linux-confirm-first.csv) · [Replication repeat](mixed-linux-confirm-repeat.csv)
+
 ## Reproduction
 
 Use the pinned Pixi environment. Set `BASE_SRC` and `CANDIDATE_SRC` to the respective archived `src` directories and choose a fresh CSV path.
