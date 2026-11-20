@@ -24,6 +24,19 @@ The second comparison used the row optimization as its baseline. Collecting the 
 | Right | 128 × 32 | 0.3202 | 0.0420–0.7400 | 8/8 |
 | Right | 32 × 128 | 0.2401 | 0.1155–0.9714 | 8/8 |
 
+## Linux x86-64 results
+
+Two eight-block comparisons ran on Ubuntu 24.04 with an Intel Xeon 6975P-C and Mojo 1.1.0 (8189361e). Each optimization was measured against its immediate parent. Every target shape won all eight paired blocks in each repeat. The table gives median candidate time divided by baseline time. [Hosted comparison](https://github.com/davidmashburn/mojj/actions/runs/44807036089)
+
+| Optimization | Matrix shape | First run | Repeat |
+| --- | ---: | ---: | ---: |
+| Matrix × vector | 128 × 32 | 0.0590 | 0.0646 |
+| Matrix × vector | 32 × 128 | 0.0408 | 0.0525 |
+| Vector × matrix | 128 × 32 | 0.5013 | 0.4172 |
+| Vector × matrix | 32 × 128 | 0.3971 | 0.3924 |
+
+For the row optimization, the unchanged reverse orientation had median ratios of 1.0375 and 1.0281 on the tall matrix and 0.9992 and 1.0041 on the wide matrix. For the column optimization, the control medians ranged from 0.9848 to 1.0932. These samples resolve the large target effects more clearly than small changes in either control. Raw samples are available for [rows](rectangular-linux-row-first.csv), [row repeat](rectangular-linux-row-repeat.csv), [columns](rectangular-linux-column-first.csv) and [column repeat](rectangular-linux-column-repeat.csv).
+
 ## Reproduction
 
 To reproduce, set `BASE_SRC` and `CANDIDATE_SRC` to the source directories containing `mojj/` and choose a fresh output path.
