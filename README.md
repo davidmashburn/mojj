@@ -12,9 +12,9 @@ the unboxed Float64 maps and strict right fold landed.
 
 [The ownership change](https://github.com/davidmashburn/mojj/commit/1e042d2) removes the measured Float64 output copy
 at the public `Expr.map` list boundary. Caller-owned input still copies on
-entry. The [ten SIMD experiments](https://github.com/davidmashburn/mojj/blob/6c00dc3/tests/perf/simd/README.md)
-selected four-wide SIMD for Float64 vector double (1.63× median paired
-speedup on the M4 at 100,000 elements). Extending SIMD to another verb
+entry. The [ten SIMD experiments](https://github.com/davidmashburn/mojj/blob/f4467f1/tests/perf/simd/README.md)
+selected four-wide SIMD for Float64 vector double (1.63× and 1.19× median paired
+speedups in two M4 runs at 100,000 elements). Extending SIMD to another verb
 requires its own matched public benchmark. A separately
 named blocked sum remains a proposal for workloads that can accept different
 rounding. See the [performance tuning plan](plans/expression-performance.md).

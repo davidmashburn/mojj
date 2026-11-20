@@ -16,10 +16,11 @@ independence checks. The [original
 baseline](evidence/performance-baseline.md) and projections below describe
 the implementation before slices 1–3.
 
-The [ten SIMD experiments](https://github.com/davidmashburn/mojj/blob/6c00dc3/tests/perf/simd/README.md)
+The [ten SIMD experiments](https://github.com/davidmashburn/mojj/blob/f4467f1/tests/perf/simd/README.md)
 evaluated slice 5 for Float64 vector double. [The implementation](https://github.com/davidmashburn/mojj/commit/e0ed509)
 retains scalar tails and leaves other verbs on their existing paths. Width
-four won all eight primary public comparisons against the scalar baseline.
+four won all eight primary public comparisons against the scalar baseline
+and seven of eight in a fresh build and timing repeat.
 Width eight won three of eight head-to-head comparisons with width four.
 Further kernel proposals need an end-to-end workload and per-verb contract
 checks. Fast reduction remains contingent on a workload and a rounding decision.
