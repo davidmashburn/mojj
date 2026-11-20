@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 import sys
@@ -12,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = (ROOT / "pixi.toml").resolve()
 SOURCE_ROOT = (ROOT / "src").resolve()
-TIMEOUT_SECONDS = 30
+DEFAULT_TIMEOUT_SECONDS = 30
 DIAGNOSTIC_LIMIT = 4000
 
 
@@ -71,7 +72,7 @@ def _balanced_scalar_expression(leaf_count: int) -> str:
 
 
 def _compile(
-    fixture: Path, binary: Path
+    fixture: Path, binary: Path, timeout_seconds: int
 ) -> subprocess.CompletedProcess[str]:
     argv = [
         "pixi",
@@ -93,7 +94,7 @@ def _compile(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=TIMEOUT_SECONDS,
+        timeout=timeout_seconds,
         check=False,
     )
 
@@ -102,7 +103,7 @@ def _diagnostics(result: subprocess.CompletedProcess[str]) -> str:
     return result.stdout + result.stderr
 
 
-def _run_control(directory: Path) -> None:
+def _run_control(directory: Path, timeout_seconds: int) -> None:
     fixture = directory / "control.mojo"
     binary = directory / "control"
     # Binary composition trees have odd node counts: 32 leaves use 63 nodes,
@@ -136,10 +137,10 @@ def _run_control(directory: Path) -> None:
         encoding="utf-8",
     )
     try:
-        result = _compile(fixture, binary)
+        result = _compile(fixture, binary, timeout_seconds)
     except subprocess.TimeoutExpired as error:
         raise RuntimeError(
-            f"valid control timed out after {TIMEOUT_SECONDS} seconds"
+            f"valid control timed out after {timeout_seconds} seconds"
         ) from error
     if result.returncode != 0:
         raise RuntimeError(
@@ -203,10 +204,18 @@ def _negative_cases() -> list[tuple[str, str, str, str]]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--timeout-seconds", type=int, default=DEFAULT_TIMEOUT_SECONDS,
+        help="Time limit for each compiler invocation (default: %(default)s seconds)",
+    )
+    timeout_seconds = parser.parse_args().timeout_seconds
+    if timeout_seconds < 1:
+        parser.error("--timeout-seconds must be positive")
     with tempfile.TemporaryDirectory(prefix="mojj-syntax-") as temporary:
         directory = Path(temporary)
         try:
-            _run_control(directory)
+            _run_control(directory, timeout_seconds)
         except (OSError, RuntimeError, subprocess.SubprocessError) as error:
             print(f"FAIL check_syntax control: {error}", file=sys.stderr)
             return 1
@@ -221,10 +230,10 @@ def main() -> int:
                 encoding="utf-8",
             )
             try:
-                result = _compile(fixture, binary)
+                result = _compile(fixture, binary, timeout_seconds)
             except subprocess.TimeoutExpired:
                 failures.append(
-                    f"{name}: compiler timed out after {TIMEOUT_SECONDS} seconds"
+                    f"{name}: compiler timed out after {timeout_seconds} seconds"
                 )
                 continue
             diagnostics = _diagnostics(result)

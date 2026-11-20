@@ -78,7 +78,9 @@ pixi run package-smoke
 ```
 
 On a minimal Ubuntu installation, install `gcc` and `libc6-dev` for the
-syntax suite, which links a control executable.
+syntax suite, which links a control executable. Each compiler invocation has
+a 30-second timeout. On a heavily loaded host, use
+`pixi run test-syntax --timeout-seconds 180` to allow more time per fixture.
 
 The toolchain is pinned to Mojo 1.1.0. `package-smoke` precompiles
 `src/mojj` into `build/mojj.mojoc` and runs the example using that compiled
