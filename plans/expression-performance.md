@@ -282,3 +282,13 @@ Profile vector × matrix on the same two shapes. Test whether directly copying a
 ### Row extraction decision
 
 The M4 profile of the typed product-matrix candidate implicated first-axis reduction. Direct product construction took about 20–35 µs per call, while reduction of a preconstructed product matrix took about 615–773 µs. A prototype copied Float64 rows directly, leaving the dyadic reducer intact. With bounds handling restored, it won 7/8 tall pairs and 5/8 wide on M4. Both Linux repeats qualified, but the wide M4 result fell short. The [revert](https://github.com/davidmashburn/mojj/commit/150197d) keeps the new semantic tests. Reconsider the experiment with a representative application shape and a quiet M4 host. A fused reduction would additionally need an explicit contract for custom verbs that process an entire row.
+
+### Mixed operand orders
+
+Compare the retained matrix × vector path at `c06d309` with `15a1b77` in
+the same binary workload for each revision. Estimate crossover shares from
+the isolated paired samples, then time 100-call batches with 0, 5, 10 and 50
+matrix × vector calls, interleaved with vector × matrix calls. Keep the two
+matrix shapes separate. Report all eight paired ratios through their median
+and win count, with two Linux runs. These mixes test sensitivity to operand
+order. An application-level prediction still requires its actual call mix.
