@@ -25,6 +25,18 @@ Width eight won three of eight head-to-head comparisons with width four.
 Further kernel proposals need an end-to-end workload and per-verb contract
 checks. Fast reduction remains contingent on a workload and a rounding decision.
 
+## Input transfer and the next SIMD trial
+
+[Owned Float64 map and reduce](https://github.com/davidmashburn/mojj/commit/c2d75a2)
+accept a moved input list. The arm64 public-wrapper assembly shows the entry
+payload copy disappears. Existing borrowing consumers preserve input ownership.
+Measure direct identity separately because its monad still copies its result.
+
+[The square trial](https://github.com/davidmashburn/mojj/commit/444db48)
+compares four builds through public square and RMS calls. Require repeatable
+paired evidence and check the Linux timing run before selecting a production
+width. Keep native x86-64 and Apple Silicon findings separate.
+
 ## Aim and evidence
 
 Reduce overhead in the compiled `Expr` API while preserving its noun, rank,

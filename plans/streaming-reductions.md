@@ -27,3 +27,20 @@ The [Linux workflow](https://github.com/davidmashburn/mojj/commit/30fe221)
 runs tests, the demo and package imports on the locked native Ubuntu environment.
 Track [the first hosted run](https://github.com/davidmashburn/mojj/actions/runs/44793497240)
 independently of local Apple Silicon performance evidence.
+
+## Implementation evidence
+
+[StridedView](https://github.com/davidmashburn/mojj/commit/7446ed3) passed
+bounds and live-owner tests on macOS arm64. Mojo permits the owner to grow
+while a view exists, so the implementation borrows the list header. The
+compiler rejected attempts to return a view of a local list or use the view
+after moving its owner. The
+[first hosted Linux check](https://github.com/davidmashburn/mojj/actions/runs/44793497240)
+passed the full suite, demo and compiled-package smoke before the view landed.
+Check each later revision independently.
+
+The Linux reference runner now has a [pinned J
+distribution](https://github.com/davidmashburn/mojj/commit/97327cd). A live
+J probe during the empty-frame review exposed an incorrect output shape when
+one argument to a ranked dyad still had a real cell. Add the three reproducers
+to the cross-platform corpus with the fix.
