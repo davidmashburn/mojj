@@ -153,12 +153,9 @@ def test_hooks_forks_composition_and_reductions() raises:
 
     with assert_raises(contains="negative real"):
         _ = Root.monad(Noun(-1))
-    with assert_raises(contains="Squared dyad is unsupported"):
-        _ = Squared.dyad(Noun(1), Noun(1))
-    with assert_raises(contains="Root dyad is unsupported"):
-        _ = Root.dyad(Noun(2), Noun(2))
-    with assert_raises(contains="Tally dyad is unsupported"):
-        _ = Tally.dyad(Noun(1), Noun(1))
+    assert_equal(Squared.dyad(Noun(1), Noun(1)).as_bool(), False)
+    assert_equal(Root.dyad(Noun(2), Noun(4)).as_float(), 2.0)
+    assert_int_vector(Tally.dyad(Noun(2), Noun(3)), List[Int]([3, 3]))
 
 
 def test_float64_kernel_fast_paths() raises:
@@ -256,8 +253,7 @@ def test_exact_overflow_and_unsupported_valences() raises:
         _ = Squared.monad(Noun(Int.MAX))
     with assert_raises(contains="Int overflow"):
         _ = Doubled.monad(Noun(Int.MAX))
-    with assert_raises(contains="Insert dyad is unsupported"):
-        _ = Insert[Plus].dyad(Noun(1), Noun(2))
+    assert_int_scalar(Insert[Plus].dyad(Noun(1), Noun(2)), 3)
     with assert_raises(contains="BindLeft dyad is unsupported"):
         _ = BindLeft[10, Plus].dyad(Noun(1), Noun(2))
     with assert_raises(contains="BindRightNoun dyad is unsupported"):

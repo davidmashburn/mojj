@@ -1,9 +1,4 @@
-"""Small, value-owned nouns for the typed J semantic core.
-
-The first semantic slice deliberately models atoms and one-dimensional vectors
-only.  A noun keeps its element dtype and rank explicit; verbs are responsible
-for applying the scalar-extension/vector-agreement rules exposed below.
-"""
+"""Value-owned, homogeneous nouns with row-major storage."""
 
 from std.collections import List
 
@@ -12,7 +7,7 @@ comptime SCALAR_RANK = 0
 comptime VECTOR_RANK = 1
 
 
-struct NounDType(ImplicitlyCopyable, Equatable):
+struct NounDType(Equatable, ImplicitlyCopyable):
     """The exact element type carried by a :class:`Noun`."""
 
     var tag: Int
@@ -39,16 +34,11 @@ struct NounDType(ImplicitlyCopyable, Equatable):
 
 
 struct Noun:
-    """A copyable scalar or vector with exact Int/Float64/Bool storage.
-
-    Scalars have rank ``SCALAR_RANK`` and length one.  Vectors have rank
-    ``VECTOR_RANK`` and may be empty.  The inactive storage fields are kept
-    initialized so ordinary struct value semantics remain sufficient for
-    copying a noun.
-    """
+    """A scalar or shaped array with exact Int/Float64/Bool storage."""
 
     var rank: Int
     var dtype: NounDType
+    var _dimensions: List[Int]
 
     var int_value: Int
     var float_value: Float64
@@ -61,6 +51,7 @@ struct Noun:
     def __init__(out self, value: Int):
         self.rank = SCALAR_RANK
         self.dtype = NounDType.INT
+        self._dimensions = List[Int]()
         self.int_value = value
         self.float_value = 0.0
         self.bool_value = False
@@ -71,6 +62,7 @@ struct Noun:
     def __init__(out self, value: Float64):
         self.rank = SCALAR_RANK
         self.dtype = NounDType.FLOAT64
+        self._dimensions = List[Int]()
         self.int_value = 0
         self.float_value = value
         self.bool_value = False
@@ -81,6 +73,7 @@ struct Noun:
     def __init__(out self, value: Bool):
         self.rank = SCALAR_RANK
         self.dtype = NounDType.BOOL
+        self._dimensions = List[Int]()
         self.int_value = 0
         self.float_value = 0.0
         self.bool_value = value
@@ -91,6 +84,7 @@ struct Noun:
     def __init__(out self, values: List[Int]):
         self.rank = VECTOR_RANK
         self.dtype = NounDType.INT
+        self._dimensions = List[Int]()
         self.int_value = 0
         self.float_value = 0.0
         self.bool_value = False
@@ -101,6 +95,7 @@ struct Noun:
     def __init__(out self, values: List[Float64]):
         self.rank = VECTOR_RANK
         self.dtype = NounDType.FLOAT64
+        self._dimensions = List[Int]()
         self.int_value = 0
         self.float_value = 0.0
         self.bool_value = False
@@ -111,6 +106,7 @@ struct Noun:
     def __init__(out self, values: List[Bool]):
         self.rank = VECTOR_RANK
         self.dtype = NounDType.BOOL
+        self._dimensions = List[Int]()
         self.int_value = 0
         self.float_value = 0.0
         self.bool_value = False
@@ -137,6 +133,64 @@ struct Noun:
     def is_vector(self) -> Bool:
         return self.rank == VECTOR_RANK
 
+    def dims(self) -> List[Int]:
+        """Return an independent copy of the axis lengths."""
+        if self.is_vector():
+            return [self.length()]
+        return self._dimensions.copy()
+
+    def axis_length(self, axis: Int) raises -> Int:
+        if axis < 0 or axis >= self.rank:
+            raise Error("noun axis out of range")
+        return self._axis_length(axis)
+
+    def _axis_length(self, axis: Int) -> Int:
+        if self.is_vector():
+            return self.length()
+        return self._dimensions[axis]
+
+    def same_shape(self, other: Self) -> Bool:
+        if self.rank != other.rank:
+            return False
+        for axis in range(self.rank):
+            if self._axis_length(axis) != other._axis_length(axis):
+                return False
+        return True
+
+    def with_shape(self, dims: List[Int]) raises -> Self:
+        """Copy the noun and reinterpret its storage with the given axes."""
+        var result = self.copy()
+        result.set_shape(dims)
+        return result^
+
+    def set_shape(mut self, dims: List[Int]) raises:
+        """Set the axis lengths without changing the atom count or order."""
+        if shape_size(dims) != self.length():
+            raise Error("shape does not match noun atom count")
+        var new_rank = len(dims)
+        if self.is_scalar() and new_rank > SCALAR_RANK:
+            if self.is_int():
+                self.int_values.append(self.int_value)
+            elif self.is_float64():
+                self.float_values.append(self.float_value)
+            else:
+                self.bool_values.append(self.bool_value)
+        elif not self.is_scalar() and new_rank == SCALAR_RANK:
+            if self.is_int():
+                self.int_value = self.int_values[0]
+                self.int_values = List[Int]()
+            elif self.is_float64():
+                self.float_value = self.float_values[0]
+                self.float_values = List[Float64]()
+            else:
+                self.bool_value = self.bool_values[0]
+                self.bool_values = List[Bool]()
+        self.rank = new_rank
+        if new_rank > VECTOR_RANK:
+            self._dimensions = dims.copy()
+        else:
+            self._dimensions = List[Int]()
+
     def is_int(self) -> Bool:
         return self.dtype == NounDType.INT
 
@@ -147,6 +201,7 @@ struct Noun:
         return self.dtype == NounDType.BOOL
 
     def length(self) -> Int:
+        """Return the total atom count across every axis."""
         if self.rank == SCALAR_RANK:
             return 1
         if self.dtype == NounDType.INT:
@@ -184,16 +239,16 @@ struct Noun:
         return self.bool_value
 
     def as_ints(self) raises -> List[Int]:
-        """Return a copied Int vector, rejecting scalar or non-Int nouns."""
-        if self.rank != VECTOR_RANK:
+        """Return a copy of the flat storage of an Int array."""
+        if self.is_scalar():
             raise Error("as_ints requires a vector noun")
         if self.dtype != NounDType.INT:
             raise Error("as_ints requires an Int vector")
         return self.int_values.copy()
 
     def as_floats(self) raises -> List[Float64]:
-        """Return a copied Float64 vector, rejecting scalar nouns."""
-        if self.rank != VECTOR_RANK:
+        """Return a flat Float64 copy of the atoms of an array."""
+        if self.is_scalar():
             raise Error("as_floats requires a vector noun")
         var result = List[Float64](length=self.length(), fill=0.0)
         if self.dtype == NounDType.FLOAT64:
@@ -211,8 +266,8 @@ struct Noun:
         return result^
 
     def as_bools(self) raises -> List[Bool]:
-        """Return a copied Boolean vector, rejecting scalar or non-Bool nouns."""
-        if self.rank != VECTOR_RANK:
+        """Return a copy of the flat storage of a Boolean array."""
+        if self.is_scalar():
             raise Error("as_bools requires a vector noun")
         if self.dtype != NounDType.BOOL:
             raise Error("as_bools requires a Bool vector")
@@ -238,11 +293,17 @@ struct Noun:
             if self.dtype == NounDType.FLOAT64:
                 return Noun(self.float_value)
             return Noun(self.bool_value)
+        var result = Noun(False)
+        result.rank = self.rank
+        result.dtype = self.dtype
+        result._dimensions = self._dimensions.copy()
         if self.dtype == NounDType.INT:
-            return Noun(self.int_values)
-        if self.dtype == NounDType.FLOAT64:
-            return Noun(self.float_values)
-        return Noun(self.bool_values)
+            result.int_values = self.int_values.copy()
+        elif self.dtype == NounDType.FLOAT64:
+            result.float_values = self.float_values.copy()
+        else:
+            result.bool_values = self.bool_values.copy()
+        return result^
 
     def describe(self) -> String:
         if self.rank == SCALAR_RANK:
@@ -255,6 +316,14 @@ struct Noun:
             return "0"
 
         var result = ""
+        if self.rank > VECTOR_RANK:
+            for axis in range(self.rank):
+                if axis > 0:
+                    result += " "
+                result += String(self._axis_length(axis))
+            result += "$"
+            if self.length() == 0:
+                result += "0"
         for index in range(self.length()):
             if index > 0:
                 result += " "
@@ -269,23 +338,75 @@ struct Noun:
         return result
 
 
-def agreement_length(left: Noun, right: Noun) raises -> Int:
-    """Return the result length under scalar extension and vector agreement."""
-    if left.rank == VECTOR_RANK and right.rank == VECTOR_RANK:
-        if left.length() != right.length():
+def shape_size(dims: List[Int]) raises -> Int:
+    """Return the validated atom count, including zero-length axes."""
+    var has_zero = False
+    for index in range(len(dims)):
+        var dim = dims[index]
+        if dim < 0:
+            raise Error("shape axes must be nonnegative")
+        has_zero = has_zero or dim == 0
+    if has_zero:
+        return 0
+    var size = 1
+    for index in range(len(dims)):
+        var dim = dims[index]
+        if size > Int.MAX // dim:
+            raise Error("shape atom count overflows Int")
+        size *= dim
+    return size
+
+
+def _check_agreement(left: Noun, right: Noun) raises:
+    for axis in range(min(left.rank, right.rank)):
+        var left_dim = left._axis_length(axis)
+        var right_dim = right._axis_length(axis)
+        if left_dim != right_dim:
+            if left.is_vector() and right.is_vector():
+                raise Error(
+                    "shape agreement failed: vector lengths "
+                    + String(left_dim)
+                    + " and "
+                    + String(right_dim)
+                    + " differ"
+                )
             raise Error(
-                "shape agreement failed: vector lengths "
-                + String(left.length())
+                "shape agreement failed: axis "
+                + String(axis)
+                + " has lengths "
+                + String(left_dim)
                 + " and "
-                + String(right.length())
-                + " differ"
+                + String(right_dim)
             )
+
+
+def agreement_length(left: Noun, right: Noun) raises -> Int:
+    """Return the atom count of the longer of two agreed prefix shapes."""
+    _check_agreement(left, right)
+    if left.rank >= right.rank:
         return left.length()
-    if left.rank == VECTOR_RANK:
-        return left.length()
-    if right.rank == VECTOR_RANK:
-        return right.length()
-    return 1
+    return right.length()
+
+
+def agreement_dims(left: Noun, right: Noun) raises -> List[Int]:
+    """Return the longer shape when the shorter shape matches its prefix."""
+    _check_agreement(left, right)
+    if left.rank >= right.rank:
+        return left.dims()
+    return right.dims()
+
+
+def agreed_atom(noun: Noun, partner: Noun, index: Int) raises -> Noun:
+    """Read a flat atom under previously validated prefix agreement."""
+    if noun.rank >= partner.rank:
+        return noun.at(index)
+    var output_length = partner.length()
+    if index < 0 or index >= output_length:
+        raise Error("noun index out of range")
+    if noun.is_scalar():
+        return noun.copy()
+    var repeat = output_length // noun.length()
+    return noun.at(index // repeat)
 
 
 def agreed_at(noun: Noun, index: Int) raises -> Noun:

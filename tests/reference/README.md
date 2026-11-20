@@ -32,21 +32,16 @@ other development dependencies resolve through `pixi.lock`.
 
 ## Conformance scope
 
-`cases.json` contains 33 named cases: 30 successful value/shape agreements, one
-shared shape error, and two deliberate domain differences (integer overflow
-and complex-producing square root). It exercises hooks, forks, composition,
-modifier binding, noun sentences, left/right binding, scalar extension, empty
-reductions, Boolean arithmetic, and exact large integers. Read each input and
-observed output in [results.json](results.json).
+`cases.json` contains 117 expectations covering trains, scalar and shaped arithmetic, comparisons, Boolean operations, rank, segment operators, tables, and dot products. The corpus includes deliberate domain differences for checked integer overflow and complex-producing square root. The original 33-case report remains available in [results.json](results.json). Run the command above to verify the current corpus.
 
 Values compare exactly whenever either output uses integer or Boolean storage,
 including cross-dtype comparisons. Otherwise floating values use absolute and
-relative tolerances of 1e-12; rank and element count must agree. Dtype is recorded separately: empty
+relative tolerances of 1e-12; rank, axis lengths, and element count must agree. Dtype is recorded separately: empty
 sum/product have equal numeric identities but J returns Boolean and Mojj returns
 Float64. Expected success/error status is explicit for each runtime, so a shared
 unexpected failure cannot pass as an agreement. Error messages/categories are
 not compared. Complex values are recorded only to demonstrate the unsupported
-domain. NaN, infinity, signed zero, cancellation-sensitive sums, matrices, and
+domain. NaN, infinity, signed zero, cancellation-sensitive sums and
 other unlisted J features are outside this corpus.
 
 ## Performance method

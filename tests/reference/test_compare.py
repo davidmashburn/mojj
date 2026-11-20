@@ -35,6 +35,11 @@ class ComparisonTests(unittest.TestCase):
         self.assertFalse(equal_values(scalar, vector))
         self.assertFalse(equal_values(vector, {**vector, 'values': [7, 8]}))
 
+    def test_same_rank_and_size_can_have_different_shapes(self):
+        left = parse_results('RESULT|x|Int|2|2 3|1 2 3 4 5 6', False)['x']
+        right = parse_results('RESULT|x|4|2|3 2|1 2 3 4 5 6', True)['x']
+        self.assertFalse(equal_values(left, right))
+
     def test_dtype_difference_does_not_hide_equal_values(self):
         left = parse_results('RESULT|x|Float64|0|0.0', False)['x']
         right = parse_results('RESULT|x|1|0|0', True)['x']

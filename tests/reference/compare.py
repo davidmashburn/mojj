@@ -139,7 +139,7 @@ J_HEADER = """output=: 1!:2&2
 9!:37 ] 0 20000000 0 10000
 output 'VERSION|',9!:14''
 emit=: 4 : 0
- output 'RESULT|',x,'|',(":3!:0 y),'|',(":#$y),'|',":,y
+ output 'RESULT|',x,'|',(":3!:0 y),'|',(":#$y),'|',(":$y),'|',":,y
 )
 """
 MOJO_HEADER = '''from std.collections import List
@@ -158,7 +158,13 @@ def emit(id: String, value: Noun) raises:
             values += String(Int(cell.as_bool()))
         else:
             values += String(cell.as_int())
-    print("RESULT|" + id + "|" + value.dtype.describe() + "|" + String(value.rank) + "|" + values)
+    var shape = String("")
+    var dimensions = value.dims()
+    for i in range(value.rank):
+        if i > 0:
+            shape += " "
+        shape += String(dimensions[i])
+    print("RESULT|" + id + "|" + value.dtype.describe() + "|" + String(value.rank) + "|" + shape + "|" + values)
 '''
 
 
@@ -175,10 +181,18 @@ def parse_results(output: str, is_j: bool) -> dict:
         if line.startswith("ERROR|"):
             results[line.split("|")[1]] = {"status": Status.ERROR}
         elif line.startswith("RESULT|"):
-            _, id, dtype, rank, values = line.split("|", 4)
+            _, id, dtype, rank, payload = line.split("|", 4)
+            if "|" in payload:
+                dimensions, values = payload.split("|")
+                shape = [int(v) for v in dimensions.split()]
+            else:
+                values = payload
+                if int(rank) > 1:
+                    raise ValueError("array result is missing dimensions")
+                shape = [] if int(rank) == 0 else [len(values.split())]
             dtype = J_TYPES[int(dtype)] if is_j else DType(dtype)
             results[id] = {"status": Status.VALUE, "dtype": dtype,
-                           "rank": int(rank), "values": [number(v) for v in values.split()]}
+                           "rank": int(rank), "shape": shape, "values": [number(v) for v in values.split()]}
     return results
 
 
@@ -187,7 +201,8 @@ def equal_values(left: dict, right: dict) -> bool:
         return False
     if left["status"] == Status.ERROR:
         return True  # Error categories/messages are recorded as outside this comparison.
-    if left["rank"] != right["rank"] or len(left["values"]) != len(right["values"]):
+    if (left.get("shape") != right.get("shape") or left["rank"] != right["rank"]
+            or len(left["values"]) != len(right["values"])):
         return False
     exact = (left["dtype"] in (DType.INT, DType.BOOL)
              or right["dtype"] in (DType.INT, DType.BOOL))
@@ -402,7 +417,7 @@ def main() -> None:
                          "timed": "batch loop, first-cell update, operation, first-result-cell consumption, allocation and destruction",
                          "excluded": "compilation, process startup, initial input construction, output serialization",
                          "order": "all Mojj workloads, then all J workloads; single process per runtime; no parallel runs",
-                         "comparison": "exact values whenever either storage dtype is integer/Boolean; otherwise float abs/relative tolerance 1e-12; rank and length; dtype recorded separately for conformance and required equal for benchmarks"},
+                         "comparison": "exact values whenever either storage dtype is integer/Boolean; otherwise float abs/relative tolerance 1e-12; shape, rank and length; dtype recorded separately for conformance and required equal for benchmarks"},
               "conformance": cases, "benchmarks": bench}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")

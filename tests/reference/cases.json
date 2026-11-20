@@ -520,5 +520,677 @@
     },
     "j_status": "value",
     "mojj_status": "error"
+  },
+  {
+    "id": "floor",
+    "expression": "<. 3.8",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "minimum",
+    "expression": "5 <. 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "ceiling",
+    "expression": ">. _1.5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "maximum",
+    "expression": "3 >. 7",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "magnitude",
+    "expression": "| _2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "residue",
+    "expression": "3 | _1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "exponential",
+    "expression": "^ 1.0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "power",
+    "expression": "2 ^ 10",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "logarithm",
+    "expression": "^. 2.0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "base-log",
+    "expression": "2 ^. 8",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "nth-root",
+    "expression": "3 %: 27",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "circle",
+    "expression": "o. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "sine",
+    "expression": "1 o. 0.5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "cosine",
+    "expression": "2 o. 0.5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "equal",
+    "expression": "2 = 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "unequal",
+    "expression": "2 ~: 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "less",
+    "expression": "1 < 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "greater",
+    "expression": "1 > 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "at-most",
+    "expression": "2 <: 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "at-least",
+    "expression": "2 >: 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "decrement",
+    "expression": "<: 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "increment",
+    "expression": ">: 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "match",
+    "expression": "1 2 -: 1 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "half",
+    "expression": "-: 5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "complement",
+    "expression": "-. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "or",
+    "expression": "0 +. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "and",
+    "expression": "1 *. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "nor",
+    "expression": "0 +: 0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "nand",
+    "expression": "1 *: 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "verb-bond",
+    "expression": "4 (-&*:) 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "swap",
+    "expression": "3 -~ 10",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "reflex",
+    "expression": "-~ 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "matrix-shape",
+    "expression": "$ i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "matrix-iota",
+    "expression": "i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "signed-iota",
+    "expression": "i. 2 _3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "matrix-reshape",
+    "expression": "3 $ i. 2 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-matrix",
+    "expression": "0 3 $ 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "ravel",
+    "expression": ", i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "append",
+    "expression": "1 2 , 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "stitch",
+    "expression": "1 2 ,. 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "laminate",
+    "expression": "1 2 ,: 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "gather-rows",
+    "expression": "1 0 { i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "head-row",
+    "expression": "{. i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "tail-row",
+    "expression": "{: i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "negative-overtake",
+    "expression": "_4 {. 1 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "drop",
+    "expression": "1 }. i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "curtail",
+    "expression": "}: i. 3 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "reverse",
+    "expression": "|. i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rotate",
+    "expression": "_1 |. i. 3 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "transpose",
+    "expression": "|: i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "mask-copy",
+    "expression": "1 0 1 # i. 3 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "matrix-tally",
+    "expression": "# i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "array-prefix-agreement",
+    "expression": "2 3 + i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "array-equal",
+    "expression": "3 < i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "match-different-shapes",
+    "expression": "(i. 2 3) -: i. 3 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "insert-matrix",
+    "expression": "+/ i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "table",
+    "expression": "1 2 */ 3 4 5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-row-sum",
+    "expression": "+/\"1 i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "prefix-sum",
+    "expression": "+/\\ 1 2 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "suffix-sum",
+    "expression": "+/\\. 1 2 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "infix-sum",
+    "expression": "2 +/\\ 1 2 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "outfix-sum",
+    "expression": "2 +/\\. 1 2 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "dot-vector",
+    "expression": "1 2 3 +/ . * 4 5 6",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "dot-matrix",
+    "expression": "(i. 2 3) +/ . * i. 3 2",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-relative",
+    "expression": "+/\"_1 i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "rank-full",
+    "expression": "#\" _ i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "negative-infix",
+    "expression": "_2 +/\\ 1 2 3 4 5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "negative-outfix",
+    "expression": "_2 +/\\. 1 2 3 4 5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "zero-infix",
+    "expression": "0 +/\\ i. 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "zero-outfix",
+    "expression": "0 +/\\. i. 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-contraction",
+    "expression": "(2 0 $ 0) +/ . * 0 3 $ 0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "empty-matrix-reduction",
+    "expression": "+/ 0 3 $ 0",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "negative-gather",
+    "expression": "_1 { i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "overtake-matrix",
+    "expression": "3 4 {. i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "scalar-matrix-bond",
+    "expression": "1 (+&*:) i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "axis-permute",
+    "expression": "2 0 1 |: i. 2 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "shape-rank-verb",
+    "expression": "$ @ i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "circle-atan",
+    "expression": "_3 o. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "circle-sinh",
+    "expression": "5 o. 1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "circle-phase",
+    "expression": "12 o. _1",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "shape-disagree",
+    "expression": "(i. 3 2) + i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "error",
+    "mojj_status": "error"
+  },
+  {
+    "id": "dot-disagree",
+    "expression": "(i. 3 2) +/ . * i. 3 4",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "error",
+    "mojj_status": "error"
+  },
+  {
+    "id": "atop-relative-rank",
+    "expression": "+/ @ (]\"_1) i. 2 3",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "value",
+    "mojj_status": "value"
+  },
+  {
+    "id": "table-relative-rank",
+    "expression": "(2 2 $ 1 2 3 4) (]\"_1)/ 3 4 5",
+    "mode": "value",
+    "expected": "match",
+    "j_status": "error",
+    "mojj_status": "error"
   }
 ]

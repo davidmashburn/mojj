@@ -4,6 +4,11 @@ Words normalize to the same terms as symbols. Reductions build syntax nodes;
 no user noun sentence is executed by the parser.
 """
 from std.collections import List
+from std.math import isinf, round
+from std.memory import bitcast
+
+from .predicates import tolerant_equal
+
 
 struct Part(ImplicitlyCopyable, Equatable):
     var code: Int
@@ -55,6 +60,40 @@ struct Kind(ImplicitlyCopyable, Equatable):
     comptime CONSTANT = Self(20)
     comptime MONAD = Self(21)
     comptime DYAD = Self(22)
+    comptime EQUAL = Self(23)
+    comptime UNEQUAL = Self(24)
+    comptime LESS = Self(25)
+    comptime GREATER = Self(26)
+    comptime LESS_EQUAL = Self(27)
+    comptime GREATER_EQUAL = Self(28)
+    comptime MATCH_HALVE = Self(29)
+    comptime COMPLEMENT = Self(30)
+    comptime OR = Self(31)
+    comptime AND = Self(32)
+    comptime FLOOR_MIN = Self(33)
+    comptime CEILING_MAX = Self(34)
+    comptime MAGNITUDE_RESIDUE = Self(35)
+    comptime POWER = Self(36)
+    comptime LOGARITHM = Self(37)
+    comptime CIRCLE = Self(38)
+    comptime BOND_VERBS = Self(39)
+    comptime REFLEX = Self(40)
+    comptime SHAPE_RESHAPE = Self(41)
+    comptime IOTA = Self(42)
+    comptime RAVEL_APPEND = Self(43)
+    comptime STITCH = Self(44)
+    comptime LAMINATE = Self(45)
+    comptime GATHER = Self(46)
+    comptime HEAD = Self(47)
+    comptime TAIL = Self(48)
+    comptime DROP = Self(49)
+    comptime CURTAIL = Self(50)
+    comptime REVERSE_ROTATE = Self(51)
+    comptime TRANSPOSE = Self(52)
+    comptime RANK = Self(53)
+    comptime PREFIX = Self(54)
+    comptime SUFFIX = Self(55)
+    comptime DOT = Self(56)
 
     def __eq__(self, other: Self) -> Bool:
         return self.code == other.code
@@ -211,15 +250,50 @@ struct Syntax:
             result = self.add(Kind.FORK, position, insert, divide, tally)
         self.tokens.append(Term(Part.VERB, position, result))
 
+    def bound_circle(mut self, selector: Int, position: Int):
+        var number = len(self.numbers)
+        var kind = NumberKind.INTEGER
+        if selector == 1:
+            kind = NumberKind.BOOLEAN
+        self.numbers.append(Number(kind, selector, Float64(selector)))
+        var left = self.add(Kind.LITERAL, position, number, 1)
+        var right = self.add(Kind.CIRCLE, position)
+        var result = self.add(Kind.BIND_LEFT, position, left, right)
+        self.tokens.append(Term(Part.VERB, position, result))
+
+    def dot(mut self, position: Int):
+        var plus = self.add(Kind.PLUS, position)
+        var insert = self.add(Kind.INSERT, position, plus)
+        var times = self.add(Kind.TIMES, position)
+        var result = self.add(Kind.DOT, position, insert, times)
+        self.tokens.append(Term(Part.VERB, position, result))
+
     def number_start(self) -> Bool:
         var ch = self.byte(self.position)
-        return _digit(ch) or (ch == 95 and (_digit(self.byte(self.position + 1)) or self.byte(self.position + 1) == 46)) or (ch == 46 and _digit(self.byte(self.position + 1)))
+        return (
+            _digit(ch)
+            or ch == 95
+            or (ch == 46 and _digit(self.byte(self.position + 1)))
+        )
 
     def number(mut self):
         var start = self.position
         var negative = self.byte(self.position) == 95
         if negative:
             self.position += 1
+            var next = self.byte(self.position)
+            if not _digit(next) and next != 46:
+                var infinity = bitcast[DType.float64](
+                    UInt64(0x7FF0000000000000)
+                )
+                if next == 95:
+                    self.position += 1
+                    infinity = -infinity
+                var after = self.byte(self.position)
+                if _letter(after) or _digit(after) or after == 95:
+                    self.fail(start, "invalid infinity literal")
+                self.numbers.append(Number(NumberKind.REAL, 0, infinity))
+                return
         # Accumulate integer magnitudes negatively to include Int.MIN exactly.
         var integer: Int = 0
         var real: Float64 = 0.0
@@ -227,13 +301,18 @@ struct Syntax:
         var digits = 0
         while _digit(self.byte(self.position)):
             var digit = self.byte(self.position) - 48
-            if integer < -922337203685477580 or (integer == -922337203685477580 and digit > 7 + Int(negative)):
+            if integer < -922337203685477580 or (
+                integer == -922337203685477580 and digit > 7 + Int(negative)
+            ):
                 overflow = True
             if not overflow:
                 integer = integer * 10 - digit
             real = real * 10.0 + Float64(digit)
             self.position += 1
             digits += 1
+        if not overflow:
+            # Convert the integer part once to avoid rounding each decimal digit.
+            real = -Float64(integer)
         var is_real = False
         if self.byte(self.position) == 46:
             is_real = True
@@ -249,17 +328,23 @@ struct Syntax:
         if self.byte(self.position) == 101 or self.byte(self.position) == 69:
             is_real = True
             self.position += 1
-            var exponent_negative = self.byte(self.position) == 95 or self.byte(self.position) == 45
+            var exponent_negative = (
+                self.byte(self.position) == 95 or self.byte(self.position) == 45
+            )
             if exponent_negative or self.byte(self.position) == 43:
                 self.position += 1
             var exponent = 0
             var exponent_digits = 0
             while _digit(self.byte(self.position)):
-                exponent = min(309, exponent * 10 + self.byte(self.position) - 48)
+                exponent = min(
+                    309, exponent * 10 + self.byte(self.position) - 48
+                )
                 exponent_digits += 1
                 self.position += 1
             if exponent_digits == 0 or exponent > 308:
-                self.fail(start, "numeric exponent must be between -308 and 308")
+                self.fail(
+                    start, "numeric exponent must be between -308 and 308"
+                )
             for _ in range(exponent):
                 if exponent_negative:
                     real /= 10.0
@@ -270,6 +355,8 @@ struct Syntax:
         else:
             real = -real
         if is_real:
+            if isinf(real):
+                self.fail(start, "finite numeric literal exceeds Float64 range")
             self.numbers.append(Number(NumberKind.REAL, 0, real))
         else:
             if overflow:
@@ -310,9 +397,17 @@ struct Syntax:
                 self.noun()
                 continue
             self.position += 1
+            if (ch == 105 or ch == 111) and self.byte(self.position) == 46:
+                self.position += 1
+                self.verb(Kind.IOTA if ch == 105 else Kind.CIRCLE, start)
+                continue
             if _letter(ch):
                 var word = String(chr(ch))
-                while _letter(self.byte(self.position)) or _digit(self.byte(self.position)) or self.byte(self.position) == 95:
+                while (
+                    _letter(self.byte(self.position))
+                    or _digit(self.byte(self.position))
+                    or self.byte(self.position) == 95
+                ):
                     word += String(chr(self.byte(self.position)))
                     self.position += 1
                 if word == "group":
@@ -320,19 +415,56 @@ struct Syntax:
                 elif word == "end":
                     ch = 41
                 elif word == "of":
-                    self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.COMPOSE))
+                    self.tokens.append(
+                        Term(Part.CONJUNCTION, start, kind=Kind.COMPOSE)
+                    )
                     continue
                 elif word == "atop":
-                    self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.ATOP))
+                    self.tokens.append(
+                        Term(Part.CONJUNCTION, start, kind=Kind.ATOP)
+                    )
                     continue
                 elif word == "bind":
-                    self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.BIND))
+                    self.tokens.append(
+                        Term(Part.CONJUNCTION, start, kind=Kind.BIND)
+                    )
                     continue
-                elif word == "insert":
-                    self.tokens.append(Term(Part.ADVERB, start, kind=Kind.INSERT))
+                elif word == "insert" or word == "table":
+                    self.tokens.append(
+                        Term(Part.ADVERB, start, kind=Kind.INSERT)
+                    )
+                    continue
+                elif word == "reflex":
+                    self.tokens.append(
+                        Term(Part.ADVERB, start, kind=Kind.REFLEX)
+                    )
+                    continue
+                elif word == "rank":
+                    self.tokens.append(
+                        Term(Part.CONJUNCTION, start, kind=Kind.RANK)
+                    )
+                    continue
+                elif word == "prefix" or word == "infix" or word == "scan":
+                    self.tokens.append(
+                        Term(Part.ADVERB, start, kind=Kind.PREFIX)
+                    )
+                    continue
+                elif word == "suffix" or word == "outfix":
+                    self.tokens.append(
+                        Term(Part.ADVERB, start, kind=Kind.SUFFIX)
+                    )
+                    continue
+                elif word == "dot":
+                    self.dot(start)
                     continue
                 elif word == "mean" or word == "sum":
                     self.derived(word == "mean", start)
+                    continue
+                elif word == "sin":
+                    self.bound_circle(1, start)
+                    continue
+                elif word == "cos":
+                    self.bound_circle(2, start)
                     continue
                 else:
                     var kind = Kind.RIGHT
@@ -348,16 +480,85 @@ struct Syntax:
                         kind = Kind.TIMES
                     elif word == "divide":
                         kind = Kind.DIVIDE
-                    elif word == "square":
+                    elif word == "square" or word == "nand":
                         kind = Kind.SQUARE
-                    elif word == "double":
+                    elif word == "double" or word == "nor":
                         kind = Kind.DOUBLE
-                    elif word == "sqrt":
+                    elif word == "sqrt" or word == "root":
                         kind = Kind.SQRT
-                    elif word == "tally":
+                    elif word == "tally" or word == "copy" or word == "filter":
                         kind = Kind.TALLY
                     elif word == "cap":
                         kind = Kind.CAP
+                    elif word == "equal" or word == "eq":
+                        kind = Kind.EQUAL
+                    elif word == "unequal" or word == "ne":
+                        kind = Kind.UNEQUAL
+                    elif word == "less" or word == "lt":
+                        kind = Kind.LESS
+                    elif word == "greater" or word == "gt":
+                        kind = Kind.GREATER
+                    elif (
+                        word == "less_equal"
+                        or word == "decrement"
+                        or word == "le"
+                    ):
+                        kind = Kind.LESS_EQUAL
+                    elif (
+                        word == "greater_equal"
+                        or word == "increment"
+                        or word == "ge"
+                    ):
+                        kind = Kind.GREATER_EQUAL
+                    elif word == "match" or word == "halve":
+                        kind = Kind.MATCH_HALVE
+                    elif word == "complement" or word == "not":
+                        kind = Kind.COMPLEMENT
+                    elif word == "or":
+                        kind = Kind.OR
+                    elif word == "and":
+                        kind = Kind.AND
+                    elif word == "floor" or word == "min" or word == "minimum":
+                        kind = Kind.FLOOR_MIN
+                    elif (
+                        word == "ceiling"
+                        or word == "ceil"
+                        or word == "max"
+                        or word == "maximum"
+                    ):
+                        kind = Kind.CEILING_MAX
+                    elif word == "abs" or word == "residue":
+                        kind = Kind.MAGNITUDE_RESIDUE
+                    elif word == "power" or word == "pow":
+                        kind = Kind.POWER
+                    elif word == "logarithm" or word == "log":
+                        kind = Kind.LOGARITHM
+                    elif word == "circle":
+                        kind = Kind.CIRCLE
+                    elif word == "shape" or word == "reshape":
+                        kind = Kind.SHAPE_RESHAPE
+                    elif word == "iota":
+                        kind = Kind.IOTA
+                    elif word == "ravel" or word == "append":
+                        kind = Kind.RAVEL_APPEND
+                    elif word == "stitch":
+                        kind = Kind.STITCH
+                    elif word == "laminate":
+                        kind = Kind.LAMINATE
+                    elif word == "gather":
+                        kind = Kind.GATHER
+                    elif word == "head" or word == "take":
+                        kind = Kind.HEAD
+                    elif word == "tail":
+                        kind = Kind.TAIL
+                    elif word == "drop" or word == "behead":
+                        kind = Kind.DROP
+                    elif word == "curtail":
+                        kind = Kind.CURTAIL
+                    elif word == "reverse" or word == "rotate":
+                        kind = Kind.REVERSE_ROTATE
+                    elif word == "transpose":
+                        kind = Kind.TRANSPOSE
                     else:
                         self.fail(start, "unknown word '" + word + "'")
                     self.verb(kind, start)
@@ -381,23 +582,52 @@ struct Syntax:
                     self.position += 1
                 self.tokens.append(Term(Part.CONJUNCTION, start, kind=kind))
             elif ch == 38:
-                self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.BIND))
+                self.tokens.append(
+                    Term(Part.CONJUNCTION, start, kind=Kind.BIND)
+                )
             elif ch == 47:
                 self.tokens.append(Term(Part.ADVERB, start, kind=Kind.INSERT))
+            elif ch == 92:
+                var kind = Kind.PREFIX
+                if self.byte(self.position) == 46:
+                    self.position += 1
+                    kind = Kind.SUFFIX
+                self.tokens.append(Term(Part.ADVERB, start, kind=kind))
+            elif ch == 34:
+                self.tokens.append(
+                    Term(Part.CONJUNCTION, start, kind=Kind.RANK)
+                )
+            elif ch == 46:
+                self.tokens.append(Term(Part.CONJUNCTION, start, kind=Kind.DOT))
+            elif ch == 126 and self.byte(self.position) != 58:
+                self.tokens.append(Term(Part.ADVERB, start, kind=Kind.REFLEX))
             else:
                 var kind = Kind.RIGHT
                 var colon = self.byte(self.position) == 58
+                var dot = self.byte(self.position) == 46
                 if ch == 43:
                     kind = Kind.PLUS
                     if colon:
                         kind = Kind.DOUBLE
                         self.position += 1
+                    elif dot:
+                        kind = Kind.OR
+                        self.position += 1
                 elif ch == 45:
                     kind = Kind.MINUS
+                    if colon:
+                        kind = Kind.MATCH_HALVE
+                        self.position += 1
+                    elif dot:
+                        kind = Kind.COMPLEMENT
+                        self.position += 1
                 elif ch == 42:
                     kind = Kind.TIMES
                     if colon:
                         kind = Kind.SQUARE
+                        self.position += 1
+                    elif dot:
+                        kind = Kind.AND
                         self.position += 1
                 elif ch == 37:
                     kind = Kind.DIVIDE
@@ -413,6 +643,61 @@ struct Syntax:
                         self.position += 1
                 elif ch == 93:
                     kind = Kind.RIGHT
+                elif ch == 61:
+                    kind = Kind.EQUAL
+                elif ch == 126:
+                    kind = Kind.UNEQUAL
+                    self.position += 1
+                elif ch == 60:
+                    kind = Kind.LESS
+                    if colon:
+                        kind = Kind.LESS_EQUAL
+                        self.position += 1
+                    elif dot:
+                        kind = Kind.FLOOR_MIN
+                        self.position += 1
+                elif ch == 62:
+                    kind = Kind.GREATER
+                    if colon:
+                        kind = Kind.GREATER_EQUAL
+                        self.position += 1
+                    elif dot:
+                        kind = Kind.CEILING_MAX
+                        self.position += 1
+                elif ch == 124:
+                    kind = Kind.MAGNITUDE_RESIDUE
+                    if dot:
+                        kind = Kind.REVERSE_ROTATE
+                        self.position += 1
+                    elif colon:
+                        kind = Kind.TRANSPOSE
+                        self.position += 1
+                elif ch == 36:
+                    kind = Kind.SHAPE_RESHAPE
+                elif ch == 44:
+                    kind = Kind.RAVEL_APPEND
+                    if dot:
+                        kind = Kind.STITCH
+                        self.position += 1
+                    elif colon:
+                        kind = Kind.LAMINATE
+                        self.position += 1
+                elif ch == 123:
+                    kind = Kind.GATHER
+                    if dot:
+                        kind = Kind.HEAD
+                        self.position += 1
+                    elif colon:
+                        kind = Kind.TAIL
+                        self.position += 1
+                elif ch == 125 and (dot or colon):
+                    kind = Kind.DROP if dot else Kind.CURTAIL
+                    self.position += 1
+                elif ch == 94:
+                    kind = Kind.POWER
+                    if dot:
+                        kind = Kind.LOGARITHM
+                        self.position += 1
                 else:
                     self.fail(start, "unsupported token")
                 self.verb(kind, start)
@@ -436,6 +721,55 @@ struct Syntax:
     def is_cap(self, term: Term) -> Bool:
         return term.part == Part.VERB and self.nodes[term.node].kind == Kind.CAP
 
+    def valid_rank_operand(self, term: Term) -> Bool:
+        if term.part != Part.NOUN:
+            return False
+        var literal = self.nodes[term.node]
+        if literal.kind != Kind.LITERAL or literal.b < 1 or literal.b > 3:
+            return False
+        for index in range(literal.b):
+            var number = self.numbers[literal.a + index]
+            if number.kind != NumberKind.REAL or isinf(number.real):
+                continue
+            var nearest = round(number.real)
+            if not (
+                nearest >= Float64(Int.MIN)
+                and nearest < Float64(Int.MAX)
+                and tolerant_equal(nearest, number.real)
+            ):
+                return False
+        return True
+
+    def rank_value(self, literal_node: Int, slot: Int) -> Int:
+        # Unselected lowering candidates have no rank literal.
+        var literal = self.nodes[literal_node]
+        if literal.kind != Kind.LITERAL or literal.b < 1 or literal.b > 3:
+            return 0
+        var index = slot
+        if literal.b == 1:
+            index = 0
+        elif literal.b == 2:
+            index = 0 if slot == 1 else 1
+        var number = self.numbers[literal.a + index]
+        if number.kind != NumberKind.REAL:
+            return number.integer
+        if isinf(number.real):
+            return Int.MAX if number.real > 0.0 else Int.MIN
+        var nearest = round(number.real)
+        if nearest >= Float64(Int.MIN) and nearest < Float64(Int.MAX):
+            return Int(nearest)
+        return 0
+
+    def supported_dot(self, left: Term, right: Term) -> Bool:
+        if left.part != Part.VERB or right.part != Part.VERB:
+            return False
+        var reduction = self.nodes[left.node]
+        return (
+            reduction.kind == Kind.INSERT
+            and self.nodes[reduction.a].kind == Kind.PLUS
+            and self.nodes[right.node].kind == Kind.TIMES
+        )
+
     def reduce_once(mut self) -> Bool:
         var p = self.top(0)
         var q = self.top(1)
@@ -444,43 +778,102 @@ struct Syntax:
         # Rule order is significant: these are the retained rows of J's table.
         if _edge(p.part) and q.part == Part.VERB and r.part == Part.NOUN:
             if self.is_cap(q):
-                self.fail(q.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    q.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             var node = self.add(Kind.MONAD, q.position, q.node, r.node)
             self.replace(1, 2, Term(Part.NOUN, q.position, node))
-        elif _edge_avn(p.part) and q.part == Part.VERB and r.part == Part.VERB and s.part == Part.NOUN:
+        elif (
+            _edge_avn(p.part)
+            and q.part == Part.VERB
+            and r.part == Part.VERB
+            and s.part == Part.NOUN
+        ):
             if self.is_cap(r):
-                self.fail(r.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    r.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             var node = self.add(Kind.MONAD, r.position, r.node, s.node)
             self.replace(2, 2, Term(Part.NOUN, r.position, node))
-        elif _edge_avn(p.part) and q.part == Part.NOUN and r.part == Part.VERB and s.part == Part.NOUN:
+        elif (
+            _edge_avn(p.part)
+            and q.part == Part.NOUN
+            and r.part == Part.VERB
+            and s.part == Part.NOUN
+        ):
             if self.is_cap(r):
-                self.fail(r.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    r.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             var node = self.add(Kind.DYAD, r.position, r.node, q.node, s.node)
             self.replace(1, 3, Term(Part.NOUN, r.position, node))
         elif _edge_avn(p.part) and _vn(q.part) and r.part == Part.ADVERB:
             if q.part != Part.VERB or self.is_cap(q):
-                self.fail(r.position, "insertion requires a supported verb")
-            var node = self.add(Kind.INSERT, r.position, q.node)
+                if r.kind == Kind.INSERT:
+                    self.fail(r.position, "insertion requires a supported verb")
+                elif r.kind == Kind.REFLEX:
+                    self.fail(r.position, "reflex requires a supported verb")
+                else:
+                    self.fail(
+                        r.position, "prefix or suffix requires a supported verb"
+                    )
+            var node = self.add(r.kind, r.position, q.node)
             self.replace(1, 2, Term(Part.VERB, r.position, node))
-        elif _edge_avn(p.part) and _vn(q.part) and r.part == Part.CONJUNCTION and _vn(s.part):
+        elif (
+            _edge_avn(p.part)
+            and _vn(q.part)
+            and r.part == Part.CONJUNCTION
+            and _vn(s.part)
+        ):
             var kind = r.kind
             if kind == Kind.BIND:
                 if q.part == Part.NOUN and s.part == Part.VERB:
                     kind = Kind.BIND_LEFT
                 elif q.part == Part.VERB and s.part == Part.NOUN:
                     kind = Kind.BIND_RIGHT
+                elif q.part == Part.VERB and s.part == Part.VERB:
+                    kind = Kind.BOND_VERBS
                 else:
-                    self.fail(r.position, "binding requires one noun and one verb")
+                    self.fail(r.position, "bond requires at least one verb")
+            elif kind == Kind.RANK:
+                if q.part != Part.VERB or not self.valid_rank_operand(s):
+                    self.fail(
+                        r.position,
+                        (
+                            "rank requires a verb and one to three integer rank"
+                            " literals"
+                        ),
+                    )
+            elif kind == Kind.DOT:
+                if not self.supported_dot(q, s):
+                    self.fail(
+                        r.position,
+                        "dot requires +/ on the left and * on the right",
+                    )
             elif q.part != Part.VERB or s.part != Part.VERB:
                 self.fail(r.position, "composition requires two verbs")
             if self.is_cap(q) or self.is_cap(s):
-                self.fail(r.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    r.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             var node = self.add(kind, r.position, q.node, s.node)
             self.replace(1, 3, Term(Part.VERB, r.position, node))
-        elif _edge_avn(p.part) and _vn(q.part) and r.part == Part.VERB and s.part == Part.VERB:
+        elif (
+            _edge_avn(p.part)
+            and _vn(q.part)
+            and r.part == Part.VERB
+            and s.part == Part.VERB
+        ):
             var node: Int
             if self.is_cap(r) or self.is_cap(s):
-                self.fail(r.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    r.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             if self.is_cap(q):
                 node = self.add(Kind.COMPOSE, q.position, r.node, s.node)
             else:
@@ -491,7 +884,10 @@ struct Syntax:
             self.replace(1, 3, Term(Part.VERB, q.position, node))
         elif _edge(p.part) and q.part == Part.VERB and r.part == Part.VERB:
             if self.is_cap(q) or self.is_cap(r):
-                self.fail(q.position, "cap is only supported as the left verb of a fork")
+                self.fail(
+                    q.position,
+                    "cap is only supported as the left verb of a fork",
+                )
             var node = self.add(Kind.HOOK, q.position, q.node, r.node)
             self.replace(1, 2, Term(Part.VERB, q.position, node))
         elif p.part == Part.OPEN and _vn(q.part) and r.part == Part.CLOSE:

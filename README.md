@@ -49,7 +49,9 @@ Mean is the derived fork `(+/ % #)`, and its empty-vector result is zero.
 
 Use `monad(Noun)` or `dyad(Noun, Noun)` for verb application, and `value()`
 for a complete noun sentence such as `10 divide 3 plus 2`. Nouns distinguish
-scalars from vectors and Boolean, integer, and real storage. The Float64
+atoms, vectors, and higher-rank arrays with Boolean, integer, or real storage.
+For example, `Expr["3 | 10"].value()` computes a residue, and
+`Expr["3 -~ 10"].value()` subtracts 3 from 10. The Float64
 convenience consumers are `apply`, `map`, and `reduce`. All expose inspectable
 structure through `describe()`.
 

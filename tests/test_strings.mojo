@@ -87,8 +87,7 @@ def test_rank_and_modifier_binding() raises:
     assert_true(Expr["*:@(+/)"].describe() != Expr["*:@+/"].describe())
     with assert_raises():
         _ = Expr["+"].dyad(Noun(List[Int]([1, 2])), Noun(List[Int]([1])))
-    with assert_raises():
-        _ = Expr["*:"].dyad(Noun(1), Noun(1))
+    assert_equal(Expr["*:"].dyad(Noun(1), Noun(1)).as_bool(), False)
 
 
 def test_domains_and_reuse() raises:

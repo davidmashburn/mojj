@@ -1,4 +1,4 @@
-"""Typed J verbs and the small modifier set used by the P1 semantic core."""
+"""Typed arithmetic, selectors, reductions, and J verb trains."""
 
 from std.collections import List
 from std.math import sqrt
@@ -10,125 +10,34 @@ from .nouns import (
     SCALAR_RANK,
     VECTOR_RANK,
     agreement_length,
-    agreed_at,
+    agreed_atom,
+    agreement_dims,
+    shape_size,
 )
 
 
-comptime WHOLE_NOUN_RANK = -1
-comptime ATOM_RANK = 0
+from ._atomic import _empty, _append
+from .array_modifiers import Table, rank_monad, rank_dyad
+from .arrays import Copy
+from .predicates import Nand, Nor
+from .real_verbs import NthRoot
+from ._verb_base import (
+    Verb, WHOLE_NOUN_RANK, ATOM_RANK, _require_numeric, _numeric_int,
+    _is_integer_numeric, _checked_add, _checked_sub, _checked_mul,
+    _checked_neg, _float_divide,
+)
 
 
-trait Verb:
-    """An ambivalent typed verb with explicit supported ranks."""
-
-    @staticmethod
-    def monad(y: Noun) raises -> Noun:
-        ...
-
-    @staticmethod
-    def dyad(x: Noun, y: Noun) raises -> Noun:
-        ...
-
-    @staticmethod
-    def describe() -> String:
-        ...
-
-    @staticmethod
-    def monad_rank() -> Int:
-        ...
-
-    @staticmethod
-    def left_rank() -> Int:
-        ...
-
-    @staticmethod
-    def right_rank() -> Int:
-        ...
-
-    @staticmethod
-    def insert_identity(dtype: NounDType) raises -> Noun:
-        raise Error("Insert identity is unsupported for this verb in P1")
-
-    # Optional Float64 fast-path kernels.  The defaults declare that a verb has
-    # no kernel, so evaluators fall back to the generic Noun path, which remains
-    # the reference implementation and oracle.  A verb that overrides these must
-    # reproduce its generic Float64 behavior exactly, including error messages.
-    @staticmethod
-    def has_float64_monad() -> Bool:
-        return False
-
-    @staticmethod
-    def float64_monad(value: Float64) raises -> Float64:
-        raise Error("this verb has no Float64 monad kernel")
-
-    @staticmethod
-    def has_float64_dyad() -> Bool:
-        return False
-
-    @staticmethod
-    def float64_dyad(left: Float64, right: Float64) raises -> Float64:
-        raise Error("this verb has no Float64 dyad kernel")
+def _monad_shape(var result: Noun, source: Noun) raises -> Noun:
+    if source.rank > 1:
+        result.set_shape(source.dims())
+    return result^
 
 
-def _require_numeric(noun: Noun, operation: String) raises:
-    """Validate the currently supported numeric dtype domain."""
-    if (
-        noun.dtype != NounDType.INT
-        and noun.dtype != NounDType.FLOAT64
-        and noun.dtype != NounDType.BOOL
-    ):
-        raise Error(operation + " received an unsupported noun dtype")
-
-
-def _numeric_int(noun: Noun) raises -> Int:
-    """Read Int/Bool as exact integer data without widening to Float64."""
-    if noun.dtype == NounDType.INT:
-        return noun.as_int()
-    if noun.dtype == NounDType.BOOL:
-        if noun.as_bool():
-            return 1
-        return 0
-    raise Error("exact integer access requires an Int or Bool noun")
-
-
-def _is_integer_numeric(dtype: NounDType) -> Bool:
-    return dtype == NounDType.INT or dtype == NounDType.BOOL
-
-
-def _checked_add(left: Int, right: Int, operation: String) raises -> Int:
-    var wide: Int128 = Int128(left) + Int128(right)
-    if wide > Int128(Int.MAX) or wide < Int128(Int.MIN):
-        raise Error("Int overflow in " + operation)
-    return Int(wide)
-
-
-def _checked_sub(left: Int, right: Int, operation: String) raises -> Int:
-    var wide: Int128 = Int128(left) - Int128(right)
-    if wide > Int128(Int.MAX) or wide < Int128(Int.MIN):
-        raise Error("Int overflow in " + operation)
-    return Int(wide)
-
-
-def _checked_mul(left: Int, right: Int, operation: String) raises -> Int:
-    var wide: Int128 = Int128(left) * Int128(right)
-    if wide > Int128(Int.MAX) or wide < Int128(Int.MIN):
-        raise Error("Int overflow in " + operation)
-    return Int(wide)
-
-
-def _checked_neg(value: Int) raises -> Int:
-    var wide: Int128 = -Int128(value)
-    if wide > Int128(Int.MAX) or wide < Int128(Int.MIN):
-        raise Error("Int overflow in negation")
-    return Int(wide)
-
-
-def _float_divide(numerator: Float64, denominator: Float64) -> Float64:
-    # J specifies the indeterminate 0%0 case as 0.  Other zero denominators
-    # retain IEEE division behavior (signed infinity where supported).
-    if numerator == 0.0 and denominator == 0.0:
-        return 0.0
-    return numerator / denominator
+def _dyad_shape(var result: Noun, x: Noun, y: Noun) raises -> Noun:
+    if x.rank > 1 or y.rank > 1:
+        result.set_shape(agreement_dims(x, y))
+    return result^
 
 
 def _map_float64_vector[Op: Verb](values: List[Float64]) raises -> Noun:
@@ -168,19 +77,19 @@ struct Plus(Verb):
             var result = List[Int](length=output_length, fill=0)
             for index in range(output_length):
                 result[index] = _checked_add(
-                    _numeric_int(agreed_at(x, index)),
-                    _numeric_int(agreed_at(y, index)),
+                    _numeric_int(agreed_atom(x, y, index)),
+                    _numeric_int(agreed_atom(y, x, index)),
                     "addition",
                 )
-            return Noun(result)
+            return _dyad_shape(Noun(result), x, y)
         if x.rank == SCALAR_RANK and y.rank == SCALAR_RANK:
             return Noun(x.as_float() + y.as_float())
         var float_result = List[Float64](length=output_length, fill=0.0)
         for index in range(output_length):
             float_result[index] = (
-                agreed_at(x, index).as_float() + agreed_at(y, index).as_float()
+                agreed_atom(x, y, index).as_float() + agreed_atom(y, x, index).as_float()
             )
-        return Noun(float_result)
+        return _dyad_shape(Noun(float_result), x, y)
 
     @staticmethod
     def describe() -> String:
@@ -237,8 +146,8 @@ struct Minus(Verb):
             var result = List[Int](length=y.length(), fill=0)
             for index in range(y.length()):
                 result[index] = _checked_neg(_numeric_int(y.at(index)))
-            return Noun(result)
-        return _map_float64_vector[Minus](y.float_values)
+            return _monad_shape(Noun(result), y)
+        return _monad_shape(_map_float64_vector[Minus](y.float_values), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -251,19 +160,19 @@ struct Minus(Verb):
             var result = List[Int](length=output_length, fill=0)
             for index in range(output_length):
                 result[index] = _checked_sub(
-                    _numeric_int(agreed_at(x, index)),
-                    _numeric_int(agreed_at(y, index)),
+                    _numeric_int(agreed_atom(x, y, index)),
+                    _numeric_int(agreed_atom(y, x, index)),
                     "subtraction",
                 )
-            return Noun(result)
+            return _dyad_shape(Noun(result), x, y)
         if x.rank == SCALAR_RANK and y.rank == SCALAR_RANK:
             return Noun(x.as_float() - y.as_float())
         var float_result = List[Float64](length=output_length, fill=0.0)
         for index in range(output_length):
             float_result[index] = (
-                agreed_at(x, index).as_float() - agreed_at(y, index).as_float()
+                agreed_atom(x, y, index).as_float() - agreed_atom(y, x, index).as_float()
             )
-        return Noun(float_result)
+        return _dyad_shape(Noun(float_result), x, y)
 
     @staticmethod
     def describe() -> String:
@@ -336,8 +245,8 @@ struct Times(Verb):
                     int_result[index] = 0
                 else:
                     int_result[index] = 1
-            return Noun(int_result)
-        return _map_float64_vector[Times](y.float_values)
+            return _monad_shape(Noun(int_result), y)
+        return _monad_shape(_map_float64_vector[Times](y.float_values), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -350,19 +259,19 @@ struct Times(Verb):
             var result = List[Int](length=output_length, fill=0)
             for index in range(output_length):
                 result[index] = _checked_mul(
-                    _numeric_int(agreed_at(x, index)),
-                    _numeric_int(agreed_at(y, index)),
+                    _numeric_int(agreed_atom(x, y, index)),
+                    _numeric_int(agreed_atom(y, x, index)),
                     "multiplication",
                 )
-            return Noun(result)
+            return _dyad_shape(Noun(result), x, y)
         if x.rank == SCALAR_RANK and y.rank == SCALAR_RANK:
             return Noun(x.as_float() * y.as_float())
         var float_result = List[Float64](length=output_length, fill=0.0)
         for index in range(output_length):
             float_result[index] = (
-                agreed_at(x, index).as_float() * agreed_at(y, index).as_float()
+                agreed_atom(x, y, index).as_float() * agreed_atom(y, x, index).as_float()
             )
-        return Noun(float_result)
+        return _dyad_shape(Noun(float_result), x, y)
 
     @staticmethod
     def describe() -> String:
@@ -418,11 +327,11 @@ struct Divide(Verb):
         if y.rank == SCALAR_RANK:
             return Noun(_float_divide(1.0, y.as_float()))
         if y.dtype == NounDType.FLOAT64:
-            return _map_float64_vector[Divide](y.float_values)
+            return _monad_shape(_map_float64_vector[Divide](y.float_values), y)
         var result = List[Float64](length=y.length(), fill=0.0)
         for index in range(y.length()):
             result[index] = _float_divide(1.0, y.at(index).as_float())
-        return Noun(result)
+        return _monad_shape(Noun(result), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
@@ -434,9 +343,9 @@ struct Divide(Verb):
         var result = List[Float64](length=output_length, fill=0.0)
         for index in range(output_length):
             result[index] = _float_divide(
-                agreed_at(x, index).as_float(), agreed_at(y, index).as_float()
+                agreed_atom(x, y, index).as_float(), agreed_atom(y, x, index).as_float()
             )
-        return Noun(result)
+        return _dyad_shape(Noun(result), x, y)
 
     @staticmethod
     def describe() -> String:
@@ -480,7 +389,7 @@ struct Divide(Verb):
 
 
 struct Squared(Verb):
-    """The monadic square verb; its Boolean dyad is intentionally deferred."""
+    """Square as a monad and Boolean NAND as a dyad."""
 
     @staticmethod
     def monad(y: Noun) raises -> Noun:
@@ -495,12 +404,16 @@ struct Squared(Verb):
             for index in range(y.length()):
                 var value = _numeric_int(y.at(index))
                 result[index] = _checked_mul(value, value, "square")
-            return Noun(result)
-        return _map_float64_vector[Squared](y.float_values)
+            return _monad_shape(Noun(result), y)
+        return _monad_shape(_map_float64_vector[Squared](y.float_values), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        raise Error("Squared dyad is unsupported in P1 (Boolean nand is deferred)")
+        return Nand.dyad(x, y)
+
+    @staticmethod
+    def insert_identity(dtype: NounDType) raises -> Noun:
+        return Nand.insert_identity(dtype)
 
     @staticmethod
     def describe() -> String:
@@ -528,7 +441,7 @@ struct Squared(Verb):
 
 
 struct Doubled(Verb):
-    """The monadic double verb; its Boolean dyad is intentionally deferred."""
+    """Double as a monad and Boolean NOR as a dyad."""
 
     @staticmethod
     def monad(y: Noun) raises -> Noun:
@@ -543,7 +456,7 @@ struct Doubled(Verb):
             for index in range(y.length()):
                 var value = _numeric_int(y.at(index))
                 result[index] = _checked_add(value, value, "double")
-            return Noun(result)
+            return _monad_shape(Noun(result), y)
         comptime width = 4
         var length = len(y.float_values)
         var result = List[Float64](length=length, fill=0.0)
@@ -559,11 +472,15 @@ struct Doubled(Verb):
             var value = source[unsafe_offset=index]
             target[unsafe_offset=index] = value + value
             index += 1
-        return Noun.from_owned_float64(result^)
+        return _monad_shape(Noun.from_owned_float64(result^), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        raise Error("Doubled dyad is unsupported in P1 (Boolean nor is deferred)")
+        return Nor.dyad(x, y)
+
+    @staticmethod
+    def insert_identity(dtype: NounDType) raises -> Noun:
+        return Nor.insert_identity(dtype)
 
     @staticmethod
     def describe() -> String:
@@ -602,18 +519,22 @@ struct Root(Verb):
                 raise Error("Root monad rejects negative real values without Complex")
             return Noun(sqrt(value))
         if y.dtype == NounDType.FLOAT64:
-            return _map_float64_vector[Root](y.float_values)
+            return _monad_shape(_map_float64_vector[Root](y.float_values), y)
         var result = List[Float64](length=y.length(), fill=0.0)
         for index in range(y.length()):
             var value = y.at(index).as_float()
             if value < 0.0:
                 raise Error("Root monad rejects negative real values without Complex")
             result[index] = sqrt(value)
-        return Noun(result)
+        return _monad_shape(Noun(result), y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        raise Error("Root dyad is unsupported in P1 (root degree is deferred)")
+        return NthRoot.dyad(x, y)
+
+    @staticmethod
+    def insert_identity(dtype: NounDType) raises -> Noun:
+        return NthRoot.insert_identity(dtype)
 
     @staticmethod
     def describe() -> String:
@@ -699,15 +620,17 @@ struct Right(Verb):
 
 
 struct Tally(Verb):
-    """Count items exactly as Int; the copy dyad is deferred."""
+    """Count leading items or replicate them by nonnegative counts."""
 
     @staticmethod
     def monad(y: Noun) raises -> Noun:
+        if y.rank > 1:
+            return Noun(y.axis_length(0))
         return Noun(y.length())
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        raise Error("Tally dyad is unsupported in P1 (copy is deferred)")
+        return Copy.dyad(x, y)
 
     @staticmethod
     def describe() -> String:
@@ -719,25 +642,43 @@ struct Tally(Verb):
 
     @staticmethod
     def left_rank() -> Int:
-        return WHOLE_NOUN_RANK
+        return Copy.left_rank()
 
     @staticmethod
     def right_rank() -> Int:
         return WHOLE_NOUN_RANK
 
 
-struct Insert[Op: Verb](Verb):
-    """Right-grouped insertion/reduction over a scalar or vector noun.
+def _row(y: Noun, index: Int, shape: List[Int], width: Int) raises -> Noun:
+    var cell = _empty(y.dtype)
+    for offset in range(width):
+        _append(cell, y.at(index * width + offset))
+    cell.set_shape(shape)
+    return cell^
 
-    P1 intentionally supports only the monadic reduction case.  The dyadic
-    table/outer-product form needs shaped rank-2 nouns and is kept as an
-    explicit unsupported valence.
-    """
+
+struct Insert[Op: Verb](Verb):
+    """Right-fold leading items as a monad and form a table as a dyad."""
 
     @staticmethod
     def monad(y: Noun) raises -> Noun:
         if y.rank == SCALAR_RANK:
             return y.copy()
+        if y.rank > 1:
+            var cell_shape = y.dims()
+            var rows = cell_shape.pop(0)
+            var width = shape_size(cell_shape)
+            if rows == 0:
+                var identity = Self.Op.insert_identity(y.dtype)
+                var cells = _empty(identity.dtype)
+                for _ in range(width):
+                    _append(cells, identity)
+                cells.set_shape(cell_shape)
+                return cells^
+            var folded = _row(y, rows - 1, cell_shape, width)
+            for step in range(1, rows):
+                folded = Self.Op.dyad(_row(y, rows - 1 - step, cell_shape, width), folded)
+            return folded^
         if y.length() == 0:
             return Self.Op.insert_identity(y.dtype)
         if y.dtype == NounDType.FLOAT64 and Self.Op.has_float64_dyad():
@@ -758,13 +699,11 @@ struct Insert[Op: Verb](Verb):
             index -= 1
             var left = y.at(index)
             result = Self.Op.dyad(left, result)
-            if result.rank != SCALAR_RANK:
-                raise Error("Insert operand must produce scalar results in P1")
         return result^
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        raise Error("Insert dyad is unsupported in P1 (table rank is deferred)")
+        return Table[Self.Op].dyad(x, y)
 
     @staticmethod
     def describe() -> String:
@@ -781,65 +720,6 @@ struct Insert[Op: Verb](Verb):
     @staticmethod
     def right_rank() -> Int:
         return WHOLE_NOUN_RANK
-
-
-def _empty_mapped_vector[Op: Verb](sample: Noun) raises -> Noun:
-    """Infer an empty per-cell result dtype from one representative cell."""
-    var mapped = Op.monad(sample)
-    if mapped.rank != SCALAR_RANK:
-        raise Error("Atop per-cell application requires scalar cell results")
-    if mapped.dtype == NounDType.INT:
-        return Noun(List[Int]())
-    if mapped.dtype == NounDType.FLOAT64:
-        return Noun(List[Float64]())
-    if mapped.dtype == NounDType.BOOL:
-        return Noun(List[Bool]())
-    raise Error("Atop per-cell results have an unsupported dtype")
-
-
-def _map_monad_per_cell[Op: Verb](value: Noun) raises -> Noun:
-    """Apply a monad to each scalar cell, preserving a fresh vector result."""
-    if value.rank == SCALAR_RANK:
-        return Op.monad(value)
-    if value.length() == 0:
-        if value.dtype == NounDType.INT:
-            return _empty_mapped_vector[Op](Noun(0))
-        if value.dtype == NounDType.FLOAT64:
-            return _empty_mapped_vector[Op](Noun(0.0))
-        return _empty_mapped_vector[Op](Noun(False))
-
-    if value.dtype == NounDType.FLOAT64 and Op.has_float64_monad():
-        return _map_float64_vector[Op](value.float_values)
-
-    var first = Op.monad(value.at(0))
-    if first.rank != SCALAR_RANK:
-        raise Error("Atop per-cell application requires scalar cell results")
-    if first.dtype == NounDType.INT:
-        var result = List[Int](length=value.length(), fill=0)
-        result[0] = first.as_int()
-        for index in range(1, value.length()):
-            var item = Op.monad(value.at(index))
-            if item.rank != SCALAR_RANK or item.dtype != NounDType.INT:
-                raise Error("Atop per-cell results must have one dtype")
-            result[index] = item.as_int()
-        return Noun(result)
-    if first.dtype == NounDType.FLOAT64:
-        var float_result = List[Float64](length=value.length(), fill=0.0)
-        float_result[0] = first.as_float()
-        for index in range(1, value.length()):
-            var item = Op.monad(value.at(index))
-            if item.rank != SCALAR_RANK or item.dtype != NounDType.FLOAT64:
-                raise Error("Atop per-cell results must have one dtype")
-            float_result[index] = item.as_float()
-        return Noun(float_result)
-    var bool_result = List[Bool](length=value.length(), fill=False)
-    bool_result[0] = first.as_bool()
-    for index in range(1, value.length()):
-        var item = Op.monad(value.at(index))
-        if item.rank != SCALAR_RANK or item.dtype != NounDType.BOOL:
-            raise Error("Atop per-cell results must have one dtype")
-        bool_result[index] = item.as_bool()
-    return Noun(bool_result)
 
 
 struct Hook[F: Verb, G: Verb](Verb):
@@ -931,21 +811,17 @@ struct Atop[F: Verb, G: Verb](Verb):
 
     @staticmethod
     def monad(y: Noun) raises -> Noun:
-        var inner = Self.G.monad(y)
-        if Self.G.monad_rank() == WHOLE_NOUN_RANK:
-            return Self.F.monad(inner)
-        if Self.G.monad_rank() == ATOM_RANK:
-            return _map_monad_per_cell[Self.F](inner)
-        raise Error("Atop monad does not support the inner verb's rank")
+        var rank = Self.G.monad_cell_rank(y.rank)
+        if rank == ATOM_RANK and y.is_float64() and Self.G.has_float64_monad() and Self.F.has_float64_monad() and not y.is_scalar():
+            var inner = Self.G.monad(y)
+            return _monad_shape(_map_float64_vector[Self.F](inner.float_values), y)
+        return rank_monad[ComposeAll[Self.F, Self.G]](y, rank)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        var inner = Self.G.dyad(x, y)
-        if Self.G.left_rank() == WHOLE_NOUN_RANK and Self.G.right_rank() == WHOLE_NOUN_RANK:
-            return Self.F.monad(inner)
-        if Self.G.left_rank() == ATOM_RANK and Self.G.right_rank() == ATOM_RANK:
-            return _map_monad_per_cell[Self.F](inner)
-        raise Error("Atop dyad does not support mixed inner ranks")
+        return rank_dyad[ComposeAll[Self.F, Self.G]](
+            x, y, Self.G.left_cell_rank(x.rank), Self.G.right_cell_rank(y.rank)
+        )
 
     @staticmethod
     def describe() -> String:
@@ -956,12 +832,24 @@ struct Atop[F: Verb, G: Verb](Verb):
         return Self.G.monad_rank()
 
     @staticmethod
+    def monad_cell_rank(noun_rank: Int) -> Int:
+        return Self.G.monad_cell_rank(noun_rank)
+
+    @staticmethod
     def left_rank() -> Int:
         return Self.G.left_rank()
 
     @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.G.left_cell_rank(noun_rank)
+
+    @staticmethod
     def right_rank() -> Int:
         return Self.G.right_rank()
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.G.right_cell_rank(noun_rank)
 
 
 struct BindLeft[value: Int, Op: Verb](Verb):
@@ -988,8 +876,16 @@ struct BindLeft[value: Int, Op: Verb](Verb):
         return Self.Op.left_rank()
 
     @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.left_cell_rank(noun_rank)
+
+    @staticmethod
     def right_rank() -> Int:
         return Self.Op.right_rank()
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.right_cell_rank(noun_rank)
 
 
 struct BindRight[Op: Verb, value: Int](Verb):
@@ -1016,8 +912,16 @@ struct BindRight[Op: Verb, value: Int](Verb):
         return Self.Op.left_rank()
 
     @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.left_cell_rank(noun_rank)
+
+    @staticmethod
     def right_rank() -> Int:
         return Self.Op.right_rank()
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.right_cell_rank(noun_rank)
 
 
 struct BindLeftNoun[Value: NounProvider, Op: Verb](Verb):
@@ -1044,8 +948,16 @@ struct BindLeftNoun[Value: NounProvider, Op: Verb](Verb):
         return Self.Op.left_rank()
 
     @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.left_cell_rank(noun_rank)
+
+    @staticmethod
     def right_rank() -> Int:
         return Self.Op.right_rank()
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.right_cell_rank(noun_rank)
 
 
 struct BindRightNoun[Op: Verb, Value: NounProvider](Verb):
@@ -1072,8 +984,16 @@ struct BindRightNoun[Op: Verb, Value: NounProvider](Verb):
         return Self.Op.left_rank()
 
     @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.left_cell_rank(noun_rank)
+
+    @staticmethod
     def right_rank() -> Int:
         return Self.Op.right_rank()
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.Op.right_cell_rank(noun_rank)
 
 
 struct Constant[value: Int](Verb):

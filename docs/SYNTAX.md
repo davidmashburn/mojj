@@ -16,7 +16,7 @@ means composition. Use `of` or `@:` explicitly:
 | `square plus double` / `*: + +:` | 15 | Fork: `square(y) + double(y)` |
 
 RMS is `sqrt of mean of square`. `sqrt mean square` is a fork whose middle
-verb is mean; its required dyadic mean is unsupported. It is not an RMS alias.
+verb applies mean dyadically. This has different domain and shape requirements.
 `negate` is retained as an alias for the ambivalent verb `minus`.
 
 Descriptions now expose J verb trees instead of the old map/reduction lowering.
@@ -35,18 +35,45 @@ left to right. Those legacy APIs keep their original contract.
 | `minus`, `negate` | `-` | Negation | Subtraction |
 | `times` | `*` | Sign | Multiplication |
 | `divide` | `%` | Reciprocal | Division; zero divided by zero is zero |
-| `square` | `*:` | Square | Unsupported |
-| `double` | `+:` | Double | Unsupported |
-| `sqrt` | `%:` | Real square root | Unsupported |
-| `tally` | `#` | Exact integer item count | Unsupported |
+| `square` | `*:` | Square | Boolean NAND |
+| `double` | `+:` | Double | Boolean NOR |
+| `sqrt` | `%:` | Real square root | Principal real nth root |
+| `tally` | `#` | Exact integer item count | Replicate or filter items |
 | `cap` | `[:` | Only the left branch of a fork | Same restriction |
-| `sum` | `+/` | Insertion of plus | Table unsupported |
-| `mean` | `(+/ % #)` | Derived fork | Unsupported |
+| `sum` | `+/` | Insertion of plus | Addition table |
+| `mean` | `(+/ % #)` | Derived mean | Dyadic fork over table, divide, and copy |
 
-`mean` expands to insertion, division, and tally; it is not a special parsed
-symbolic pattern. Unsupported valences fail explicitly. Boolean dyads of `*:`
-and `+:`, complex values, root degree, copy, and insertion tables are outside
-this scalar/vector milestone.
+| Words | Symbols | Monad | Dyad |
+| --- | --- | --- | --- |
+| `floor`, `min` | `<.` | Floor | Minimum |
+| `ceiling`, `max` | `>.` | Ceiling | Maximum |
+| `abs`, `residue` | `\|` | Magnitude | Residue |
+| `power` | `^` | Exponential | Power |
+| `log` | `^.` | Natural logarithm | Logarithm with left base |
+| `circle` | `o.` | Multiply by π | Select a real circular or hyperbolic function |
+| `equal`, `unequal`, `less`, `greater` | `=`, `~:`, `<`, `>` | Unsupported | Elementwise comparison |
+| `decrement`, `increment` | `<:`, `>:` | Subtract or add one | At most or at least |
+| `halve`, `match` | `-:` | Halve | Whole-array match |
+| `complement` | `-.` | One minus argument | Unsupported |
+| `or`, `and` | `+.`, `*.` | Unsupported | Boolean OR or AND |
+
+`sin` and `cos` expand to `1&o.` and `2&o.`. The selectors 1 through 3 compute sine, cosine, and tangent. Selectors 5 through 7 compute their hyperbolic counterparts. Negative selectors compute inverse functions over their real domains. Expressions that require a complex noun raise a domain error.
+
+## Array vocabulary
+
+| Symbol | Monad | Dyad |
+| --- | --- | --- |
+| `$` | Shape | Reshape |
+| `i.` | Generate integer indices | Unsupported |
+| `,` | Ravel | Append |
+| `,.` | Make a table | Stitch |
+| `,:` | Add a leading axis | Laminate |
+| `{` | Unsupported | Gather leading items by integer index |
+| `{.`, `{:` | Head, tail | `{.` takes items, filling beyond bounds |
+| `}.`, `}:` | Drop first or last item | `}.` drops items |
+| `\|.`, `\|:` | Reverse leading items, transpose axes | Rotate, reorder axes |
+
+`i. 2 3` produces a two-row, three-column matrix. `+/ i. 2 3` sums the rows to produce `3 5 7`. Use `+/"1 i. 2 3` to sum each row separately and obtain `3 12`. `1 2 3 +/ . * 4 5 6` computes the dot product 32. The same expression accepts conforming matrices.
 
 ## Parsing and modifiers
 
@@ -60,9 +87,16 @@ A train used in a sentence needs grouping: `(- *:) 3` is -6, while `- *: 3` is -
 | --- | --- | --- |
 | `of` | `@:` | Whole-result composition, with infinite ranks |
 | `atop` | `@` | Composition at the right verb's ranks |
-| `insert` | `/` | Right-grouped monadic insertion |
-| `bind` | `&` | Bind a noun on either side of a verb; monadic application only |
+| `insert` | `/` | Right-grouped reduction or dyadic table |
+| `bind` | `&` | Bind a noun, or apply the right verb to each argument of the left verb |
+| `reflex` | `~` | Apply a dyad to the same argument twice, or swap its arguments |
+| `rank` | `"` | Apply a verb to cells of specified ranks |
+| `prefix` | `\` | Prefixes, sliding windows, or disjoint blocks |
+| `suffix` | `\.` | Suffixes or complements of windows |
+| `dot` | `+/ . *` | Contract the last left and first right axes |
 | `group … end` | `( … )` | Group a phrase |
+
+Rank accepts one, two, or three literal integers. One sets all ranks. Two specify left and right ranks, and the monad uses the right rank. Three specify monad, left, and right in order. A negative rank counts back from the argument rank, and `_` selects the whole argument.
 
 Modifiers bind according to J, including to a preceding derived verb.
 `*:@(+/)` squares the sum; `*:@+/` inserts the dyad `*:@+`. On `1 2 3 4`
@@ -70,7 +104,7 @@ they produce 100 and 6770404. `-/ 1 2 3` is `1 - (2 - 3)` = 2.
 
 `@` and `@:` differ in rank. With vectors `1 2 3 4` and `7 5 3 2`,
 `*/ @: +` returns 2016; `*/ @ +` returns `8 7 6 6`.
-Scalar extension and equal-length vector agreement are supported. A length-one
+Atomic dyads use prefix shape agreement. An atom extends over every axis. A length-one
 vector is not an atom and does not broadcast to a longer vector.
 
 Numeric literals include signed Int64 integers, decimal Float64 values, and
@@ -83,7 +117,7 @@ constant branch. Noun binding supports scalar/vector nouns and noun sentences:
 
 Words are lowercase whole tokens. Space, tab, CR, and LF are whitespace;
 punctuation delimits words. Words and symbols may be mixed. Unsupported
-operators, names, assignments, Unicode, higher-rank nouns, and arbitrary
+operators, names, assignments, Unicode, and arbitrary
 modifier trains are rejected rather than reinterpreted.
 
 ## Consumers

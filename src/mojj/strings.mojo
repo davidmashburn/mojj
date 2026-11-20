@@ -1,7 +1,19 @@
 """Compile literal J phrases into the same typed verbs used by Mojo callers."""
 from std.collections import List
 from ._syntax import Kind, NumberKind, Part, parse
+from .array_modifiers import Dot, Prefix, Rank, Suffix
+from .arrays import (
+    ShapeReshape, Iota, RavelAppend, Stitch, Laminate, Gather, Head, Tail,
+    Drop, Curtail, ReverseRotate, Transpose,
+)
+from .circle import Circle
+from .modifiers import BondVerbs, Reflex
 from .nouns import Noun, NounDType, NounProvider
+from .predicates import (
+    Equal, Unequal, Less, Greater, LessEqual, GreaterEqual, MatchHalve,
+    Complement, Or, And,
+)
+from .real_verbs import FloorMin, CeilingMax, MagnitudeResidue, Power, Logarithm
 from .verbs import (
     Verb, Plus, Minus, Times, Divide, Squared, Doubled, Root,
     Left, Right, Tally, Insert, Hook, Fork, ComposeAll, Atop,
@@ -84,383 +96,137 @@ struct _Value[source: StringLiteral, node: Int](NounProvider):
             return "invalid noun"
 
 
+struct _VerbAt[index: Int, *candidates: Verb]:
+    comptime Type = Self.candidates[Self.index]
+
+
 struct _Verb[source: StringLiteral, node: Int](Verb):
+    comptime ast = _Syntax[Self.source].ast
+    comptime current = Self.ast.nodes[Self.node]
+    comptime rank_operand = Self.current.b if Self.current.kind == Kind.RANK else 0
+    # Match Kind's indices. Parser-only kinds occupy slots but never execute as
+    # verbs. Each selected type keeps its own ranks, kernels, and description.
+    comptime Implementation = _VerbAt[
+        Self.current.kind.code,
+        Right,
+        Left,
+        Plus,
+        Minus,
+        Times,
+        Divide,
+        Squared,
+        Doubled,
+        Root,
+        Tally,
+        Right,  # CAP
+        Right,  # LITERAL
+        Insert[_Verb[Self.source, Self.current.a]],
+        ComposeAll[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Atop[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Right,  # BIND
+        Hook[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Fork[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b], _Verb[Self.source, Self.current.c]],
+        BindLeftNoun[_Value[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        BindRightNoun[_Verb[Self.source, Self.current.a], _Value[Self.source, Self.current.b]],
+        ConstantNoun[_Value[Self.source, Self.current.a]],
+        Right,  # MONAD
+        Right,  # DYAD
+        Equal,
+        Unequal,
+        Less,
+        Greater,
+        LessEqual,
+        GreaterEqual,
+        MatchHalve,
+        Complement,
+        Or,
+        And,
+        FloorMin,
+        CeilingMax,
+        MagnitudeResidue,
+        Power,
+        Logarithm,
+        Circle,
+        BondVerbs[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Reflex[_Verb[Self.source, Self.current.a]],
+        ShapeReshape,
+        Iota,
+        RavelAppend,
+        Stitch,
+        Laminate,
+        Gather,
+        Head,
+        Tail,
+        Drop,
+        Curtail,
+        ReverseRotate,
+        Transpose,
+        Rank[
+            _Verb[Self.source, Self.current.a],
+            Self.ast.rank_value(Self.rank_operand, 0),
+            Self.ast.rank_value(Self.rank_operand, 1),
+            Self.ast.rank_value(Self.rank_operand, 2),
+        ],
+        Prefix[_Verb[Self.source, Self.current.a]],
+        Suffix[_Verb[Self.source, Self.current.a]],
+        Dot[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+    ].Type
+
     @staticmethod
     def monad(y: Noun) raises -> Noun:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.monad(y)
-        elif current.kind == Kind.LEFT:
-            return Left.monad(y)
-        elif current.kind == Kind.PLUS:
-            return Plus.monad(y)
-        elif current.kind == Kind.MINUS:
-            return Minus.monad(y)
-        elif current.kind == Kind.TIMES:
-            return Times.monad(y)
-        elif current.kind == Kind.DIVIDE:
-            return Divide.monad(y)
-        elif current.kind == Kind.SQUARE:
-            return Squared.monad(y)
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.monad(y)
-        elif current.kind == Kind.SQRT:
-            return Root.monad(y)
-        elif current.kind == Kind.TALLY:
-            return Tally.monad(y)
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].monad(y)
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad(y)
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].monad(y)
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad(y)
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad(y)
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].monad(y)
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].monad(y)
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].monad(y)
-        else:
-            raise Error("Mojj internal: unsupported verb node")
+        return Self.Implementation.monad(y)
 
     @staticmethod
     def dyad(x: Noun, y: Noun) raises -> Noun:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.dyad(x, y)
-        elif current.kind == Kind.LEFT:
-            return Left.dyad(x, y)
-        elif current.kind == Kind.PLUS:
-            return Plus.dyad(x, y)
-        elif current.kind == Kind.MINUS:
-            return Minus.dyad(x, y)
-        elif current.kind == Kind.TIMES:
-            return Times.dyad(x, y)
-        elif current.kind == Kind.DIVIDE:
-            return Divide.dyad(x, y)
-        elif current.kind == Kind.SQUARE:
-            return Squared.dyad(x, y)
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.dyad(x, y)
-        elif current.kind == Kind.SQRT:
-            return Root.dyad(x, y)
-        elif current.kind == Kind.TALLY:
-            return Tally.dyad(x, y)
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].dyad(x, y)
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].dyad(x, y)
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].dyad(x, y)
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].dyad(x, y)
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].dyad(x, y)
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].dyad(x, y)
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].dyad(x, y)
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].dyad(x, y)
-        else:
-            raise Error("Mojj internal: unsupported verb node")
+        return Self.Implementation.dyad(x, y)
 
-    # Fast-path capability forwarding.  The expression wrapper is what the
-    # benchmark exercises, so it must advertise the kernel of the concrete verb
-    # it dispatches to; otherwise every Expr phrase would stay on the generic
-    # Noun path.
     @staticmethod
     def has_float64_monad() -> Bool:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.PLUS:
-            return Plus.has_float64_monad()
-        elif current.kind == Kind.MINUS:
-            return Minus.has_float64_monad()
-        elif current.kind == Kind.TIMES:
-            return Times.has_float64_monad()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.has_float64_monad()
-        elif current.kind == Kind.SQUARE:
-            return Squared.has_float64_monad()
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.has_float64_monad()
-        elif current.kind == Kind.SQRT:
-            return Root.has_float64_monad()
-        else:
-            return False
+        return Self.Implementation.has_float64_monad()
 
     @staticmethod
     def float64_monad(value: Float64) raises -> Float64:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.PLUS:
-            return Plus.float64_monad(value)
-        elif current.kind == Kind.MINUS:
-            return Minus.float64_monad(value)
-        elif current.kind == Kind.TIMES:
-            return Times.float64_monad(value)
-        elif current.kind == Kind.DIVIDE:
-            return Divide.float64_monad(value)
-        elif current.kind == Kind.SQUARE:
-            return Squared.float64_monad(value)
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.float64_monad(value)
-        elif current.kind == Kind.SQRT:
-            return Root.float64_monad(value)
-        else:
-            raise Error("this verb has no Float64 monad kernel")
+        return Self.Implementation.float64_monad(value)
 
     @staticmethod
     def has_float64_dyad() -> Bool:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.PLUS:
-            return Plus.has_float64_dyad()
-        elif current.kind == Kind.MINUS:
-            return Minus.has_float64_dyad()
-        elif current.kind == Kind.TIMES:
-            return Times.has_float64_dyad()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.has_float64_dyad()
-        else:
-            return False
+        return Self.Implementation.has_float64_dyad()
 
     @staticmethod
     def float64_dyad(left: Float64, right: Float64) raises -> Float64:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.PLUS:
-            return Plus.float64_dyad(left, right)
-        elif current.kind == Kind.MINUS:
-            return Minus.float64_dyad(left, right)
-        elif current.kind == Kind.TIMES:
-            return Times.float64_dyad(left, right)
-        elif current.kind == Kind.DIVIDE:
-            return Divide.float64_dyad(left, right)
-        else:
-            raise Error("this verb has no Float64 dyad kernel")
+        return Self.Implementation.float64_dyad(left, right)
 
     @staticmethod
     def describe() -> String:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.describe()
-        elif current.kind == Kind.LEFT:
-            return Left.describe()
-        elif current.kind == Kind.PLUS:
-            return Plus.describe()
-        elif current.kind == Kind.MINUS:
-            return Minus.describe()
-        elif current.kind == Kind.TIMES:
-            return Times.describe()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.describe()
-        elif current.kind == Kind.SQUARE:
-            return Squared.describe()
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.describe()
-        elif current.kind == Kind.SQRT:
-            return Root.describe()
-        elif current.kind == Kind.TALLY:
-            return Tally.describe()
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].describe()
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].describe()
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].describe()
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].describe()
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].describe()
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].describe()
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].describe()
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].describe()
-        else:
-            return "invalid verb"
+        return Self.Implementation.describe()
 
     @staticmethod
     def monad_rank() -> Int:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.monad_rank()
-        elif current.kind == Kind.LEFT:
-            return Left.monad_rank()
-        elif current.kind == Kind.PLUS:
-            return Plus.monad_rank()
-        elif current.kind == Kind.MINUS:
-            return Minus.monad_rank()
-        elif current.kind == Kind.TIMES:
-            return Times.monad_rank()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.monad_rank()
-        elif current.kind == Kind.SQUARE:
-            return Squared.monad_rank()
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.monad_rank()
-        elif current.kind == Kind.SQRT:
-            return Root.monad_rank()
-        elif current.kind == Kind.TALLY:
-            return Tally.monad_rank()
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].monad_rank()
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad_rank()
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].monad_rank()
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad_rank()
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].monad_rank()
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].monad_rank()
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].monad_rank()
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].monad_rank()
-        else:
-            return -1
+        return Self.Implementation.monad_rank()
 
     @staticmethod
     def left_rank() -> Int:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.left_rank()
-        elif current.kind == Kind.LEFT:
-            return Left.left_rank()
-        elif current.kind == Kind.PLUS:
-            return Plus.left_rank()
-        elif current.kind == Kind.MINUS:
-            return Minus.left_rank()
-        elif current.kind == Kind.TIMES:
-            return Times.left_rank()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.left_rank()
-        elif current.kind == Kind.SQUARE:
-            return Squared.left_rank()
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.left_rank()
-        elif current.kind == Kind.SQRT:
-            return Root.left_rank()
-        elif current.kind == Kind.TALLY:
-            return Tally.left_rank()
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].left_rank()
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].left_rank()
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].left_rank()
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].left_rank()
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].left_rank()
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].left_rank()
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].left_rank()
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].left_rank()
-        else:
-            return -1
+        return Self.Implementation.left_rank()
 
     @staticmethod
     def right_rank() -> Int:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.right_rank()
-        elif current.kind == Kind.LEFT:
-            return Left.right_rank()
-        elif current.kind == Kind.PLUS:
-            return Plus.right_rank()
-        elif current.kind == Kind.MINUS:
-            return Minus.right_rank()
-        elif current.kind == Kind.TIMES:
-            return Times.right_rank()
-        elif current.kind == Kind.DIVIDE:
-            return Divide.right_rank()
-        elif current.kind == Kind.SQUARE:
-            return Squared.right_rank()
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.right_rank()
-        elif current.kind == Kind.SQRT:
-            return Root.right_rank()
-        elif current.kind == Kind.TALLY:
-            return Tally.right_rank()
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].right_rank()
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].right_rank()
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].right_rank()
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].right_rank()
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].right_rank()
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].right_rank()
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].right_rank()
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].right_rank()
-        else:
-            return -1
+        return Self.Implementation.right_rank()
+
+    @staticmethod
+    def monad_cell_rank(noun_rank: Int) -> Int:
+        return Self.Implementation.monad_cell_rank(noun_rank)
+
+    @staticmethod
+    def left_cell_rank(noun_rank: Int) -> Int:
+        return Self.Implementation.left_cell_rank(noun_rank)
+
+    @staticmethod
+    def right_cell_rank(noun_rank: Int) -> Int:
+        return Self.Implementation.right_cell_rank(noun_rank)
 
     @staticmethod
     def insert_identity(dtype: NounDType) raises -> Noun:
-        comptime ast = _Syntax[Self.source].ast
-        comptime current = ast.nodes[Self.node]
-        comptime if current.kind == Kind.RIGHT:
-            return Right.insert_identity(dtype)
-        elif current.kind == Kind.LEFT:
-            return Left.insert_identity(dtype)
-        elif current.kind == Kind.PLUS:
-            return Plus.insert_identity(dtype)
-        elif current.kind == Kind.MINUS:
-            return Minus.insert_identity(dtype)
-        elif current.kind == Kind.TIMES:
-            return Times.insert_identity(dtype)
-        elif current.kind == Kind.DIVIDE:
-            return Divide.insert_identity(dtype)
-        elif current.kind == Kind.SQUARE:
-            return Squared.insert_identity(dtype)
-        elif current.kind == Kind.DOUBLE:
-            return Doubled.insert_identity(dtype)
-        elif current.kind == Kind.SQRT:
-            return Root.insert_identity(dtype)
-        elif current.kind == Kind.TALLY:
-            return Tally.insert_identity(dtype)
-        elif current.kind == Kind.INSERT:
-            return Insert[_Verb[Self.source, current.a]].insert_identity(dtype)
-        elif current.kind == Kind.HOOK:
-            return Hook[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].insert_identity(dtype)
-        elif current.kind == Kind.FORK:
-            return Fork[_Verb[Self.source, current.a], _Verb[Self.source, current.b], _Verb[Self.source, current.c]].insert_identity(dtype)
-        elif current.kind == Kind.COMPOSE:
-            return ComposeAll[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].insert_identity(dtype)
-        elif current.kind == Kind.ATOP:
-            return Atop[_Verb[Self.source, current.a], _Verb[Self.source, current.b]].insert_identity(dtype)
-        elif current.kind == Kind.BIND_LEFT:
-            return BindLeftNoun[_Value[Self.source, current.a], _Verb[Self.source, current.b]].insert_identity(dtype)
-        elif current.kind == Kind.BIND_RIGHT:
-            return BindRightNoun[_Verb[Self.source, current.a], _Value[Self.source, current.b]].insert_identity(dtype)
-        elif current.kind == Kind.CONSTANT:
-            return ConstantNoun[_Value[Self.source, current.a]].insert_identity(dtype)
-        else:
-            raise Error("Mojj internal: unsupported verb node")
+        return Self.Implementation.insert_identity(dtype)
 
 
 struct Expr[source: StringLiteral]:
@@ -521,7 +287,9 @@ struct Expr[source: StringLiteral]:
     @staticmethod
     def map(data: List[Float64]) raises -> List[Float64]:
         var result = Self.monad(Noun(data))
-        if result.is_vector() and result.dtype == NounDType.FLOAT64:
+        if not result.is_vector():
+            raise Error("Expr.map requires a vector result")
+        if result.dtype == NounDType.FLOAT64:
             var values = result.float_values^
             result.float_values = List[Float64]()
             return values^

@@ -1,23 +1,21 @@
 # J compatibility ledger
 
-This change targets the roadmap's bounded P0/P1 semantic foundation.
-It is a compiled Mojo library, not a full J implementation. Compatibility claims
-are limited to the vocabulary, ranks, noun domains, and fixtures below.
+Mojj implements a compiled, numerical subset of J. The tables below describe supported domains and the checked reference cases.
 
 ## Contract
 
 | Surface | Supported contract | Explicit boundary |
 | --- | --- | --- |
-| Nouns | Value-owned atoms and vectors; Boolean, Int64, Float64 | No higher-rank shapes, complex, extended integers, or boxed nouns |
-| Arithmetic | `+ - * %`, monadic `*: +: %:`, selectors and tally | Unsupported valences raise; negative square root raises |
+| Nouns | Value-owned homogeneous arrays; Boolean, Int64, Float64 | No complex, extended integers, or boxed nouns |
+| Arithmetic | `+ - * %`, real powers/logs/roots, residue, min/max, comparisons, circle and Boolean verbs | Unsupported valences raise; negative square root raises |
 | Trains | Hooks, forks, cap, longer verb trains, constant noun branches | Verb trains only; no arbitrary adverb/conjunction trains |
-| Modifiers | `@:`, supported atom/whole-noun `@`, monadic noun binding, insertion | No verb-verb bond, explicit rank operator, repeated bound application, or insertion tables |
+| Modifiers | `@:`, rank-sensitive `@`, noun and verb bond, reflex, rank, insertion/table, prefix/suffix and dot | Repeated application of a noun-bound verb is unsupported |
 | Grammar | Relevant J parse-table rows, numeric nouns and sentences, groups | No assignment, names, foreigns, control flow, or dynamic evaluation |
 | Aliases | Words and symbols normalize before parsing | No whitespace pipeline mode |
 | Execution | Literal-specialized typed verbs; fresh result storage | No promised fusion, allocation optimization, or performance parity |
 
 `Noun.rank` distinguishes an atom from a singleton vector. Atomic arithmetic
-extends a scalar to a vector and otherwise requires equal vector lengths.
+uses J prefix agreement. For example, a length-two vector extends along the rows of a two-by-three matrix.
 Tally returns an exact integer count. Integer arithmetic checks overflow and
 raises; it does not wrap or silently approximate. This intentionally differs
 from J's overflow promotion. Arithmetic on Boolean nouns promotes to integer
@@ -26,9 +24,8 @@ square root use Float64. This is a documented storage policy, not a claim of
 matching every J result type.
 
 Hooks, forks, whole-result composition, and noun binding have infinite monadic
-rank. `@` inherits the inner verb's ranks. The supported finite rank is atomic;
-results requiring higher-rank assembly are explicitly unsupported. Noun binding's
-dyadic repeated-application meaning is outside P1.
+rank. `@` inherits the inner verb's ranks. Explicit rank selects trailing cells and agrees the leading frames. A negative rank is relative to the argument when the verb runs. Enclosing modifiers see that rank as infinite. Noun binding's
+dyadic repeated-application meaning remains outside the supported vocabulary.
 
 Insertion is grouped from the right, including for non-associative operations.
 The empty identities for retained arithmetic are zero for addition/subtraction
@@ -54,21 +51,16 @@ Checks use exact equality for exact small results and absolute tolerance 1e-12
 for the small reference fixtures. This is not a general error bound or a bitwise
 portability claim. J may use different reduction kernels and accumulation orders;
 right grouping alone does not promise matching floating cancellation behavior.
-Exhaustive NaN, infinity, signed-zero, underflow, and transcendental behavior is
-outside the conformance claim.
+Real circular and hyperbolic verbs use Float64 LLVM intrinsics and platform math functions. The circular selectors for sine, cosine, and tangent reject magnitudes above 596313653.72958016, matching the pinned runtime. Exhaustive IEEE behavior across platforms remains unverified.
+
+Rank and window operations infer empty result shapes by evaluating a representative fill cell. Its evaluation can report a domain error. Shaped results own their storage, and windows can materialize intermediate cells. Dyadic dot supports rank-zero cell verbs, including multiplication for vector and matrix products. The determinant monad is outside the supported subset.
 
 Validation runs on macOS arm64 with the manifest-pinned Mojo toolchain. Linux
 execution, remote CI, and performance comparisons are not implied by the lockfile
-or these fixtures. P2 numerical breadth/shared traversal and P3 multidimensional
-arrays remain separate work.
+or these fixtures.
 
 ## Reference execution
 
-A [bounded live-J runner](../tests/reference/README.md) pins J 9.6.3 for macOS
-arm64 and records 33 conformance expectations plus nine matched performance
-measurements. Thirty cases agree on successful values/shapes, one agrees on
-failure, and two document intentional domain differences. Empty sum/product
-also differ in dtype. This is evidence for the selected cases, not full J parity
-or exhaustive agreement over the supported syntax. See the
-[recorded results](../tests/reference/RESULTS.md) for performance and limitations.
-J is not linked into the library or required by consumers or the default tests.
+The current suite has 117 expectations against J 9.6.3 for macOS arm64. It compares every result axis, checks integer and Boolean values exactly, and records dtype differences separately. It exercises vector and matrix products, zero-length axes, negative windows, prefix frame agreement, and shape errors. Two expected differences cover checked integer overflow and complex-producing square root. See the [cases and reproduction command](../tests/reference/README.md).
+
+The [historical performance report](../tests/reference/RESULTS.md) used the original 33 fixtures. J is a development reference and is independent of the library runtime.
