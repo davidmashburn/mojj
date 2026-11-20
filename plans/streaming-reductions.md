@@ -61,3 +61,13 @@ digests. Their 125 case records matched exactly, including the expected
 differences for overflow and complex-producing square root. Three identity
 cases require dtype equality to detect J treating integer zero and one as
 Boolean inputs. The Linux workflow retains its JSON result as an artifact.
+
+A separate generated sweep compared 32 Float64 matrix cases across dot,
+table and dyadic rank, including singleton and zero axes. Twenty produced
+matching values and shapes, and twelve raised errors in both runtimes.
+If a new array operation extends these contracts, reuse explicit shaped
+inputs and retain any counterexample as a named regression.
+
+The [next Linux run](https://github.com/davidmashburn/mojj/actions/runs/44797839837)
+also passed with the default compiler timeout. On a loaded host the syntax
+checker now accepts `--timeout-seconds` for an individual run.
