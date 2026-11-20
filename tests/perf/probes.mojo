@@ -277,6 +277,34 @@ def fixed_section() raises:
         )
 
 
+def time_map_boundary[copy_result: Bool](data: List[Float64], reps: Int) raises:
+    var sink = 0.0
+    var start = perf_counter_ns()
+    for i in range(reps):
+        var result: List[Float64]
+        comptime if copy_result:
+            result = Expr["+:"].monad(Noun(data)).as_floats()
+        else:
+            result = Expr["+:"].map(data)
+        sink += result[i % len(data)]
+    var elapsed = Float64(perf_counter_ns() - start) / Float64(reps)
+    print("  n=", len(data), " copy_result=", copy_result, " ns/call=", elapsed, " sink=", sink)
+
+
+def map_boundary_section() raises:
+    print("Float64 map boundary, public path vs explicit result copy")
+    var sizes: List[Int] = [1, 16, ELEMENTS]
+    for size in sizes:
+        var data = make_data(size)
+        var reps = CALL_REPS if size < ELEMENTS else BULK_REPS
+        # Reverse order on the second pair to expose ordering effects.
+        time_map_boundary[True](data, reps)
+        time_map_boundary[False](data, reps)
+        time_map_boundary[False](data, reps)
+        time_map_boundary[True](data, reps)
+
+
 def main() raises:
     bulk_section(make_data(ELEMENTS))
     fixed_section()
+    map_boundary_section()

@@ -106,6 +106,14 @@ def test_domains_and_reuse() raises:
     assert_equal(Expr["mean"].reduce(short), -0.5)
     assert_equal(Expr["mean"].reduce(longer), 0.6)
     assert_equal(Expr["mean"].reduce(short), -0.5)
+    var identity = Expr["]"].map(short)
+    short[1] = 7.0
+    assert_equal(identity[1], -2.0)
+    identity[0] = 4.0
+    assert_equal(short[0], 1.0)
+    assert_equal(len(Expr["]"].map(List[Float64]())), 0)
+    assert_equal(Expr["2 3 & ["].map(short)[1], 3.0)
+    assert_equal(Expr["0 1 & ["].map(short)[1], 1.0)
     # Consumers check result rank rather than pretending all verbs are maps.
     with assert_raises():
         _ = Expr["sum"].map(short)

@@ -127,3 +127,27 @@ change makes this vectorized, the fold order changed.
 - What would change the conclusion: a quiet-host rerun where the bare controls
   land within 10% of the recorded baseline, or a change in the sum ratio
   without a change in fold order.
+
+## Public Float64 map boundary, 2026-11-20
+
+The boundary probe compares `Expr["+:"].map(data)` with the previous
+implementation, `Expr["+:"].monad(Noun(data)).as_floats()`. Both copy the
+caller’s list on entry, perform the same elementwise double and consume one
+indexed result per call. The public path transfers the owned Float64 result
+list on exit. The control allocates and fills a second output list.
+
+| Elements | Explicit result copy, median per call | Public map, median per call |
+| ---: | ---: | ---: |
+| 1 | 382 ns | 252 ns |
+| 16 | 510 ns | 313 ns |
+| 100,000 | 492 µs | 91 µs |
+
+Measured on Darwin arm64, Apple M4, Mojo 1.1.0 (8189361e),
+`--fp-mode contract=off`, at 08:14 UTC on November 20. The working tree
+was based on `13336b8` with the map and probe edits. Initial load averages
+were 37.21, 27.65 and 27.70. Three invocations of the same binary each timed
+two batches per path in reversed order. Each short-vector batch used 20,000
+calls and each large-vector batch used 100. At 100,000 elements the six copy
+batches ranged from 377–519 µs and the six transfer batches from 72–116 µs.
+Short-vector timings were noisier. These results apply to the list-returning
+map API. The J comparison calls the noun API directly.

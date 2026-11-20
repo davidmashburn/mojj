@@ -520,7 +520,12 @@ struct Expr[source: StringLiteral]:
 
     @staticmethod
     def map(data: List[Float64]) raises -> List[Float64]:
-        return Self.monad(Noun(data)).as_floats()
+        var result = Self.monad(Noun(data))
+        if result.is_vector() and result.dtype == NounDType.FLOAT64:
+            var values = result.float_values^
+            result.float_values = List[Float64]()
+            return values^
+        return result.as_floats()
 
     @staticmethod
     def reduce(data: List[Float64]) raises -> Float64:
