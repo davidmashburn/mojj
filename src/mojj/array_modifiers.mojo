@@ -402,22 +402,6 @@ def _dot_cell[Reduction: Verb, Cell: Verb](
             values.append(Cell.float64_dyad(x.float_values[left_start + index], y.float_values[index]))
         return Reduction.monad(Noun.from_owned_float64(values^))
     var count = shape_size(right_shape)
-    if (
-        Cell.has_float64_dyad() and x.is_vector() and y.rank == 2
-        and x.is_float64() and y.is_float64() and count > 0
-        and count <= len(y.float_values)
-    ):
-        var values = List[Float64](capacity=count)
-        var index = 0
-        var columns = y.axis_length(1)
-        for row in range(width):
-            var left = x.float_values[row]
-            for _ in range(columns):
-                values.append(Cell.float64_dyad(left, y.float_values[index]))
-                index += 1
-        var products_matrix = Noun.from_owned_float64(values^)
-        products_matrix.set_shape(right_shape)
-        return Reduction.monad(products_matrix)
     var products = List[Noun]()
     if count == 0:
         var prototype = Cell.dyad(_zero(x.dtype), _zero(y.dtype))
