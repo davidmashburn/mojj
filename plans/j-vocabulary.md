@@ -1,12 +1,22 @@
 # J vocabulary and semantics roadmap
 
+## Current phase status
+
+As of 2026-11-20, all 28 families marked **Include** through P3 have shipped
+within the supported valences, ranks and numeric domains on `main` at
+[`db73eba`](https://github.com/davidmashburn/mojj/commit/db73eba). The
+[compatibility ledger](https://github.com/davidmashburn/mojj/blob/db73eba/docs/COMPATIBILITY.md)
+defines the supported surface. The [array modifiers](https://github.com/davidmashburn/mojj/blob/db73eba/src/mojj/array_modifiers.mojo)
+implement rank, prefix, suffix and dot, with [focused tests](https://github.com/davidmashburn/mojj/blob/db73eba/tests/test_array_modifiers.mojo).
+The [planning index](../README.md#remaining-work) tracks follow-ups.
+
+## Historical phase status — 2026-11-06
+
 Status: bounded P0/P1 foundation implemented; P2 partial and P3 still proposed.
 Reconciled 2026-11-06 against published `main` at
 [`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13).
 Semantic implementation: [`f6b05c8`](https://github.com/davidmashburn/mojj/commit/f6b05c82ac3251876a2e8a8af394f52581ebfcee).
 Reference runner/results: `09cf8d4`. No dirty implementation delta was included.
-
-## Current phase status
 
 | Phase | Implemented evidence | Remaining boundary |
 | --- | --- | --- |

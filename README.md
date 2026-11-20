@@ -31,6 +31,30 @@ was superseded by J train semantics.
   corpus. Empty-frame rank now uses an available real cell. The [reference harness](https://github.com/davidmashburn/mojj/commit/e74c034)
   preserves explicit matrix shapes and declared input types.
 
+## Remaining work
+
+There is no outstanding implementation milestone for the approved vocabulary
+through P3. The next repeatable experiment is to rerun the
+[mixed dot benchmark](https://github.com/davidmashburn/mojj/blob/db73eba/tests/perf/dot/mixed.md#reproduction)
+on a quiet Apple M4. Use the same revisions, shapes and eight alternating pairs
+so the result can be compared directly with the loaded-host sample.
+
+Further implementation depends on what a caller needs:
+
+- For rectangular dot, collect the matrix shapes and call counts in each
+  operand order from a representative application before choosing another optimization.
+- For a blocked sum, identify a caller and its acceptable rounding error.
+  For automatic sharing in forks, identify a repeated computation and specify
+  the observable evaluation and error order. See the [performance candidates](plans/expression-performance.md#candidates-requiring-new-evidence)
+  and [streaming reductions plan](plans/streaming-reductions.md).
+- Revisit square SIMD if profiling identifies large square maps or RMS as a bottleneck.
+  The separate pipeline syntax remains an optional language-design idea.
+
+Verified against clean published `main` at [`db73eba`](https://github.com/davidmashburn/mojj/commit/db73eba)
+on 2026-11-20. The [Linux checks](https://github.com/davidmashburn/mojj/actions/runs/44816759533)
+passed at that revision. This planning update inspected the source and recorded
+results without rerunning tests or benchmarks.
+
 ## Ideas
 
 - [One expression, two textual forms](ideas/expression-frontends.md) — shared
@@ -45,7 +69,7 @@ explicit approval for the initial public repository push. Subsequent development
 stays local until a later publication instruction. This planning branch is also
 local unless explicitly included in that approval.
 
-## Reconciliation evidence
+## Historical reconciliation — 2026-11-06
 
 Observed 2026-11-06: local and remote `main` agree at
 [`09cf8d4`](https://github.com/davidmashburn/mojj/commit/09cf8d4df865581b60727b11ecddb512de3dcc13);
