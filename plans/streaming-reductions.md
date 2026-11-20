@@ -51,3 +51,13 @@ implement the second step. Typed tests exercise lists, live views, custom folds,
 fresh state on reuse, error ordering and observable source evaluation count.
 The package smoke compiles and runs a consumer using borrowed input. Additional
 arity and implicit fork sharing remain conditional on an actual caller.
+
+## Cross-platform verification
+
+The [Linux run for cafdc9c](https://github.com/davidmashburn/mojj/actions/runs/44796207513)
+passed the locked suite, demo, compiled-package smoke and pinned J comparison.
+The macOS arm64 and Ubuntu x86-64 reports had the same source and harness
+digests. Their 125 case records matched exactly, including the expected
+differences for overflow and complex-producing square root. Three identity
+cases require dtype equality to detect J treating integer zero and one as
+Boolean inputs. The Linux workflow retains its JSON result as an artifact.
