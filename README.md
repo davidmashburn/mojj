@@ -16,13 +16,14 @@ was superseded by J train semantics.
   require a concrete caller and a design for evaluation and error order.
 - [Expression performance](plans/expression-performance.md). Direct identity
   can return a transferred Float64 list. Double uses four-wide SIMD. Square
-  stays scalar after the M4 repeat and the native Linux comparison. The next
-  experiment measures per-element boxing in Float64 vector dot products.
+  stays scalar after the M4 repeat and the native Linux comparison. [Float64 vector
+  dot](https://github.com/davidmashburn/mojj/blob/cafdc9c/tests/perf/dot/README.md)
+  now collects typed cells. It won 79/80 matched M4 timings and 80/80 on native x86-64.
   A separately named blocked sum needs a workload with an explicit rounding tolerance.
 - [Portability and compatibility](plans/streaming-reductions.md#implementation-evidence).
   Native Ubuntu CI runs the full suite, demo, package smoke and the pinned J
-  corpus. Empty-frame rank now uses an available real cell. Explicit matrix
-  inputs and dtype-sensitive fixture generation are under verification.
+  corpus. Empty-frame rank now uses an available real cell. The [reference harness](https://github.com/davidmashburn/mojj/commit/e74c034)
+  preserves explicit matrix shapes and declared input types.
 
 ## Ideas
 

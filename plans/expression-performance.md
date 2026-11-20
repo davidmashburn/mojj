@@ -39,10 +39,27 @@ support keeping scalar square. Width four won five of eight primary comparisons
 on the loaded M4 repeat. Linux won eight of eight with a median of 1.093×
 against a 1.10× threshold. A quiet M4 repeat could clarify the RMS regressions.
 
-The next bounded candidate is the Float64 vector dot cell. Measure scalar
-boxing against a typed product vector at the public API, including strict
-right-fold order and exceptional values. Keep promotion and empty identities
-on the generic path unless independent tests establish equivalence.
+[Float64 vector dot](https://github.com/davidmashburn/mojj/commit/cabe6f5)
+now builds one typed intermediate for two nonempty Float64 vectors when the
+cell advertises an equivalent scalar kernel. The reduction still receives the
+whole product vector. Tests cover result dtype, strict cancellation, negative
+zero, error order, mixed types and generic reductions. The optimization won
+79 of 80 paired samples on an M4 and 80 of 80 on an AMD EPYC runner.
+[Measurements and reproduction](https://github.com/davidmashburn/mojj/blob/cafdc9c/tests/perf/dot/README.md).
+
+## Candidates requiring new evidence
+
+- A matrix/vector dot specialization would need representative rectangular
+  workloads. Measure row and column access separately, including the cost of
+  producing a shaped result. The existing vector timings cover neither.
+- Eliminating the product vector would require proving that cell effects,
+  errors and strict right-fold rounding stay in order. Start only with a
+  measured workload where that intermediate matters.
+- Revisit square SIMD on a quiet M4 if large square maps or RMS are a
+  bottleneck. Use the existing selection criteria and include small inputs.
+- A separately named blocked sum needs a real caller who can specify the
+  permitted rounding difference. The existing sum retains strict right-fold
+  semantics.
 
 ## Aim and evidence
 
