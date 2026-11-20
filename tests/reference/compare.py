@@ -66,9 +66,11 @@ def run(argv: list[str], *, input: str | None = None) -> str:
 
 
 def runtime(fetch: bool, supplied: Path | None) -> tuple[Path, dict]:
-    pin = json.loads((HERE / "runtime.json").read_text())
-    if platform.system() + "-" + platform.machine() != pin["platform"]:
-        raise RuntimeError("This first reference pin supports Darwin arm64 only")
+    pins = json.loads((HERE / "runtime.json").read_text())
+    host = f"{platform.system()}-{platform.machine()}"
+    if host not in pins:
+        raise RuntimeError(f"No J runtime pinned for {host}. Supported: {', '.join(pins)}")
+    pin = pins[host]
     destination = BUILD / "runtime"
     if fetch:
         data = urllib.request.urlopen(pin["archive_url"], timeout=60).read()
@@ -85,7 +87,7 @@ def runtime(fetch: bool, supplied: Path | None) -> tuple[Path, dict]:
         (destination / "j64/jconsole").chmod(0o755)
     executable = (supplied or destination / "j64/jconsole").resolve()
     for name, digest in pin["files"].items():
-        path = executable.parent / Path(name).name
+        path = executable if name == "j64/jconsole" else executable.parent / Path(name).name
         if not path.exists() or sha(path.read_bytes()) != digest:
             raise RuntimeError(f"Pinned J file missing/mismatched: {path.name}; use --fetch-j")
     return executable, pin
@@ -390,17 +392,31 @@ def benchmarks(jconsole: Path) -> list[dict]:
     return rows
 
 
+def host_metadata() -> dict:
+    system = platform.system()
+    if system == "Darwin":
+        version = platform.mac_ver()[0]
+        cpu = run(["sysctl", "-n", "machdep.cpu.brand_string"]).strip()
+    else:
+        version = platform.freedesktop_os_release().get("PRETTY_NAME", platform.release())
+        cpu = next((line.partition(":")[2].strip()
+                    for line in Path("/proc/cpuinfo").read_text().splitlines()
+                    if line.partition(":")[0].strip() == "model name"), platform.machine())
+    return {"system": system, "machine": platform.machine(), "os_version": version, "cpu": cpu}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fetch-j", action="store_true", help="Download checksum-pinned J into build/reference")
     parser.add_argument("--jconsole", type=Path, help="Existing matching pinned J executable")
+    parser.add_argument("--conformance-only", action="store_true", help="Check live J results and skip timings")
     parser.add_argument("--output", type=Path, default=BUILD / "results.json")
     args = parser.parse_args()
     BUILD.mkdir(parents=True, exist_ok=True)
     executable, pin = runtime(args.fetch_j, args.jconsole)
     load_before = os.getloadavg()
     cases = conformance(executable, pin)
-    bench = benchmarks(executable)
+    bench = [] if args.conformance_only else benchmarks(executable)
     load_after = os.getloadavg()
     source_files = sorted((ROOT / "src/mojj").glob("*.mojo"))
     harness_files = [HERE / name for name in ("compare.py", "test_compare.py", "cases.json", "runtime.json")]
@@ -408,10 +424,10 @@ def main() -> None:
               "source_revision": run(["git", "rev-parse", "HEAD"]).strip(),
               "file_sha256": {str(p.relative_to(ROOT)): sha(p.read_bytes()) for p in source_files + harness_files + [ROOT / "pixi.toml", ROOT / "pixi.lock"]},
               "host_load_average": {"before": load_before, "after": load_after},
-              "platform": {"system": platform.system(), "machine": platform.machine(), "os_version": platform.mac_ver()[0],
-                           "cpu": run(["sysctl", "-n", "machdep.cpu.brand_string"]).strip()},
+              "platform": host_metadata(),
               "mojo_version": run(["pixi", "run", "mojo", "--version"]).strip(),
               "j_runtime": pin, "compile_flags": ["--fp-mode", "contract=off"],
+              "benchmarks_requested": not args.conformance_only,
               "method": {"samples": SAMPLES, "target_batch_ns": TARGET_NS, "maximum_repetitions": MAX_REPETITIONS,
                          "input": "Float64(i % 97) / 16; first cell changes to (iteration % 17) / 16 inside each timed call",
                          "timed": "batch loop, first-cell update, operation, first-result-cell consumption, allocation and destruction",

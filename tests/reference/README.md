@@ -7,7 +7,7 @@ J remains a development-only reference; library consumers do not need it.
 
 ## Reproduce
 
-On macOS arm64, with Pixi installed:
+On macOS arm64 or Linux x86-64 with Pixi installed:
 
 ```sh
 pixi install --locked
@@ -24,7 +24,8 @@ The first comparison downloads the official J archive into ignored
 executable and both libraries match `runtime.json`. A Java `jconsole` is not
 suitable. The archive URL uses a mutable release tag, so both the archive and
 individual files are checked against SHA-256 pins; changed downloads fail closed.
-Linux and other J releases are not covered by this pin.
+Each platform has a separate archive, executable and library digests, and runtime version string.
+Use `--conformance-only` to check the corpus without collecting benchmark timings.
 
 The default `pixi run test` runs the Python harness checks without downloading
 or executing J. The live comparison is an explicit task. Python, Mojo, and
