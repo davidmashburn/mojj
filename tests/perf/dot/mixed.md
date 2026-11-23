@@ -40,6 +40,19 @@ A [second hosted run](https://github.com/davidmashburn/mojj/actions/runs/4483150
 
 [Replication first](mixed-linux-confirm-first.csv) · [Replication repeat](mixed-linux-confirm-repeat.csv)
 
+## Apple M4 repeat
+
+On 2026-11-23 the ten-core M4 repeated the comparison with Mojo 1.1.0, the same two revisions and eight alternating pairs. Shortly before timing, three interval samples showed 67–69% idle CPU. At the start of the run the one-minute load average was 8.08, compared with 191 before the original sample. Background work was still present.
+
+| Matrix × vector calls per 100 | 128 × 32 median ratio (wins) | 32 × 128 median ratio (wins) |
+| ---: | ---: | ---: |
+| 0 | 1.041 (1/8) | 1.003 (4/8) |
+| 5 | 0.982 (5/8) | 0.967 (7/8) |
+| 10 | 0.931 (6/8) | 0.938 (8/8) |
+| 50 | 0.582 (8/8) | 0.621 (8/8) |
+
+At an even split, the retained implementation won every pair on both shapes. At ten calls per hundred, it met the seven-win criterion on the wide matrix only. The crossover between tested shares and the operand mix in an application remain unknown. [Raw paired timings](mixed-m4-repeat.csv)
+
 ## Reproduction
 
 Use the pinned Pixi environment. Set `BASE_SRC` and `CANDIDATE_SRC` to the respective archived `src` directories and choose a fresh CSV path.
