@@ -25,8 +25,8 @@ The original [expression grammar](plans/expression-strings.md) was superseded by
   reduction-row candidates missed the wide-matrix M4 selection gate.
   Across [four Linux mixed-batch samples](https://github.com/davidmashburn/mojj/blob/7bd4b69/tests/perf/dot/mixed.md#linux-replication),
   ten matrix × vector calls per hundred was the smallest tested share that won at
-  least seven of eight pairs on both shapes every time. A quiet M4 repeat and
-  application call counts remain open.
+  least seven of eight pairs on both shapes every time. On the M4 repeat, only the even split met that criterion on both shapes.
+  Application call counts remain open.
   A separately named blocked sum needs a workload with an explicit rounding tolerance.
 - [Portability and compatibility](plans/streaming-reductions.md#implementation-evidence).
   Native Ubuntu CI runs the full suite, demo, package smoke and the pinned J
@@ -36,10 +36,9 @@ The original [expression grammar](plans/expression-strings.md) was superseded by
 ## Remaining work
 
 There is no outstanding implementation milestone for the approved vocabulary
-through P3. The next repeatable experiment is to rerun the
-[mixed dot benchmark](https://github.com/davidmashburn/mojj/blob/db73eba/tests/perf/dot/mixed.md#reproduction)
-on a quiet Apple M4. Use the same revisions, shapes and eight alternating pairs
-so the result can be compared directly with the loaded-host sample.
+through P3. The M4 repeat used the two planned revisions, both shapes and
+eight alternating pairs. The [paired timings](https://github.com/davidmashburn/mojj/blob/39eb055/tests/perf/dot/mixed-m4-repeat.csv)
+complete the outstanding benchmark comparison.
 
 Further implementation depends on what a caller needs:
 
