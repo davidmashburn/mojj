@@ -5,7 +5,7 @@ from .core import (
     ReductionExpr, ScalarOp, Scale, SeriesExpr, Sqrt, Square, Sum,
     evaluate, materialize,
 )
-from .strings import Expr
+from .strings import Expr, jj
 
 from .nouns import Noun
 from .views import StridedView

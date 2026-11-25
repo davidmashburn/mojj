@@ -3,6 +3,7 @@ from std.collections import List
 from std.math import abs, sqrt
 from std.memory import bitcast
 from std.testing import assert_equal, assert_true, assert_raises
+from mojj import jj
 from mojj.modifiers import Repeat
 from mojj.strings import Expr
 from mojj.nouns import Noun
@@ -270,7 +271,32 @@ def test_repeat() raises:
     close(Expr["2 ^. 8"].value().as_float(), 3.0)
 
 
+def test_jj_data() raises:
+    assert_equal(jj(1).as_int(), 1)
+    assert_equal(jj(True).as_bool(), True)
+    assert_equal(jj(2.5).as_float(), 2.5)
+    assert_equal(jj([1]).as_ints(), List[Int]([1]))
+    assert_equal(jj([False, True]).as_bools(), List[Bool]([False, True]))
+    assert_equal(jj([2.5, -0.5]).as_floats(), List[Float64]([2.5, -0.5]))
+
+    var samples: List[Int] = [2, 4]
+    var v = jj(samples)
+    samples[0] = 9
+    assert_equal(v.as_ints(), List[Int]([2, 4]))
+    assert_equal(jj(List[Int]()).as_ints(), List[Int]())
+
+
+def test_jj_call_arity() raises:
+    var y = jj["3 4"]()
+    assert_equal(jj["-"](y).as_ints(), List[Int]([-3, -4]))
+    assert_equal(jj["-"](jj(10), y).as_ints(), List[Int]([7, 6]))
+    with assert_raises():
+        _ = jj["%:"](Noun(-1))
+
+
 def main() raises:
+    test_jj_data()
+    test_jj_call_arity()
     test_trains_and_composition()
     test_reductions_and_rms()
     test_binding_and_sentences()
@@ -282,4 +308,4 @@ def main() raises:
     test_double_map_bits()
     test_owned_consumers()
     test_owned_identity()
-    print("PASS test_strings: 11 J semantic test groups")
+    print("PASS test_strings: 13 J semantic test groups")

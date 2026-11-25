@@ -319,3 +319,40 @@ struct Expr[source: StringLiteral]:
     def reduce_owned(var data: List[Float64]) raises -> Float64:
         """Reduce a transferred Float64 list without copying it on entry."""
         return Self.monad(Noun.from_owned_float64(data^)).as_float()
+
+
+# Infer the element type before selecting a Noun constructor so bracket
+# literals such as [2, 4] resolve as vectors of their native Mojo type.
+def jj[T: Copyable, //](x: T) -> Noun where T == Int or T == Float64 or T == Bool:
+    """Wrap a Mojo numeric or Boolean scalar as a noun."""
+    comptime if T == Int:
+        return Noun(rebind[Int](x))
+    elif T == Float64:
+        return Noun(rebind[Float64](x))
+    else:
+        return Noun(rebind[Bool](x))
+
+
+def jj[T: Copyable, //](x: List[T]) -> Noun where T == Int or T == Float64 or T == Bool:
+    """Copy a Mojo list into a vector noun with the same element type."""
+    comptime if T == Int:
+        return Noun(rebind[List[Int]](x))
+    elif T == Float64:
+        return Noun(rebind[List[Float64]](x))
+    else:
+        return Noun(rebind[List[Bool]](x))
+
+
+def jj[source: StringLiteral]() raises -> Noun:
+    """Evaluate a complete noun sentence."""
+    return Expr[source].value()
+
+
+def jj[source: StringLiteral](y: Noun) raises -> Noun:
+    """Apply the compiled verb to one noun."""
+    return Expr[source].monad(y)
+
+
+def jj[source: StringLiteral](x: Noun, y: Noun) raises -> Noun:
+    """Apply the compiled verb to a left and a right noun."""
+    return Expr[source].dyad(x, y)
