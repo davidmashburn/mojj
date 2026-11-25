@@ -6,7 +6,7 @@ Mojj builds calculations from small, typed operations. The same expression can
 describe its structure and evaluate runtime data. This is a fresh, deliberately
 small J-inspired library; it is not a J interpreter or a general array package.
 
-Explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, NuMojo, Mojj, and J recipes covering array shapes, reductions, windows, and composition.
+Start with [Learn Mojj with words](docs/WORDS.md) for a hands-on walkthrough, or explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, NuMojo, Mojj, and J recipes covering array shapes, reductions, windows, and composition.
 
 ## First example
 

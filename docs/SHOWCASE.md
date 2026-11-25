@@ -1,5 +1,7 @@
 # Mojj by example
 
+For a guided introduction using the word spellings, start with [Learn Mojj with words](WORDS.md).
+
 `jj(x)` turns Mojo data into a Mojj **noun** (a scalar or array). For example, `jj(3)` wraps one integer and `jj([2, 4])` wraps a vector. Use `jj["…"](...)` when you have a **phrase** to evaluate. The brackets hold the code. The number of arguments in parentheses tells you how to read it.
 
 - **Zero** · `jj["10 - 3"]()` evaluates a complete sentence → `7`.
