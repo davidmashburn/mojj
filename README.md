@@ -6,6 +6,8 @@ Mojj builds calculations from small, typed operations. The same expression can
 describe its structure and evaluate runtime data. This is a fresh, deliberately
 small J-inspired library; it is not a J interpreter or a general array package.
 
+Explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, J, and Mojj recipes covering array shapes, reductions, windows, and composition.
+
 ## First example
 
 ```mojo
@@ -46,6 +48,14 @@ var rms = Words.reduce(data)
 Bare verb sequences form J trains. `Expr["minus square"].apply(3.0)` is -6;
 `Expr["minus of square"].apply(3.0)` is -9. Composition requires `of` or `@:`.
 Mean is the derived fork `(+/ % #)`, and its empty-vector result is zero.
+
+The showcase imports the shorthand with `from mojj import jj`. Wrap Mojo data
+with `jj(3)` or `jj([2, 4])`. For a scalar or typed list `x`, the explicit
+spelling is `Noun(x)`. Write `jj["10 - 3"]()` for a complete sentence,
+`jj["-"](y)` for negation, or `jj["-"](x, y)` for subtraction. All return
+nouns. To use the module and the shorthand side by side, use `import mojj`
+and `from mojj import jj`. You can then name an inspectable verb with
+`comptime Negate = mojj.Expr["-"]`.
 
 Use `monad(Noun)` or `dyad(Noun, Noun)` for verb application, and `value()`
 for a complete noun sentence such as `10 divide 3 plus 2`. Nouns distinguish
