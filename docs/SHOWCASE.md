@@ -35,13 +35,14 @@ How do you sum each row of a matrix? In NumPy you choose an axis. In MATLAB you 
 
 The `1` in `rank 1` means “give sum a vector.” Each row is one trailing vector, so the result has one total per row. To add the rows together, drop the rank modifier. That result is the three column totals `3 5 7`.
 
-[Build and select arrays](#build-and-select-arrays) · [Calculate and compare](#calculate-and-compare) · [Reduce and combine](#reduce-and-combine) · [Windows and blocks](#windows-and-blocks) · [Compose a calculation](#compose-a-calculation) · [Use runtime data](#use-runtime-data) · [Where J and Mojj differ](#where-j-and-mojj-differ)
+[Build and select arrays](#build-and-select-arrays) · [Calculate and compare](#calculate-and-compare) · [Reduce and combine](#reduce-and-combine) · [Windows and blocks](#windows-and-blocks) · [Compose a calculation](#compose-a-calculation) · [Replace a loop or callback](#replace-a-loop-or-callback) · [Use runtime data](#use-runtime-data) · [Where J and Mojj differ](#where-j-and-mojj-differ)
 
 ## Set up the other columns
 
 **NumPy**
 
 ```python
+from functools import reduce
 import numpy as np
 v = np.array([1, 2, 3, 4])
 A = np.arange(6).reshape(2, 3)
@@ -137,6 +138,20 @@ Every column applies its calculation to the scalar `x`. In J, parentheses group 
 | Double three times | `2**3*x` | `2^3*x` | `(+: ^: 3) x` | `jj["double repeat 3"](x)` | `jj["+: ^: 3"](x)` | 24 |
 
 A hook supplies the original input to the left verb. A fork sends the input down both branches and combines their results with the middle verb. In a noun sentence, evaluation proceeds from the right, so `10 divide 3 plus 2` gives 2. Parentheses let you choose a different grouping.
+
+## Replace a loop or callback
+
+A running sum already has a direct spelling in all four languages. What if each step takes the cosine of the **previous result**, or the statistic needs the values **outside** a moving window? In J and Mojj a modifier tells a verb which inputs to visit and in what order. Here are three such recipes using the same `x` and `v` as above.
+
+| Task | NumPy | MATLAB | J | Mojj words | Mojj symbols |
+| --- | --- | --- | --- | --- | --- |
+| Apply cosine 12 times, starting at `x` | `r = x`<br>`for _ in range(12): r = np.cos(r)` | `r = x; for k = 1:12, r = cos(r); end` | `((2&o.)^:12) x` | `jj["cos repeat 12"](x)` | `jj["(2&o.)^:12"](x)` |
+| Evaluate the continued fraction with coefficients `v` | `reduce(lambda tail, a: a + 1/tail, v[::-1])` | `r = v(end); for a = v(end-1:-1:1), r = a + 1/r; end` | `(+ %)/ v` | `jj["(plus divide) insert"](v)` | `jj["(+ %)/"](v)` |
+| Omit each adjacent pair from `v` and take the minimum of what remains | `np.array([np.delete(v, slice(i,i+2)).min() for i in range(len(v)-1)])` | `arrayfun(@(i) min([v(1:i-1), v(i+2:end)]), 1:numel(v)-1)` | `2 <./\. v` | `jj["min insert suffix"](jj(2), v)` | `jj["<./\\."](jj(2), v)` |
+
+- **Repetition** feeds each result back into cosine. From `x = 3.0`, twelve steps give approximately `0.7357345683`. J’s `2&o.` selects cosine. Mojj accepts both that spelling and `cos`.
+- **Insertion** groups from the right. The two-verb hook `(+ %)` combines a coefficient and a tail as `a + 1/tail`. For `1 2 3 4`, the fraction is `1 + 1/(2 + 1/(3 + 1/4)) = 43/30`. Python’s `reduce` visits left to right, so it receives the reversed vector.
+- **Outfix** (dyadic `\.`) passes the complement of each window to the verb. Omitting pairs from `1 2 3 4` leaves `3 4`, then `1 4`, then `1 2`. Their minima are `3 1 1`. Replace `min insert` with `max insert` to ask for the maxima over the same selections.
 
 ## Use runtime data
 
