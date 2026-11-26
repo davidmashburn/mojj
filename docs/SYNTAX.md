@@ -133,6 +133,12 @@ modifier trains are rejected in standalone phrase literals. The [Mojj CLI](CLI.m
 
 ## Consumers
 
+<!-- mojj-example: syntax-consumers -->
+![Define compiled verbs and evaluate a compiled sentence](highlights/syntax-consumers.svg)
+
+<details>
+<summary>Copy the example</summary>
+
 ```mojo
 from mojj import Expr, Noun
 
@@ -140,6 +146,9 @@ var hook = Expr["minus square"].monad(Noun(3))
 var difference = Expr["minus"].dyad(Noun(10), Noun(3))
 var sentence = Expr["10 divide 3 plus 2"].value()
 ```
+
+</details>
+<!-- /mojj-example -->
 
 `monad`/`dyad` consume verbs and return a `Noun`; `value` evaluates a complete
 noun sentence. A wrong consumer is a compile-time error. `describe()` works

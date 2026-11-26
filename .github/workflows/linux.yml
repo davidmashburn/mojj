@@ -21,6 +21,8 @@ jobs:
         with:
           pixi-version: v0.81.0
           locked: true
+      - run: pixi run test-docs
+      - run: pixi run docs
       - run: pixi run test
       - run: pixi run demo
       - run: pixi run package-smoke

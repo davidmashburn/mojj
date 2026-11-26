@@ -22,6 +22,15 @@ The first window, in time order, is `[1, 2, 4]`. Its output is $3(1)+2(2)+1(4)=1
 | Mojj symbols | `windows =: (# taps) ]\ samples`<br>`filtered =: windows +/ . * (\|. taps)` |
 | J | `windows =: (# taps) ]\ samples`<br>`filtered =: windows +/ . * (\|. taps)` |
 
+<!-- mojj-comparison: algorithm-filter -->
+<details>
+<summary>Read the Mojj and J expressions in color</summary>
+
+![Apply a signal filter in Mojj and J](highlights/algorithm-filter.svg)
+
+</details>
+<!-- /mojj-comparison -->
+
 Run `pixi run mojj < examples/algorithms/fir.mojj`. The output is `[11, 22, 44]`. NumPy also offers the complete operation as `np.convolve(samples, taps, mode="valid")` for these inputs.
 
 **Try one edit.** To compute valid cross-correlation with these real taps, keep the windows and use the taps in their original order. The first output becomes 17. The equation makes the time index explicit. The staged Mojj program gives you a place to inspect the windows, and the edit is local to `reverse taps`. Reading `identity prefix` takes some vocabulary: with a width on the left, `prefix` visits each complete window, and `identity` returns its contents.
@@ -43,6 +52,15 @@ With $e=\hat y-y$, the hidden gradient is $d_z=e\,w\odot\mathbf{1}_{z>0}$. The i
 | Hidden preactivation | `x . W` | `x @ W` | `x * W` | `x @ W` | `x dot W` | `x +/ . * W` | `x +/ . * W` |
 | Hidden gradient | `(err w) (Boole[# > 0] & /@ z)` | `(err * w) * (z > 0)` | `(err .* w) .* (z > 0)` | `(err * w) * (z > 0).astype[f64]()` | `(err * w) * (z greater 0)` | `(err * w) * (z > 0)` | `(err * w) * (z > 0)` |
 | Input-weight gradient | `Outer[Times, x, dz]` | `np.outer(x, dz)` | `x.' * dz` | `nm.outer(x, dz)` | `x times table dz` | `x */ dz` | `x */ dz` |
+
+<!-- mojj-comparison: algorithm-gradients -->
+<details>
+<summary>Read the Mojj and J expressions in color</summary>
+
+![Train a two-layer network in Mojj and J](highlights/algorithm-gradients.svg)
+
+</details>
+<!-- /mojj-comparison -->
 
 **Try one edit.** Change the learning rate from 0.1 to zero. The script prints the loss before and after the update. At 0.1 the loss falls from 2 to 0.045 on this example. At zero both losses are 2. All gradients use the original weights. Moving the update of `w` before the calculation of `dz` would silently change the algorithm.
 

@@ -23,7 +23,13 @@ for newest in range(len(taps) - 1, len(samples)):
 
 Here’s the same calculation at the Mojj prompt. Mojj is a J-inspired array language embedded in Mojo. Start it with `pixi run mojj` from the repository root. Use `=:` to save a value and type its name to see it.
 
-```text
+<!-- mojj-example: essay-filter -->
+![Filter samples using windows and reversed taps](highlights/essay-filter.svg)
+
+<details>
+<summary>Copy the example</summary>
+
+```mojj
 samples =: 1 2 4 8 16
 taps =: 1 2 3
 windows =: (tally taps) (identity prefix) samples
@@ -31,6 +37,9 @@ windows
 filtered =: windows dot (reverse taps)
 filtered
 ```
+
+</details>
+<!-- /mojj-example -->
 
 `tally taps` supplies the width. With a width on its left, `prefix` visits complete sliding windows, and `identity` returns each window as it stands. Read the rows it produces below. The dot product pairs each row with the reversed taps, `3 2 1`.
 
@@ -67,11 +76,26 @@ Consider a single training example for a neural network. Two input features feed
 | Mojj words | `x times table dz` |
 | J | `x */ dz` |
 
+<!-- mojj-comparison: essay-outer-product -->
+<details>
+<summary>Read the Mojj and J expressions in color</summary>
+
+![Calculate an outer product in Mojj and J](highlights/essay-outer-product.svg)
+
+</details>
+<!-- /mojj-comparison -->
+
 I can read the Mojj line as instructions for a multiplication table. Write the two features down the side, the three sensitivities across the top, and fill in the cells. Swapping the operands still produces six plausible numbers. Drawing the table tells me which shape to expect and which weight each number will update. The two characters in the J spelling do separate jobs. Change `*` to `+` in `x */ dz` and you get every pairwise sum. The Mojj edit is `times table` to `plus table`. Once I know what `table` does, I can use it to pose a new question without first asking whether the library has a function named for it.
 
 Suppose I ask the model, “Make the hidden units leaky so negative inputs can learn.” The existing network uses ReLU, which sets negative inputs to zero. We want it to pass a tenth of each negative input and leave positive inputs alone. That changes two calculations during training. Start a fresh Mojj session and run this example with the original weights, before taking an optimizer step.
 
-```text
+<!-- mojj-example: essay-gradient -->
+![Form the input-weight gradient for leaky ReLU](highlights/essay-gradient.svg)
+
+<details>
+<summary>Copy the example</summary>
+
+```mojj
 x =: 1 2
 W =: 2 3 reshape 1 _1 0.5 0 0.25 0.5
 w =: 0.5 1 _1
@@ -84,6 +108,9 @@ slope =: alpha + ((1 - alpha) * (z greater 0))
 dz =: (err * w) * slope
 x times table dz
 ```
+
+</details>
+<!-- /mojj-example -->
 
 The middle unit is the interesting one. Its input is $-1+2(0.25)=-0.5$. It used to output zero and now outputs $-0.05$. Its output weight is 1, so this lowers the network’s prediction from $-1$ to $-1.05$. A test of the prediction would pass as soon as we changed `h`.
 

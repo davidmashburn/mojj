@@ -12,15 +12,26 @@ Work through a [signal filter and a neural-network training step](docs/ALGORITHM
 
 For the argument behind the notation, read [Why care about terseness (aka expressiveness) in the age of LLM's?](docs/TERSENESS.md).
 
+The guides use the prompt’s colors for Mojj phrases. For selectable, highlighted code throughout the comparison tables, run `pixi run docs` and open `build/docs/README.html` in your browser. To refresh the illustrations after editing the Markdown examples, run `pixi run docs-images`.
+
 ## Try the Mojj prompt
 
 Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly. As you type, the prompt highlights verbs in bold cyan, nouns in green, and modifiers in underlined magenta.
+
+<!-- mojj-example: prompt-prefix -->
+![Calculate prefix sums at the Mojj prompt](docs/highlights/prompt-prefix.svg)
+
+<details>
+<summary>Copy the example</summary>
 
 ```text
 mojj> v =: 1 2 3 4
 mojj> sum prefix v
 [1, 3, 6, 10]
 ```
+
+</details>
+<!-- /mojj-example -->
 
 See [the command-line guide](docs/CLI.md) for assignment, multiline input, scripts, and the equivalent Mojo REPL code.
 
@@ -55,11 +66,20 @@ var output = jj.materialize[Pipeline](data)  # (x + 2) * 3
 
 Readable words and J symbols share one bounded grammar and typed verb model:
 
+<!-- mojj-example: compiled-rms -->
+![Compile a root mean square verb in words and symbols](docs/highlights/compiled-rms.svg)
+
+<details>
+<summary>Copy the example</summary>
+
 ```mojo
 comptime Words = jj.Expr["sqrt of mean of square"]
 comptime Symbols = jj.Expr["%: @: (+/ % #) @: *:"]
 var rms = Words.reduce(data)
 ```
+
+</details>
+<!-- /mojj-example -->
 
 Bare verb sequences form J trains. `Expr["minus square"].apply(3.0)` is -6;
 `Expr["minus of square"].apply(3.0)` is -9. Composition requires `of` or `@:`.

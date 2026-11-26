@@ -41,3 +41,16 @@ package = "mkdir -p build && mojo precompile src/mojj -o build/mojj.mojoc"
 package-smoke = { depends-on = ["package-core-smoke", "package-strings-smoke"] }
 package-core-smoke = { cmd = "mojo run --fp-mode contract=off -I build examples/rms.mojo && mojo run --fp-mode contract=off -I build tests/test_moments.mojo && mojo run --fp-mode contract=off -I build tests/test_shared_reduce.mojo", depends-on = ["package"] }
 package-strings-smoke = { cmd = "mojo run --fp-mode contract=off -I build tests/test_strings.mojo && mojo run --fp-mode contract=off -I build tests/test_p2_expr.mojo && mojo run --fp-mode contract=off -I build tests/test_p3_expr.mojo", depends-on = ["package"] }
+
+[feature.docs.dependencies]
+python = ">=3.11,<4"
+prompt-toolkit = ">=3.0,<4"
+pandoc = ">=3,<4"
+
+[feature.docs.tasks]
+docs = "python3 tools/render_docs.py"
+docs-images = "python3 tools/docs_images.py"
+test-docs = "python3 tools/docs_images.py --check && python3 -m unittest discover -s tests -p test_render_docs.py"
+
+[environments]
+docs = { features = ["docs"], no-default-feature = true }

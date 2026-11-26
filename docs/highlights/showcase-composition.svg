@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="402" height="432" viewBox="0 0 402 432" role="img">
+<title>Compose a calculation in Mojj and J</title>
+<style>svg { background: #f6f8fa; color: #24292f; }
+text { fill: currentColor; font: 15px ui-monospace, SFMono-Regular, Consolas, monospace; }
+.verb { fill: #006679; font-weight: bold; }
+.noun { fill: #176337; }
+.modifier { fill: #922477; text-decoration: underline; }
+@media (prefers-color-scheme: dark) {
+  svg { background: #171c22; color: #e6edf3; }
+  .verb { fill: #80def0; } .noun { fill: #9be4aa; } .modifier { fill: #f2b4e4; }
+}</style>
+<text x="12" y="22" xml:space="preserve">Subtract the square from the input (hook)</text>
+<text x="12" y="44" xml:space="preserve">Mojj words    jj["<tspan class="verb">minus</tspan> <tspan class="verb">square</tspan>"](x)</text>
+<text x="12" y="66" xml:space="preserve">Mojj symbols  jj["<tspan class="verb">-</tspan> <tspan class="verb">*:</tspan>"](x)</text>
+<text x="12" y="88" xml:space="preserve">J             (<tspan class="verb">-</tspan> <tspan class="verb">*:</tspan>) <tspan class="noun">x</tspan></text>
+<text x="12" y="110" xml:space="preserve"></text>
+<text x="12" y="132" xml:space="preserve">Negate the square (composition)</text>
+<text x="12" y="154" xml:space="preserve">Mojj words    jj["<tspan class="verb">minus</tspan> <tspan class="modifier">of</tspan> <tspan class="verb">square</tspan>"](x)</text>
+<text x="12" y="176" xml:space="preserve">Mojj symbols  jj["<tspan class="verb">-</tspan> <tspan class="modifier">@:</tspan> <tspan class="verb">*:</tspan>"](x)</text>
+<text x="12" y="198" xml:space="preserve">J             (<tspan class="verb">-</tspan> <tspan class="modifier">@:</tspan> <tspan class="verb">*:</tspan>) <tspan class="noun">x</tspan></text>
+<text x="12" y="220" xml:space="preserve"></text>
+<text x="12" y="242" xml:space="preserve">Add the square and the double (fork)</text>
+<text x="12" y="264" xml:space="preserve">Mojj words    jj["<tspan class="verb">square</tspan> <tspan class="verb">plus</tspan> <tspan class="verb">double</tspan>"](x)</text>
+<text x="12" y="286" xml:space="preserve">Mojj symbols  jj["<tspan class="verb">*:</tspan> <tspan class="verb">+</tspan> <tspan class="verb">+:</tspan>"](x)</text>
+<text x="12" y="308" xml:space="preserve">J             (<tspan class="verb">*:</tspan> <tspan class="verb">+</tspan> <tspan class="verb">+:</tspan>) <tspan class="noun">x</tspan></text>
+<text x="12" y="330" xml:space="preserve"></text>
+<text x="12" y="352" xml:space="preserve">Double three times</text>
+<text x="12" y="374" xml:space="preserve">Mojj words    jj["<tspan class="verb">double</tspan> <tspan class="modifier">repeat</tspan> <tspan class="noun">3</tspan>"](x)</text>
+<text x="12" y="396" xml:space="preserve">Mojj symbols  jj["<tspan class="verb">+:</tspan> <tspan class="modifier">^:</tspan> <tspan class="noun">3</tspan>"](x)</text>
+<text x="12" y="418" xml:space="preserve">J             (<tspan class="verb">+:</tspan> <tspan class="modifier">^:</tspan> <tspan class="noun">3</tspan>) <tspan class="noun">x</tspan></text>
+</svg>

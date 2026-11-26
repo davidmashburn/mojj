@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="291" height="102" viewBox="0 0 291 102" role="img">
+<title>Compute row totals using a multiline phrase</title>
+<style>svg { background: #f6f8fa; color: #24292f; }
+text { fill: currentColor; font: 15px ui-monospace, SFMono-Regular, Consolas, monospace; }
+.verb { fill: #006679; font-weight: bold; }
+.noun { fill: #176337; }
+.modifier { fill: #922477; text-decoration: underline; }
+@media (prefers-color-scheme: dark) {
+  svg { background: #171c22; color: #e6edf3; }
+  .verb { fill: #80def0; } .noun { fill: #9be4aa; } .modifier { fill: #f2b4e4; }
+}</style>
+<text x="12" y="22" xml:space="preserve">print(jj["""<tspan class="verb">sum</tspan> <tspan class="modifier">rank</tspan> <tspan class="noun">1</tspan> (</text>
+<text x="12" y="44" xml:space="preserve">    <tspan class="noun">2</tspan> <tspan class="noun">2</tspan> <tspan class="verb">reshape</tspan></text>
+<text x="12" y="66" xml:space="preserve">    <tspan class="noun">2</tspan> <tspan class="noun">4</tspan> <tspan class="noun">6</tspan> <tspan class="noun">8</tspan></text>
+<text x="12" y="88" xml:space="preserve">)"""]().as_ints())  # [6, 14]</text>
+</svg>
