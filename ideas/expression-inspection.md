@@ -1,0 +1,9 @@
+# Inspect a Mojj expression
+
+A reader can recognize the colors in `sum rank 1 A` and still wonder what reaches `sum`. Suppose `A` is an Int64 matrix with rows `1 2 3` and `4 5 6`. Inspecting `A` could show its element type and shape (2 by 3). Inspecting `sum rank 1` could explain that each call receives one row. Inspecting the result could show an Int64 vector of length 2 containing `6 15`. Those are three different questions a single “type” tooltip might otherwise blur together.
+
+In a static guide, what can we say from the phrase alone? A verb might have one meaning with one argument and another with two. A documented fixture could supply concrete operand types and shapes. At a live prompt those details might come from the current noun binding, which can change after assignment. A reader should be able to tell what was inferred from syntax, what came from a fixture, and what was observed in the session.
+
+The interaction is open. Hover or keyboard focus might suit a documentation table. Selecting a subexpression or asking the prompt to inspect a name might work better in a terminal. Would someone reading `x times table dz` prefer to inspect `times`, the derived verb `times table`, or one cell of the resulting array? Try that question with readers before choosing an interface. Touch and keyboard users should be able to reach the same information.
+
+As of 2026-11-25, the prompt on `main` at `63af496` classifies tokens on sight. Mojj also has expression descriptions and runtime noun shapes and element types. These are possible sources for a prototype. This idea leaves the UI, the amount of type inference, and whether a subexpression ever needs evaluation open. [Prompt classifier](https://github.com/davidmashburn/mojj/blob/63af496/bin/mojj_prompt.py) · [Compiled expressions](https://github.com/davidmashburn/mojj/blob/63af496/src/mojj/strings.mojo) · [Session values](https://github.com/davidmashburn/mojj/blob/63af496/src/mojj/_session.mojo)

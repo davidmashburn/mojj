@@ -60,6 +60,8 @@ including the 14 repetition fixtures.
 
 - [One expression, two textual forms](ideas/expression-frontends.md) — shared
   word/symbol model and branching shipped; separate pipeline DSL remains an idea.
+- [Inspect a Mojj expression](ideas/expression-inspection.md) explores what a reader
+  might learn about verbs, operand shapes, and intermediate results.
 
 Implementation starts from `main`. Usage documentation, implemented contracts,
 and behavioral tests belong with the code. Update this index and each proposal
