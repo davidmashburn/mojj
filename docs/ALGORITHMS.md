@@ -1,5 +1,7 @@
 # Algorithms in Mojj
 
+For a closer look at what these spellings make easy to read and change, see [Why care about terseness (aka expressiveness) in the age of LLM's?](TERSENESS.md).
+
 ## Filter a signal
 
 A finite impulse response (FIR) filter takes a weighted sum of recent samples. Suppose the samples are `[1, 2, 4, 8, 16]` and the taps are `[1, 2, 3]`, with the first tap multiplying the newest sample. Compute only outputs with a full window. With zero-based indexing and $K$ taps, the definition is

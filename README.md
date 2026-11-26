@@ -10,6 +10,8 @@ Start with [Learn Mojj with words](docs/WORDS.md) for a hands-on walkthrough, or
 
 Work through a [signal filter and a neural-network training step](docs/ALGORITHMS.md) to compare Mojj with mathematical notation and executable array code.
 
+For the argument behind the notation, read [Why care about terseness (aka expressiveness) in the age of LLM's?](docs/TERSENESS.md).
+
 ## Try the Mojj prompt
 
 Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly.
