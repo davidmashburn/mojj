@@ -11,7 +11,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
-from render_docs import Role, code_fragments, pandoc, reader_markdown, render, transform
+from render_docs import Role, code_fragments, github_markdown, pandoc, reader_markdown, render, transform
 
 
 class CodeText(HTMLParser):
@@ -92,12 +92,23 @@ class FragmentTests(unittest.TestCase):
         source = "sum(xs) # not a Mojj sentence"
         self.assertEqual(self.check_source(source, "python"), [(Role.PLAIN.value, source)])
 
-    def test_github_wrappers_keep_only_original_code(self):
-        source = '''Before\n<!-- mojj-example: demo -->\n![preview](preview.svg)\n<details><summary>Source</summary>\n\n```mojo\nprint(jj["sum"](v))\n```\n\n</details>\n<!-- /mojj-example -->\n<!-- mojj-comparison: sample -->\n![comparison](table.svg)\n<!-- /mojj-comparison -->\nAfter'''
-        result = reader_markdown(source)
-        self.assertIn('```mojo\nprint(jj["sum"](v))\n```', result)
-        for removed in ("![", "<details>", "mojj-example", "mojj-comparison"):
-            self.assertNotIn(removed, result)
+    def test_github_emphasis_round_trips_source(self):
+        source = ('''```text
+mojj> sum rank 1 A
+[3, 12]
+```
+
+| NumPy | Mojj words | Mojj symbols | J |
+| --- | --- | --- | --- |
+| `np.flip(A)` | `jj["reverse"](A)` | `jj["\\|."](A)` | `\\|. A` |
+''')
+        formatted = github_markdown(source)
+        self.assertIn("<strong>sum</strong> <ins>rank</ins> <em>1</em> <em>A</em>", formatted)
+        self.assertIn("\n[3, 12]</code></pre>", formatted)
+        self.assertIn('jj&#91;"<strong>reverse</strong>"&#93;(A)', formatted)
+        self.assertIn("`np.flip(A)`", formatted)
+        self.assertEqual(reader_markdown(formatted), source)
+        self.assertEqual(github_markdown(formatted), formatted)
 
 
 @unittest.skipUnless(shutil.which("pandoc"), "Pandoc must be on PATH")

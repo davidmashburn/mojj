@@ -12,26 +12,15 @@ Work through a [signal filter and a neural-network training step](docs/ALGORITHM
 
 For the argument behind the notation, read [Why care about terseness (aka expressiveness) in the age of LLM's?](docs/TERSENESS.md).
 
-The guides use the prompt’s colors for Mojj phrases. For selectable, highlighted code throughout the comparison tables, run `pixi run docs` and open `build/docs/README.html` in your browser. To refresh the illustrations after editing the Markdown examples, run `pixi run docs-images`.
+On GitHub, Mojj examples use **bold** for verbs, *italics* for nouns, and <ins>underlining</ins> for modifiers. To read the same guides in the prompt’s colors, run `pixi run docs` and open `build/docs/README.html`. When editing a guide, you can write ordinary code fences and table code spans, then run `pixi run docs-format` to apply the formatting.
 
 ## Try the Mojj prompt
 
 Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly. As you type, the prompt highlights verbs in bold cyan, nouns in green, and modifiers in underlined magenta.
 
-<!-- mojj-example: prompt-prefix -->
-![Calculate prefix sums at the Mojj prompt](docs/highlights/prompt-prefix.svg)
-
-<details>
-<summary>Copy the example</summary>
-
-```text
-mojj> v =: 1 2 3 4
-mojj> sum prefix v
-[1, 3, 6, 10]
-```
-
-</details>
-<!-- /mojj-example -->
+<pre data-mojj="text"><code>mojj&gt; <em>v</em> =: <em>1</em> <em>2</em> <em>3</em> <em>4</em>
+mojj&gt; <strong>sum</strong> <ins>prefix</ins> <em>v</em>
+[1, 3, 6, 10]</code></pre>
 
 See [the command-line guide](docs/CLI.md) for assignment, multiline input, scripts, and the equivalent Mojo REPL code.
 
@@ -66,20 +55,9 @@ var output = jj.materialize[Pipeline](data)  # (x + 2) * 3
 
 Readable words and J symbols share one bounded grammar and typed verb model:
 
-<!-- mojj-example: compiled-rms -->
-![Compile a root mean square verb in words and symbols](docs/highlights/compiled-rms.svg)
-
-<details>
-<summary>Copy the example</summary>
-
-```mojo
-comptime Words = jj.Expr["sqrt of mean of square"]
-comptime Symbols = jj.Expr["%: @: (+/ % #) @: *:"]
-var rms = Words.reduce(data)
-```
-
-</details>
-<!-- /mojj-example -->
+<pre data-mojj="mojo"><code>comptime Words = jj.Expr["<strong>sqrt</strong> <ins>of</ins> <strong>mean</strong> <ins>of</ins> <strong>square</strong>"]
+comptime Symbols = jj.Expr["<strong>%:</strong> <ins>@:</ins> (<strong>+</strong><ins>/</ins> <strong>%</strong> <strong>#</strong>) <ins>@:</ins> <strong>*:</strong>"]
+var rms = Words.reduce(data)</code></pre>
 
 Bare verb sequences form J trains. `Expr["minus square"].apply(3.0)` is -6;
 `Expr["minus of square"].apply(3.0)` is -9. Composition requires `of` or `@:`.

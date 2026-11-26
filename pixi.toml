@@ -49,8 +49,8 @@ pandoc = ">=3,<4"
 
 [feature.docs.tasks]
 docs = "python3 tools/render_docs.py"
-docs-images = "python3 tools/docs_images.py"
-test-docs = "python3 tools/docs_images.py --check && python3 -m unittest discover -s tests -p test_render_docs.py"
+docs-format = "python3 tools/render_docs.py --format"
+test-docs = "python3 tools/render_docs.py --check && python3 -m unittest discover -s tests -p test_render_docs.py"
 
 [environments]
 docs = { features = ["docs"], no-default-feature = true }

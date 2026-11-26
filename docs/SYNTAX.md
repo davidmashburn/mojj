@@ -11,9 +11,9 @@ means composition. Use `of` or `@:` explicitly:
 
 | Phrase | At 3 | Structure |
 | --- | --- | --- |
-| `minus square` / `- *:` | -6 | Hook: `y - square(y)` |
-| `minus of square` / `- @: *:` | -9 | Composition: `-square(y)` |
-| `square plus double` / `*: + +:` | 15 | Fork: `square(y) + double(y)` |
+| <code data-mojj><strong>minus</strong> <strong>square</strong></code> / <code data-mojj><strong>-</strong> <strong>&#42;:</strong></code> | -6 | Hook: `y - square(y)` |
+| <code data-mojj><strong>minus</strong> <ins>of</ins> <strong>square</strong></code> / <code data-mojj><strong>-</strong> <ins>@:</ins> <strong>&#42;:</strong></code> | -9 | Composition: `-square(y)` |
+| <code data-mojj><strong>square</strong> <strong>plus</strong> <strong>double</strong></code> / <code data-mojj><strong>&#42;:</strong> <strong>+</strong> <strong>+:</strong></code> | 15 | Fork: `square(y) + double(y)` |
 
 RMS is `sqrt of mean of square`. `sqrt mean square` is a fork whose middle
 verb applies mean dyadically. This has different domain and shape requirements.
@@ -29,33 +29,33 @@ left to right. Those legacy APIs keep their original contract.
 
 | Words | Symbols | Monad | Dyad |
 | --- | --- | --- | --- |
-| `identity`, `right` | `]` | Identity | Right argument |
-| `left` | `[` | Identity | Left argument |
-| `plus` | `+` | Identity for real nouns | Addition |
-| `minus`, `negate` | `-` | Negation | Subtraction |
-| `times` | `*` | Sign | Multiplication |
-| `divide` | `%` | Reciprocal | Division; zero divided by zero is zero |
-| `square` | `*:` | Square | Boolean NAND |
-| `double` | `+:` | Double | Boolean NOR |
-| `sqrt` | `%:` | Real square root | Principal real nth root |
-| `tally` | `#` | Exact integer item count | Replicate or filter items |
-| `cap` | `[:` | Only the left branch of a fork | Same restriction |
-| `sum` | `+/` | Insertion of plus | Addition table |
-| `mean` | `(+/ % #)` | Derived mean | Dyadic fork over table, divide, and copy |
+| <code data-mojj><strong>identity</strong></code>, <code data-mojj><strong>right</strong></code> | <code data-mojj><strong>&#93;</strong></code> | Identity | Right argument |
+| <code data-mojj><strong>left</strong></code> | <code data-mojj><strong>&#91;</strong></code> | Identity | Left argument |
+| <code data-mojj><strong>plus</strong></code> | <code data-mojj><strong>+</strong></code> | Identity for real nouns | Addition |
+| <code data-mojj><strong>minus</strong></code>, <code data-mojj><strong>negate</strong></code> | <code data-mojj><strong>-</strong></code> | Negation | Subtraction |
+| <code data-mojj><strong>times</strong></code> | <code data-mojj><strong>&#42;</strong></code> | Sign | Multiplication |
+| <code data-mojj><strong>divide</strong></code> | <code data-mojj><strong>%</strong></code> | Reciprocal | Division; zero divided by zero is zero |
+| <code data-mojj><strong>square</strong></code> | <code data-mojj><strong>&#42;:</strong></code> | Square | Boolean NAND |
+| <code data-mojj><strong>double</strong></code> | <code data-mojj><strong>+:</strong></code> | Double | Boolean NOR |
+| <code data-mojj><strong>sqrt</strong></code> | <code data-mojj><strong>%:</strong></code> | Real square root | Principal real nth root |
+| <code data-mojj><strong>tally</strong></code> | <code data-mojj><strong>#</strong></code> | Exact integer item count | Replicate or filter items |
+| <code data-mojj><strong>cap</strong></code> | <code data-mojj><strong>&#91;:</strong></code> | Only the left branch of a fork | Same restriction |
+| <code data-mojj><strong>sum</strong></code> | <code data-mojj><strong>+</strong><ins>/</ins></code> | Insertion of plus | Addition table |
+| <code data-mojj><strong>mean</strong></code> | <code data-mojj>(<strong>+</strong><ins>/</ins> <strong>%</strong> <strong>#</strong>)</code> | Derived mean | Dyadic fork over table, divide, and copy |
 
 | Words | Symbols | Monad | Dyad |
 | --- | --- | --- | --- |
-| `floor`, `min` | `<.` | Floor | Minimum |
-| `ceiling`, `max` | `>.` | Ceiling | Maximum |
-| `abs`, `residue` | `\|` | Magnitude | Residue |
-| `power` | `^` | Exponential | Power |
-| `log` | `^.` | Natural logarithm | Logarithm with left base |
-| `circle` | `o.` | Multiply by π | Select a real circular or hyperbolic function |
-| `equal`, `unequal`, `less`, `greater` | `=`, `~:`, `<`, `>` | Unsupported | Elementwise comparison |
-| `decrement`, `increment` | `<:`, `>:` | Subtract or add one | At most or at least |
-| `halve`, `match` | `-:` | Halve | Whole-array match |
-| `complement` | `-.` | One minus argument | Unsupported |
-| `or`, `and` | `+.`, `*.` | Unsupported | Boolean OR or AND |
+| <code data-mojj><strong>floor</strong></code>, <code data-mojj><strong>min</strong></code> | <code data-mojj><strong>&lt;.</strong></code> | Floor | Minimum |
+| <code data-mojj><strong>ceiling</strong></code>, <code data-mojj><strong>max</strong></code> | <code data-mojj><strong>&gt;.</strong></code> | Ceiling | Maximum |
+| <code data-mojj><strong>abs</strong></code>, <code data-mojj><strong>residue</strong></code> | <code data-mojj><strong>&#124;</strong></code> | Magnitude | Residue |
+| <code data-mojj><strong>power</strong></code> | <code data-mojj><strong>^</strong></code> | Exponential | Power |
+| <code data-mojj><strong>log</strong></code> | <code data-mojj><strong>^.</strong></code> | Natural logarithm | Logarithm with left base |
+| <code data-mojj><strong>circle</strong></code> | <code data-mojj><strong>o.</strong></code> | Multiply by π | Select a real circular or hyperbolic function |
+| <code data-mojj><strong>equal</strong></code>, <code data-mojj><strong>unequal</strong></code>, <code data-mojj><strong>less</strong></code>, <code data-mojj><strong>greater</strong></code> | <code data-mojj><strong>=</strong></code>, <code data-mojj><strong>&#126;:</strong></code>, <code data-mojj><strong>&lt;</strong></code>, <code data-mojj><strong>&gt;</strong></code> | Unsupported | Elementwise comparison |
+| <code data-mojj><strong>decrement</strong></code>, <code data-mojj><strong>increment</strong></code> | <code data-mojj><strong>&lt;:</strong></code>, <code data-mojj><strong>&gt;:</strong></code> | Subtract or add one | At most or at least |
+| <code data-mojj><strong>halve</strong></code>, <code data-mojj><strong>match</strong></code> | <code data-mojj><strong>-:</strong></code> | Halve | Whole-array match |
+| <code data-mojj><strong>complement</strong></code> | <code data-mojj><strong>-.</strong></code> | One minus argument | Unsupported |
+| <code data-mojj><strong>or</strong></code>, <code data-mojj><strong>and</strong></code> | <code data-mojj><strong>+.</strong></code>, <code data-mojj><strong>&#42;.</strong></code> | Unsupported | Boolean OR or AND |
 
 `sin` and `cos` expand to `1&o.` and `2&o.`. The selectors 1 through 3 compute sine, cosine, and tangent. Selectors 5 through 7 compute their hyperbolic counterparts. Negative selectors compute inverse functions over their real domains. Expressions that require a complex noun raise a domain error.
 
@@ -63,15 +63,15 @@ left to right. Those legacy APIs keep their original contract.
 
 | Symbol | Monad | Dyad |
 | --- | --- | --- |
-| `$` | Shape | Reshape |
-| `i.` | Generate integer indices | Unsupported |
-| `,` | Ravel | Append |
-| `,.` | Make a table | Stitch |
-| `,:` | Add a leading axis | Laminate |
-| `{` | Unsupported | Gather leading items by integer index |
-| `{.`, `{:` | Head, tail | `{.` takes items, filling beyond bounds |
-| `}.`, `}:` | Drop first or last item | `}.` drops items |
-| `\|.`, `\|:` | Reverse leading items, transpose axes | Rotate, reorder axes |
+| <code data-mojj><strong>&#36;</strong></code> | Shape | Reshape |
+| <code data-mojj><strong>i.</strong></code> | Generate integer indices | Unsupported |
+| <code data-mojj><strong>,</strong></code> | Ravel | Append |
+| <code data-mojj><strong>,.</strong></code> | Make a table | Stitch |
+| <code data-mojj><strong>,:</strong></code> | Add a leading axis | Laminate |
+| <code data-mojj><strong>{</strong></code> | Unsupported | Gather leading items by integer index |
+| <code data-mojj><strong>{.</strong></code>, <code data-mojj><strong>{:</strong></code> | Head, tail | `{.` takes items, filling beyond bounds |
+| <code data-mojj><strong>}.</strong></code>, <code data-mojj><strong>}:</strong></code> | Drop first or last item | `}.` drops items |
+| <code data-mojj><strong>&#124;.</strong></code>, <code data-mojj><strong>&#124;:</strong></code> | Reverse leading items, transpose axes | Rotate, reorder axes |
 
 `i. 2 3` produces a two-row, three-column matrix. `+/ i. 2 3` sums the rows to produce `3 5 7`. Use `+/"1 i. 2 3` to sum each row separately and obtain `3 12`. `1 2 3 +/ . * 4 5 6` computes the dot product 32. The same expression accepts conforming matrices.
 
@@ -85,16 +85,16 @@ A train used in a sentence needs grouping: `(- *:) 3` is -6, while `- *: 3` is -
 
 | Word | Symbol | Meaning |
 | --- | --- | --- |
-| `of` | `@:` | Whole-result composition, with infinite ranks |
-| `atop` | `@` | Composition at the right verb's ranks |
-| `insert` | `/` | Right-grouped reduction or dyadic table |
-| `bind` | `&` | Bind a noun, or apply the right verb to each argument of the left verb |
-| `repeat` | `^:` | Apply a verb a fixed number of times |
-| `reflex` | `~` | Apply a dyad to the same argument twice, or swap its arguments |
-| `rank` | `"` | Apply a verb to cells of specified ranks |
-| `prefix` | `\` | Prefixes, sliding windows, or disjoint blocks |
-| `suffix` | `\.` | Suffixes or complements of windows |
-| `dot` | `+/ . *` | Contract the last left and first right axes |
+| <code data-mojj><ins>of</ins></code> | <code data-mojj><ins>@:</ins></code> | Whole-result composition, with infinite ranks |
+| <code data-mojj><ins>atop</ins></code> | <code data-mojj><ins>@</ins></code> | Composition at the right verb's ranks |
+| <code data-mojj><ins>insert</ins></code> | <code data-mojj><ins>/</ins></code> | Right-grouped reduction or dyadic table |
+| <code data-mojj><ins>bind</ins></code> | <code data-mojj><ins>&amp;</ins></code> | Bind a noun, or apply the right verb to each argument of the left verb |
+| <code data-mojj><ins>repeat</ins></code> | <code data-mojj><ins>^:</ins></code> | Apply a verb a fixed number of times |
+| <code data-mojj><ins>reflex</ins></code> | <code data-mojj><ins>&#126;</ins></code> | Apply a dyad to the same argument twice, or swap its arguments |
+| <code data-mojj><ins>rank</ins></code> | <code data-mojj><ins>"</ins></code> | Apply a verb to cells of specified ranks |
+| <code data-mojj><ins>prefix</ins></code> | <code data-mojj><ins>&#92;</ins></code> | Prefixes, sliding windows, or disjoint blocks |
+| <code data-mojj><ins>suffix</ins></code> | <code data-mojj><ins>&#92;.</ins></code> | Suffixes or complements of windows |
+| <code data-mojj><strong>dot</strong></code> | <code data-mojj><strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong></code> | Contract the last left and first right axes |
 | `group … end` | `( … )` | Group a phrase |
 
 Use `u ^: n`, `u repeat n`, or the typed `jj.Repeat[Op, n]` for a literal integer
@@ -133,22 +133,11 @@ modifier trains are rejected in standalone phrase literals. The [Mojj CLI](CLI.m
 
 ## Consumers
 
-<!-- mojj-example: syntax-consumers -->
-![Define compiled verbs and evaluate a compiled sentence](highlights/syntax-consumers.svg)
+<pre data-mojj="mojo"><code>from mojj import Expr, Noun
 
-<details>
-<summary>Copy the example</summary>
-
-```mojo
-from mojj import Expr, Noun
-
-var hook = Expr["minus square"].monad(Noun(3))
-var difference = Expr["minus"].dyad(Noun(10), Noun(3))
-var sentence = Expr["10 divide 3 plus 2"].value()
-```
-
-</details>
-<!-- /mojj-example -->
+var hook = Expr["<strong>minus</strong> <strong>square</strong>"].monad(Noun(3))
+var difference = Expr["<strong>minus</strong>"].dyad(Noun(10), Noun(3))
+var sentence = Expr["<em>10</em> <strong>divide</strong> <em>3</em> <strong>plus</strong> <em>2</em>"].value()</code></pre>
 
 `monad`/`dyad` consume verbs and return a `Noun`; `value` evaluates a complete
 noun sentence. A wrong consumer is a compile-time error. `describe()` works

@@ -18,18 +18,9 @@ The first window, in time order, is `[1, 2, 4]`. Its output is $3(1)+2(2)+1(4)=1
 | NumPy | `np.lib.stride_tricks.sliding_window_view(samples, len(taps)) @ taps[::-1]` |
 | MATLAB (row-vector inputs) | `k = numel(taps); windows = samples((1:numel(samples)-k+1).' + (0:k-1));`<br>`filtered = (windows * flip(taps(:))).';` |
 | NuMojo | `var k = taps.size`<br>`var weights = nm.flip(taps)`<br>`var filtered = nm.zeros[i64](Shape(samples.size-k+1))`<br>`for i in range(filtered.size): filtered[Item(i)] = nm.dot(samples[i:i+k], weights).item()` |
-| Mojj words | `windows =: (tally taps) (identity prefix) samples`<br>`filtered =: windows dot (reverse taps)` |
-| Mojj symbols | `windows =: (# taps) ]\ samples`<br>`filtered =: windows +/ . * (\|. taps)` |
-| J | `windows =: (# taps) ]\ samples`<br>`filtered =: windows +/ . * (\|. taps)` |
-
-<!-- mojj-comparison: algorithm-filter -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Apply a signal filter in Mojj and J](highlights/algorithm-filter.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Mojj words | <code data-mojj><em>windows</em> =: (<strong>tally</strong> <em>taps</em>) (<strong>identity</strong> <ins>prefix</ins>) <em>samples</em></code><br><code data-mojj><em>filtered</em> =: <em>windows</em> <strong>dot</strong> (<strong>reverse</strong> <em>taps</em>)</code> |
+| Mojj symbols | <code data-mojj><em>windows</em> =: (<strong>#</strong> <em>taps</em>) <strong>&#93;</strong><ins>&#92;</ins> <em>samples</em></code><br><code data-mojj><em>filtered</em> =: <em>windows</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> (<strong>&#124;.</strong> <em>taps</em>)</code> |
+| J | <code data-mojj><em>windows</em> =: (<strong>#</strong> <em>taps</em>) <strong>&#93;</strong><ins>&#92;</ins> <em>samples</em></code><br><code data-mojj><em>filtered</em> =: <em>windows</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> (<strong>&#124;.</strong> <em>taps</em>)</code> |
 
 Run `pixi run mojj < examples/algorithms/fir.mojj`. The output is `[11, 22, 44]`. NumPy also offers the complete operation as `np.convolve(samples, taps, mode="valid")` for these inputs.
 
@@ -49,18 +40,9 @@ With $e=\hat y-y$, the hidden gradient is $d_z=e\,w\odot\mathbf{1}_{z>0}$. The i
 
 | Step | Wolfram Language | NumPy | MATLAB (row vectors) | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Hidden preactivation | `x . W` | `x @ W` | `x * W` | `x @ W` | `x dot W` | `x +/ . * W` | `x +/ . * W` |
-| Hidden gradient | `(err w) (Boole[# > 0] & /@ z)` | `(err * w) * (z > 0)` | `(err .* w) .* (z > 0)` | `(err * w) * (z > 0).astype[f64]()` | `(err * w) * (z greater 0)` | `(err * w) * (z > 0)` | `(err * w) * (z > 0)` |
-| Input-weight gradient | `Outer[Times, x, dz]` | `np.outer(x, dz)` | `x.' * dz` | `nm.outer(x, dz)` | `x times table dz` | `x */ dz` | `x */ dz` |
-
-<!-- mojj-comparison: algorithm-gradients -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Train a two-layer network in Mojj and J](highlights/algorithm-gradients.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Hidden preactivation | `x . W` | `x @ W` | `x * W` | `x @ W` | <code data-mojj><em>x</em> <strong>dot</strong> <em>W</em></code> | <code data-mojj><em>x</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>W</em></code> | <code data-mojj><em>x</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>W</em></code> |
+| Hidden gradient | `(err w) (Boole[# > 0] & /@ z)` | `(err * w) * (z > 0)` | `(err .* w) .* (z > 0)` | `(err * w) * (z > 0).astype[f64]()` | <code data-mojj>(<em>err</em> <strong>&#42;</strong> <em>w</em>) <strong>&#42;</strong> (<em>z</em> <strong>greater</strong> <em>0</em>)</code> | <code data-mojj>(<em>err</em> <strong>&#42;</strong> <em>w</em>) <strong>&#42;</strong> (<em>z</em> <strong>&gt;</strong> <em>0</em>)</code> | <code data-mojj>(<em>err</em> <strong>&#42;</strong> <em>w</em>) <strong>&#42;</strong> (<em>z</em> <strong>&gt;</strong> <em>0</em>)</code> |
+| Input-weight gradient | `Outer[Times, x, dz]` | `np.outer(x, dz)` | `x.' * dz` | `nm.outer(x, dz)` | <code data-mojj><em>x</em> <strong>times</strong> <ins>table</ins> <em>dz</em></code> | <code data-mojj><em>x</em> <strong>&#42;</strong><ins>/</ins> <em>dz</em></code> | <code data-mojj><em>x</em> <strong>&#42;</strong><ins>/</ins> <em>dz</em></code> |
 
 **Try one edit.** Change the learning rate from 0.1 to zero. The script prints the loss before and after the update. At 0.1 the loss falls from 2 to 0.045 on this example. At zero both losses are 2. All gradients use the original weights. Moving the update of `w` before the calculation of `dz` would silently change the algorithm.
 

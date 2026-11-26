@@ -44,9 +44,19 @@ PHRASE_PREFIX = re.compile(r"\b(?:jj|Expr)\s*\[\s*$")
 PROMPT = re.compile(r"^(?:mojj>|\.\.\.)[ \t]?")
 ESCAPE = re.compile(r"\\(?:[\\'\"abfnrtv]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})|[\s\S]")
 ESCAPES = dict(zip("\\'\"abfnrtv", "\\'\"\a\b\f\n\r\t\v"))
-EXAMPLE = re.compile(r"^<!-- mojj-example: [^\n]+ -->\s*\n(.*?)^<!-- /mojj-example -->[ \t]*$", re.M | re.S)
-COMPARISON = re.compile(r"^<!-- mojj-comparison: [^\n]+ -->.*?^<!-- /mojj-comparison -->[ \t]*$", re.M | re.S)
-FENCE = re.compile(r"^```[^\n]*\n.*?^```[ \t]*$", re.M | re.S)
+# GitHub preserves emphasis in code but strips author-defined CSS. Keep the
+# input language on blocks so the offline reader can restore fenced Markdown.
+ROLE_TAG = {Role.VERB: "strong", Role.NOUN: "em", Role.MODIFIER: "ins"}
+BLOCK = re.compile(r'^<pre data-mojj="(\w+)"><code>(.*?)</code></pre>$', re.M | re.S)
+CELL = re.compile(r'<code data-mojj>([^\n]*?)</code>')
+ROLE_MARKUP = re.compile(r"</?(?:strong|em|ins)>")
+# Inline HTML in a GFM table still undergoes Markdown parsing (e.g. jj["v"](x)
+# can become a link). Character references keep the visible source literal.
+TABLE_ESCAPES = str.maketrans({c: f"&#{ord(c)};" for c in r"[]*_`~\|$"})
+MARKDOWN_EXAMPLE = re.compile(
+    r"^```(?P<lang>[^\n`]*)\n(?P<code>.*?)^```[ \t]*$|(?P<table>(?:^\|[^\n]*\|(?:\n|$))+)",
+    re.M | re.S,
+)
 PHRASE_COLUMNS = frozenset({"word", "words", "symbol", "symbols", "phrase", "expression", "mojj words", "mojj symbols", "in this sentence"})
 COMPARISON_ROWS = frozenset({"mojj words", "mojj symbols", "j"})
 
@@ -119,13 +129,72 @@ def colored_code(source, language):
 
 
 def reader_markdown(source):
-    """Keep one selectable source sample in place of GitHub image wrappers."""
-    def original(match):
-        fences = FENCE.findall(match[1])
-        if len(fences) != 1:
-            raise ValueError("Each mojj-example wrapper must contain one fenced code block")
-        return fences[0]
-    return EXAMPLE.sub(original, COMPARISON.sub("", source))
+    """Recover ordinary fenced code and table code spans, preserving source spelling."""
+    def plain(markup):
+        return html.unescape(ROLE_MARKUP.sub("", markup))
+
+    def block(match):
+        return f"```{match[1]}\n{plain(match[2])}\n```"
+
+    def cell(match):
+        code = plain(match[1]).replace("|", r"\|")
+        return f"`{code}`"
+
+    return BLOCK.sub(block, CELL.sub(cell, source))
+
+
+def github_code(code, language, *, inline=False):
+    fragments = code_fragments(code, language)
+    if not any(style for style, _ in fragments):
+        return None
+    parts = []
+    for style, token in fragments:
+        token = html.escape(token, quote=False)
+        if inline:
+            token = token.translate(TABLE_ESCAPES)
+        tag = ROLE_TAG.get(Role(style))
+        parts.append(f"<{tag}>{token}</{tag}>" if tag else token)
+    content = "".join(parts)
+    if inline:
+        return f"<code data-mojj>{content}</code>"
+    return f'<pre data-mojj="{language}"><code>{content}</code></pre>'
+
+
+def phrase_cell(headers, label, index):
+    if headers[index] in PHRASE_COLUMNS:
+        return True
+    if headers[index] == "j" and {"mojj words", "mojj symbols"}.intersection(headers):
+        return True
+    return index > 0 and (
+        (headers[0] in {"environment", "notation"} and label in COMPARISON_ROWS)
+        or (headers[0] == "surface" and label in {"arithmetic", "modifiers"})
+    )
+
+
+def github_markdown(source):
+    """Refresh role markup from its text, also accepting ordinary Markdown examples."""
+    def format_span(span):
+        code = span[1].replace(r"\|", "|")
+        return (github_code(code, Language.MOJO.value, inline=True)
+                or github_code(code, Language.MOJJ.value, inline=True) or span[0])
+
+    def format_example(match):
+        if match["table"] is None:
+            code = match["code"].removesuffix("\n")
+            return github_code(code, match["lang"]) or match[0]
+        rows = match["table"].splitlines(keepends=True)
+        delimiter = re.compile(r"(?<!\\)\|")
+        headers = [cell.strip().lower() for cell in delimiter.split(rows[0])[1:-1]]
+        for i in range(2, len(rows)):
+            cells = delimiter.split(rows[i])
+            label = cells[1].strip().lower()
+            for j, cell in enumerate(cells[1:-1]):
+                if j < len(headers) and phrase_cell(headers, label, j):
+                    cells[j + 1] = re.sub(r"`([^`]+)`", format_span, cell)
+            rows[i] = "|".join(cells)
+        return "".join(rows)
+
+    return MARKDOWN_EXAMPLE.sub(format_example, reader_markdown(source))
 
 
 def plain_text(value):
@@ -145,19 +214,12 @@ def _table_languages(table):
     """Select code cells by semantic headers, not by their punctuation."""
     head, bodies, foot = table[3:6]
     headers = [plain_text(cell[4]).strip().lower() for cell in head[1][0][1]] if head[1] else []
-    columns = {i for i, label in enumerate(headers) if label in PHRASE_COLUMNS}
-    if {"mojj words", "mojj symbols"} & set(headers):
-        columns.update(i for i, label in enumerate(headers) if label == "j")
     rows = [row for body in bodies for row in body[2] + body[3]] + foot[1]
     for row in rows:
         cells = row[1]
         label = plain_text(cells[0][4]).strip().lower() if cells else ""
-        selected_row = bool(headers) and (
-            (headers[0] in {"environment", "notation"} and label in COMPARISON_ROWS)
-            or (headers[0] == "surface" and label in {"arithmetic", "modifiers"})
-        )
         for index, cell in enumerate(cells):
-            if index in columns or (selected_row and index > 0):
+            if index < len(headers) and phrase_cell(headers, label, index):
                 yield cell
 
 
@@ -244,7 +306,7 @@ code { background:var(--panel); border-radius:.2rem; padding:.1rem .25rem; }
 pre { padding:1rem; background:var(--panel); border:1px solid var(--line);
   border-radius:.4rem; overflow:auto; line-height:1.6; tab-size:4; }
 pre code { padding:0; border:0; font-size:1em; background:none; }
-.mojj-noun { color:var(--noun); }
+.mojj-noun { color:var(--noun); font-style:italic; }
 .mojj-verb { color:var(--verb); font-weight:700; }
 .mojj-modifier { color:var(--modifier); text-decoration:underline; text-underline-offset:.2em; }
 .legend { color:var(--muted); font-size:.85rem; margin:.8rem 0 0; }
@@ -292,10 +354,22 @@ def render(source, destination, outputs):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "build" / "docs")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--format", action="store_true", help="Refresh selectable GitHub role markup")
+    modes.add_argument("--check", action="store_true", help="Report stale GitHub role markup")
     args = parser.parse_args()
+    sources = [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]
+    if args.format or args.check:
+        for path in sources:
+            source = path.read_text()
+            formatted = github_markdown(source)
+            if formatted != source:
+                if args.check:
+                    parser.exit(1, f"Refresh {path.name} with pixi run docs-format\n")
+                path.write_text(formatted)
+        return
     if not shutil.which("pandoc"):
         parser.error("pandoc must be installed and available on PATH")
-    sources = [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]
     outputs = {source.resolve(): args.output.resolve() / source.relative_to(ROOT).with_suffix(".html") for source in sources}
     try:
         for source, destination in outputs.items():

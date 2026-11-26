@@ -7,9 +7,9 @@ Mojj implements a compiled, numerical subset of J. The tables below describe sup
 | Surface | Supported contract | Explicit boundary |
 | --- | --- | --- |
 | Nouns | Value-owned homogeneous arrays; Boolean, Int64, Float64 | No complex, extended integers, or boxed nouns |
-| Arithmetic | `+ - * %`, real powers/logs/roots, residue, min/max, comparisons, circle and Boolean verbs | Unsupported valences raise; negative square root raises |
+| Arithmetic | <code data-mojj><strong>+</strong> <strong>-</strong> <strong>&#42;</strong> <strong>%</strong></code>, real powers/logs/roots, residue, min/max, comparisons, circle and Boolean verbs | Unsupported valences raise; negative square root raises |
 | Trains | Hooks, forks, cap, longer verb trains, constant noun branches | Verb trains only; no arbitrary adverb/conjunction trains |
-| Modifiers | `@:`, rank-sensitive `@`, noun and verb bond, reflex, rank, insertion/table, prefix/suffix, dot and fixed verb repetition (`^:`) | Repetition takes one integer literal from 0 through 1024. Inverse, convergence and array-of-count forms are unsupported. A noun-bound verb supports monadic use only |
+| Modifiers | <code data-mojj><ins>@:</ins></code>, rank-sensitive <code data-mojj><ins>@</ins></code>, noun and verb bond, reflex, rank, insertion/table, prefix/suffix, dot and fixed verb repetition (<code data-mojj><ins>^:</ins></code>) | Repetition takes one integer literal from 0 through 1024. Inverse, convergence and array-of-count forms are unsupported. A noun-bound verb supports monadic use only |
 | Grammar | Relevant J parse-table rows, numeric nouns and sentences, groups | No assignment, names, foreigns, control flow, or dynamic evaluation |
 | Aliases | Words and symbols normalize before parsing | No whitespace pipeline mode |
 | Execution | Literal-specialized typed verbs; fresh result storage | No promised fusion, allocation optimization, or performance parity |

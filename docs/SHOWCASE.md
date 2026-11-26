@@ -10,7 +10,7 @@ For a guided introduction using the word spellings, start with [Learn Mojj with 
 
 Each call returns a noun, so you can pass its result straight into another call. If you prefer explicit names, import `Noun` and `Expr` from `mojj`. Write `Noun(x)` for an `Int`, `Float64`, `Bool`, or a list of any one of those types. For a phrase, spell the three calls `Expr[phrase].value()`, `Expr[phrase].monad(y)`, and `Expr[phrase].dyad(x, y)`.
 
-Read the colors as parts of speech. In `sum rank 1`, **sum** is a verb (bold cyan), **rank** modifies it (underlined magenta), and **1** is a noun (green). On GitHub, expand **Read the Mojj and J expressions in color** beneath any recipe table. For color directly in the table cells, run `pixi run docs` and open `build/docs/docs/SHOWCASE.html`.
+In the comparison tables, read <code><strong>sum</strong> <ins>rank</ins> <em>1</em></code> as a verb, a modifier, and a noun. GitHub uses bold, underline, and italics for those roles. For the same tables in the prompt’s colors, run `pixi run docs` and open `build/docs/docs/SHOWCASE.html`.
 
 ## Try it in the Mojo REPL
 
@@ -22,21 +22,10 @@ cd src && pixi run mojo repl
 
 Paste this block and press Enter on a blank line. The variables stay available for all the tables.
 
-<!-- mojj-example: showcase-setup -->
-![Create the array, matrix, and scalar for the comparisons](highlights/showcase-setup.svg)
-
-<details>
-<summary>Copy the example</summary>
-
-```mojo
-from mojj import jj
+<pre data-mojj="mojo"><code>from mojj import jj
 var v = jj([1, 2, 3, 4])
-var A = jj["i.2 3"]()
-var x = jj(3.0)
-```
-
-</details>
-<!-- /mojj-example -->
+var A = jj["<strong>i.</strong><em>2</em> <em>3</em>"]()
+var x = jj(3.0)</code></pre>
 
 Try `print(jj["sum rank 1"](A).as_ints())` and submit another blank line. The result is `[3, 12]`. Enter `:quit` at a fresh prompt to exit. For the same example in a file, see [Run as a Mojo program](#run-as-a-mojo-program).
 
@@ -44,16 +33,7 @@ How do you sum each row of a matrix? In NumPy and NuMojo you choose an axis. In 
 
 | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- |
-| `A.sum(axis=1)` | `sum(A,2)` | `nm.sum(A, axis=1)` | `jj["sum rank 1"](A)` | `jj['+/"1'](A)` | `(+/"1) A` |
-
-<!-- mojj-comparison: showcase-row-totals -->
-<details open>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Sum each row in Mojj and J](highlights/showcase-row-totals.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| `A.sum(axis=1)` | `sum(A,2)` | `nm.sum(A, axis=1)` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>rank</ins> <em>1</em>"&#93;(A)</code> | <code data-mojj>jj&#91;'<strong>+</strong><ins>/</ins><ins>"</ins><em>1</em>'&#93;(A)</code> | <code data-mojj>(<strong>+</strong><ins>/</ins><ins>"</ins><em>1</em>) <em>A</em></code> |
 
 The `1` in `rank 1` means “give sum a vector.” Each row is one trailing vector, so the result has one total per row. To add the rows together, drop the rank modifier. That result is the three column totals `3 5 7`.
 
@@ -103,11 +83,9 @@ Here `v` and `A` are integer NDArrays. `nm.array[i64]` reads the elements and sh
 
 **J**
 
-```j
-v =: 1 2 3 4
-A =: i.2 3
-x =: 3.0
-```
+<pre data-mojj="j"><code><em>v</em> =: <em>1</em> <em>2</em> <em>3</em> <em>4</em>
+<em>A</em> =: <strong>i.</strong><em>2</em> <em>3</em>
+<em>x</em> =: <em>3.0</em></code></pre>
 
 MATLAB's `v` is a row vector. NuMojo, NumPy, Mojj, and J use a one-dimensional vector. Each column keeps its native indexing and shape conventions.
 
@@ -115,25 +93,16 @@ MATLAB's `v` is a row vector. NuMojo, NumPy, Mojj, and J use a one-dimensional v
 
 | Task | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- |
-| Build A | `np.arange(6).reshape(2,3)` | `reshape(0:5,3,2).'` | `nm.arange[i64](6).reshape(Shape(2, 3))` | `jj["iota 2 3"]()` | `jj["i.2 3"]()` | `i.2 3` |
-| Shape of A | `A.shape` | `size(A)` | `A.shape` | `jj["shape"](A)` | `jj["$"](A)` | `$ A` |
-| Count rows | `len(A)` | `size(A,1)` | `A.shape[0]` | `jj["tally"](A)` | `jj["#"](A)` | `# A` |
-| Flatten A row by row | `A.ravel()` | `reshape(A.',1,[])` | `nm.ravel(A)` | `jj["ravel"](A)` | `jj[","](A)` | `, A` |
-| Transpose A | `A.T` | `A.'` | `A.T()` | `jj["transpose"](A)` | `jj["\|:"](A)` | `\|: A` |
-| Second row | `A[1]` | `A(2,:)` | `A[1]` | `jj["gather"](jj(1), A)` | `jj["{"](jj(1), A)` | `1 { A` |
-| First two items | `v[:2]` | `v(1:2)` | `v[:2]` | `jj["take"](jj(2), v)` | `jj["{."](jj(2), v)` | `2 {. v` |
-| Drop first two items | `v[2:]` | `v(3:end)` | `v[2:]` | `jj["drop"](jj(2), v)` | `jj["}."](jj(2), v)` | `2 }. v` |
-| Reverse v | `v[::-1]` | `fliplr(v)` | `nm.flip(v)` | `jj["reverse"](v)` | `jj["\|."](v)` | `\|. v` |
-| Keep first and third | `v[[True,False,True,False]]` | `v(logical([1 0 1 0]))` | `v[List[Bool]([True, False, True, False])]` | `jj["filter"](jj([True, False, True, False]), v)` | `jj["#"](jj([True, False, True, False]), v)` | `1 0 1 0 # v` |
-
-<!-- mojj-comparison: showcase-arrays -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Build and select arrays in Mojj and J](highlights/showcase-arrays.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Build A | `np.arange(6).reshape(2,3)` | `reshape(0:5,3,2).'` | `nm.arange[i64](6).reshape(Shape(2, 3))` | <code data-mojj>jj&#91;"<strong>iota</strong> <em>2</em> <em>3</em>"&#93;()</code> | <code data-mojj>jj&#91;"<strong>i.</strong><em>2</em> <em>3</em>"&#93;()</code> | <code data-mojj><strong>i.</strong><em>2</em> <em>3</em></code> |
+| Shape of A | `A.shape` | `size(A)` | `A.shape` | <code data-mojj>jj&#91;"<strong>shape</strong>"&#93;(A)</code> | <code data-mojj>jj&#91;"<strong>&#36;</strong>"&#93;(A)</code> | <code data-mojj><strong>&#36;</strong> <em>A</em></code> |
+| Count rows | `len(A)` | `size(A,1)` | `A.shape[0]` | <code data-mojj>jj&#91;"<strong>tally</strong>"&#93;(A)</code> | <code data-mojj>jj&#91;"<strong>#</strong>"&#93;(A)</code> | <code data-mojj><strong>#</strong> <em>A</em></code> |
+| Flatten A row by row | `A.ravel()` | `reshape(A.',1,[])` | `nm.ravel(A)` | <code data-mojj>jj&#91;"<strong>ravel</strong>"&#93;(A)</code> | <code data-mojj>jj&#91;"<strong>,</strong>"&#93;(A)</code> | <code data-mojj><strong>,</strong> <em>A</em></code> |
+| Transpose A | `A.T` | `A.'` | `A.T()` | <code data-mojj>jj&#91;"<strong>transpose</strong>"&#93;(A)</code> | <code data-mojj>jj&#91;"<strong>&#124;:</strong>"&#93;(A)</code> | <code data-mojj><strong>&#124;:</strong> <em>A</em></code> |
+| Second row | `A[1]` | `A(2,:)` | `A[1]` | <code data-mojj>jj&#91;"<strong>gather</strong>"&#93;(jj(1), A)</code> | <code data-mojj>jj&#91;"<strong>{</strong>"&#93;(jj(1), A)</code> | <code data-mojj><em>1</em> <strong>{</strong> <em>A</em></code> |
+| First two items | `v[:2]` | `v(1:2)` | `v[:2]` | <code data-mojj>jj&#91;"<strong>take</strong>"&#93;(jj(2), v)</code> | <code data-mojj>jj&#91;"<strong>{.</strong>"&#93;(jj(2), v)</code> | <code data-mojj><em>2</em> <strong>{.</strong> <em>v</em></code> |
+| Drop first two items | `v[2:]` | `v(3:end)` | `v[2:]` | <code data-mojj>jj&#91;"<strong>drop</strong>"&#93;(jj(2), v)</code> | <code data-mojj>jj&#91;"<strong>}.</strong>"&#93;(jj(2), v)</code> | <code data-mojj><em>2</em> <strong>}.</strong> <em>v</em></code> |
+| Reverse v | `v[::-1]` | `fliplr(v)` | `nm.flip(v)` | <code data-mojj>jj&#91;"<strong>reverse</strong>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>&#124;.</strong>"&#93;(v)</code> | <code data-mojj><strong>&#124;.</strong> <em>v</em></code> |
+| Keep first and third | `v[[True,False,True,False]]` | `v(logical([1 0 1 0]))` | `v[List[Bool]([True, False, True, False])]` | <code data-mojj>jj&#91;"<strong>filter</strong>"&#93;(jj(&#91;True, False, True, False&#93;), v)</code> | <code data-mojj>jj&#91;"<strong>#</strong>"&#93;(jj(&#91;True, False, True, False&#93;), v)</code> | <code data-mojj><em>1</em> <em>0</em> <em>1</em> <em>0</em> <strong>#</strong> <em>v</em></code> |
 
 Mojj gathers along the leading axis using zero-based indices. Its reshape cycles the source items when it needs more data. For example, `2 3 reshape 1 2` gives rows `1 2 1` and `2 1 2`. NumPy and MATLAB reshape require matching element counts. Mojj take can also extend a vector with fill values.
 
@@ -141,21 +110,12 @@ Mojj gathers along the leading axis using zero-based indices. Its reshape cycles
 
 | Task | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- |
-| Square each item | `v**2` | `v.^2` | `v**2` | `jj["square"](v)` | `jj["*:"](v)` | `*: v` |
-| Double each item | `2*v` | `2*v` | `2*v` | `jj["double"](v)` | `jj["+:"](v)` | `+: v` |
-| Divide each item by 2 | `v/2` | `v./2` | `v.astype[f64]()/2` | `jj["divide"](v, jj(2))` | `jj["%"](v, jj(2))` | `v % 2` |
-| Remainders modulo 3 | `v % 3` | `mod(v,3)` | `v % 3` | `jj["residue"](jj(3), v)` | `jj["\|"](jj(3), v)` | `3 \| v` |
-| Elementwise threshold | `v > 2` | `v > 2` | `v > 2` | `jj["greater"](v, jj(2))` | `jj[">"](v, jj(2))` | `v > 2` |
-| Add 10 to row one and 20 to row two | `np.array([[10],[20]]) + A` | `[10;20] + A` | `nm.array[i64]("[[10],[20]]") + A` | `jj["plus"](jj([10, 20]), A)` | `jj["+"](jj([10, 20]), A)` | `10 20 + A` |
-
-<!-- mojj-comparison: showcase-arithmetic -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Calculate and compare in Mojj and J](highlights/showcase-arithmetic.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Square each item | `v**2` | `v.^2` | `v**2` | <code data-mojj>jj&#91;"<strong>square</strong>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>&#42;:</strong>"&#93;(v)</code> | <code data-mojj><strong>&#42;:</strong> <em>v</em></code> |
+| Double each item | `2*v` | `2*v` | `2*v` | <code data-mojj>jj&#91;"<strong>double</strong>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>+:</strong>"&#93;(v)</code> | <code data-mojj><strong>+:</strong> <em>v</em></code> |
+| Divide each item by 2 | `v/2` | `v./2` | `v.astype[f64]()/2` | <code data-mojj>jj&#91;"<strong>divide</strong>"&#93;(v, jj(2))</code> | <code data-mojj>jj&#91;"<strong>%</strong>"&#93;(v, jj(2))</code> | <code data-mojj><em>v</em> <strong>%</strong> <em>2</em></code> |
+| Remainders modulo 3 | `v % 3` | `mod(v,3)` | `v % 3` | <code data-mojj>jj&#91;"<strong>residue</strong>"&#93;(jj(3), v)</code> | <code data-mojj>jj&#91;"<strong>&#124;</strong>"&#93;(jj(3), v)</code> | <code data-mojj><em>3</em> <strong>&#124;</strong> <em>v</em></code> |
+| Elementwise threshold | `v > 2` | `v > 2` | `v > 2` | <code data-mojj>jj&#91;"<strong>greater</strong>"&#93;(v, jj(2))</code> | <code data-mojj>jj&#91;"<strong>&gt;</strong>"&#93;(v, jj(2))</code> | <code data-mojj><em>v</em> <strong>&gt;</strong> <em>2</em></code> |
+| Add 10 to row one and 20 to row two | `np.array([[10],[20]]) + A` | `[10;20] + A` | `nm.array[i64]("[[10],[20]]") + A` | <code data-mojj>jj&#91;"<strong>plus</strong>"&#93;(jj(&#91;10, 20&#93;), A)</code> | <code data-mojj>jj&#91;"<strong>+</strong>"&#93;(jj(&#91;10, 20&#93;), A)</code> | <code data-mojj><em>10</em> <em>20</em> <strong>+</strong> <em>A</em></code> |
 
 Read the last row as “pair each left item with one right row.” Mojj matches **leading** dimensions. The result has rows `10 11 12` and `23 24 25`. NumPy aligns trailing dimensions, so a bare length-two vector would fail against this matrix. A Mojj length-three vector would also fail, even though the matrix has three columns.
 
@@ -163,22 +123,13 @@ Read the last row as “pair each left item with one right row.” Mojj matches 
 
 | Task | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- |
-| Sum a vector | `v.sum()` | `sum(v)` | `nm.sum(v)` | `jj["sum"](v)` | `jj["+/"](v)` | `+/ v` |
-| Mean of a vector | `v.mean()` | `mean(v)` | `nm.mean(v)` | `jj["mean"](v)` | `jj["+/ % #"](v)` | `(+/ % #) v` |
-| Column totals | `A.sum(axis=0)` | `sum(A,1)` | `nm.sum(A, axis=0)` | `jj["sum"](A)` | `jj["+/"](A)` | `+/ A` |
-| Row totals | `A.sum(axis=1)` | `sum(A,2)` | `nm.sum(A, axis=1)` | `jj["sum rank 1"](A)` | `jj['+/"1'](A)` | `(+/"1) A` |
-| All pairwise products | `np.outer([2,3],[4,5,6])` | `[2;3]*[4 5 6]` | `nm.outer(nm.array[i64]("[2,3]"), nm.array[i64]("[4,5,6]"))` | `jj["2 3 times table 4 5 6"]()` | `jj["2 3 */ 4 5 6"]()` | `2 3 */ 4 5 6` |
-| Inner product | `np.dot([1,2,3],[4,5,6])` | `dot([1 2 3],[4 5 6])` | `nm.dot(nm.array[i64]("[1,2,3]"), nm.array[i64]("[4,5,6]"))` | `jj["1 2 3 dot 4 5 6"]()` | `jj["1 2 3 +/ . * 4 5 6"]()` | `1 2 3 +/ . * 4 5 6` |
-| Matrix times vector | `A @ np.array([1,2,3])` | `A*[1;2;3]` | `A @ nm.array[i64]("[1,2,3]")` | `jj["dot"](A, jj([1, 2, 3]))` | `jj["+/ . *"](A, jj([1, 2, 3]))` | `A +/ . * 1 2 3` |
-
-<!-- mojj-comparison: showcase-reductions -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Reduce and combine in Mojj and J](highlights/showcase-reductions.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Sum a vector | `v.sum()` | `sum(v)` | `nm.sum(v)` | <code data-mojj>jj&#91;"<strong>sum</strong>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins>"&#93;(v)</code> | <code data-mojj><strong>+</strong><ins>/</ins> <em>v</em></code> |
+| Mean of a vector | `v.mean()` | `mean(v)` | `nm.mean(v)` | <code data-mojj>jj&#91;"<strong>mean</strong>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins> <strong>%</strong> <strong>#</strong>"&#93;(v)</code> | <code data-mojj>(<strong>+</strong><ins>/</ins> <strong>%</strong> <strong>#</strong>) <em>v</em></code> |
+| Column totals | `A.sum(axis=0)` | `sum(A,1)` | `nm.sum(A, axis=0)` | <code data-mojj>jj&#91;"<strong>sum</strong>"&#93;(A)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins>"&#93;(A)</code> | <code data-mojj><strong>+</strong><ins>/</ins> <em>A</em></code> |
+| Row totals | `A.sum(axis=1)` | `sum(A,2)` | `nm.sum(A, axis=1)` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>rank</ins> <em>1</em>"&#93;(A)</code> | <code data-mojj>jj&#91;'<strong>+</strong><ins>/</ins><ins>"</ins><em>1</em>'&#93;(A)</code> | <code data-mojj>(<strong>+</strong><ins>/</ins><ins>"</ins><em>1</em>) <em>A</em></code> |
+| All pairwise products | `np.outer([2,3],[4,5,6])` | `[2;3]*[4 5 6]` | `nm.outer(nm.array[i64]("[2,3]"), nm.array[i64]("[4,5,6]"))` | <code data-mojj>jj&#91;"<em>2</em> <em>3</em> <strong>times</strong> <ins>table</ins> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj>jj&#91;"<em>2</em> <em>3</em> <strong>&#42;</strong><ins>/</ins> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj><em>2</em> <em>3</em> <strong>&#42;</strong><ins>/</ins> <em>4</em> <em>5</em> <em>6</em></code> |
+| Inner product | `np.dot([1,2,3],[4,5,6])` | `dot([1 2 3],[4 5 6])` | `nm.dot(nm.array[i64]("[1,2,3]"), nm.array[i64]("[4,5,6]"))` | <code data-mojj>jj&#91;"<em>1</em> <em>2</em> <em>3</em> <strong>dot</strong> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj>jj&#91;"<em>1</em> <em>2</em> <em>3</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj><em>1</em> <em>2</em> <em>3</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>4</em> <em>5</em> <em>6</em></code> |
+| Matrix times vector | `A @ np.array([1,2,3])` | `A*[1;2;3]` | `A @ nm.array[i64]("[1,2,3]")` | <code data-mojj>jj&#91;"<strong>dot</strong>"&#93;(A, jj(&#91;1, 2, 3&#93;))</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong>"&#93;(A, jj(&#91;1, 2, 3&#93;))</code> | <code data-mojj><em>A</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>1</em> <em>2</em> <em>3</em></code> |
 
 For the last row the two inner products are `0×1 + 1×2 + 2×3 = 8` and `3×1 + 4×2 + 5×3 = 26`. MATLAB returns a column. Mojj returns a length-two vector. Table keeps both axes, so its two-by-three result above contains six separate products.
 
@@ -190,19 +141,10 @@ Each example changes which items the **same sum** sees. A positive left argument
 
 | Task and result | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- |
-| Running totals → 1, 3, 6, 10 | `np.cumsum(v)` | `cumsum(v)` | `nm.cumsum(v)` | `jj["sum prefix"](v)` | `jj["+/\\"](v)` | `+/\ v` |
-| Totals from each item to the end → 10, 9, 7, 4 | `np.cumsum(v[::-1])[::-1]` | `flip(cumsum(flip(v)))` | `nm.flip(nm.cumsum(nm.flip(v)))` | `jj["sum suffix"](v)` | `jj["+/\\."](v)` | `+/\. v` |
-| Sliding pair sums → 3, 5, 7 | `np.lib.stride_tricks.sliding_window_view(v,2).sum(axis=1)` | `conv(v,ones(1,2),'valid')` | `v[:-1] + v[1:]` | `jj["sum prefix"](jj(2), v)` | `jj["+/\\"](jj(2), v)` | `2 +/\ v` |
-| Disjoint pair sums → 3, 7 | `v.reshape(-1,2).sum(axis=1)` | `sum(reshape(v,2,[]),1)` | `nm.sum(v.reshape(Shape(v.size//2, 2)), axis=1)` | `jj["sum prefix"](jj(-2), v)` | `jj["+/\\"](jj(-2), v)` | `_2 +/\ v` |
-
-<!-- mojj-comparison: showcase-windows -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Windows and blocks in Mojj and J](highlights/showcase-windows.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Running totals → 1, 3, 6, 10 | `np.cumsum(v)` | `cumsum(v)` | `nm.cumsum(v)` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>prefix</ins>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins><ins>&#92;&#92;</ins>"&#93;(v)</code> | <code data-mojj><strong>+</strong><ins>/</ins><ins>&#92;</ins> <em>v</em></code> |
+| Totals from each item to the end → 10, 9, 7, 4 | `np.cumsum(v[::-1])[::-1]` | `flip(cumsum(flip(v)))` | `nm.flip(nm.cumsum(nm.flip(v)))` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>suffix</ins>"&#93;(v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins><ins>&#92;&#92;.</ins>"&#93;(v)</code> | <code data-mojj><strong>+</strong><ins>/</ins><ins>&#92;.</ins> <em>v</em></code> |
+| Sliding pair sums → 3, 5, 7 | `np.lib.stride_tricks.sliding_window_view(v,2).sum(axis=1)` | `conv(v,ones(1,2),'valid')` | `v[:-1] + v[1:]` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>prefix</ins>"&#93;(jj(2), v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins><ins>&#92;&#92;</ins>"&#93;(jj(2), v)</code> | <code data-mojj><em>2</em> <strong>+</strong><ins>/</ins><ins>&#92;</ins> <em>v</em></code> |
+| Disjoint pair sums → 3, 7 | `v.reshape(-1,2).sum(axis=1)` | `sum(reshape(v,2,[]),1)` | `nm.sum(v.reshape(Shape(v.size//2, 2)), axis=1)` | <code data-mojj>jj&#91;"<strong>sum</strong> <ins>prefix</ins>"&#93;(jj(-2), v)</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins><ins>&#92;&#92;</ins>"&#93;(jj(-2), v)</code> | <code data-mojj><em>&#95;2</em> <strong>+</strong><ins>/</ins><ins>&#92;</ins> <em>v</em></code> |
 
 The reshape idioms in the last row require an even length. Append a fifth value of 5 and Mojj returns `3 7 5`. In a Mojo string literal, escape each window backslash as `\\`, or use the word spelling directly.
 
@@ -212,19 +154,10 @@ Every column applies its calculation to the scalar `x`. In J, parentheses group 
 
 | Intent | At x = 3 | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | ---: | --- | --- | --- | --- | --- | --- |
-| Subtract the square from the input (hook) | −6 | `x-x**2` | `x-x.^2` | `x-x**2` | `jj["minus square"](x)` | `jj["- *:"](x)` | `(- *:) x` |
-| Negate the square (composition) | −9 | `-(x**2)` | `-(x.^2)` | `-(x**2)` | `jj["minus of square"](x)` | `jj["- @: *:"](x)` | `(- @: *:) x` |
-| Add the square and the double (fork) | 15 | `x**2+2*x` | `x.^2+2*x` | `x**2+2*x` | `jj["square plus double"](x)` | `jj["*: + +:"](x)` | `(*: + +:) x` |
-| Double three times | 24 | `2**3*x` | `2^3*x` | `2**3*x` | `jj["double repeat 3"](x)` | `jj["+: ^: 3"](x)` | `(+: ^: 3) x` |
-
-<!-- mojj-comparison: showcase-composition -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Compose a calculation in Mojj and J](highlights/showcase-composition.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Subtract the square from the input (hook) | −6 | `x-x**2` | `x-x.^2` | `x-x**2` | <code data-mojj>jj&#91;"<strong>minus</strong> <strong>square</strong>"&#93;(x)</code> | <code data-mojj>jj&#91;"<strong>-</strong> <strong>&#42;:</strong>"&#93;(x)</code> | <code data-mojj>(<strong>-</strong> <strong>&#42;:</strong>) <em>x</em></code> |
+| Negate the square (composition) | −9 | `-(x**2)` | `-(x.^2)` | `-(x**2)` | <code data-mojj>jj&#91;"<strong>minus</strong> <ins>of</ins> <strong>square</strong>"&#93;(x)</code> | <code data-mojj>jj&#91;"<strong>-</strong> <ins>@:</ins> <strong>&#42;:</strong>"&#93;(x)</code> | <code data-mojj>(<strong>-</strong> <ins>@:</ins> <strong>&#42;:</strong>) <em>x</em></code> |
+| Add the square and the double (fork) | 15 | `x**2+2*x` | `x.^2+2*x` | `x**2+2*x` | <code data-mojj>jj&#91;"<strong>square</strong> <strong>plus</strong> <strong>double</strong>"&#93;(x)</code> | <code data-mojj>jj&#91;"<strong>&#42;:</strong> <strong>+</strong> <strong>+:</strong>"&#93;(x)</code> | <code data-mojj>(<strong>&#42;:</strong> <strong>+</strong> <strong>+:</strong>) <em>x</em></code> |
+| Double three times | 24 | `2**3*x` | `2^3*x` | `2**3*x` | <code data-mojj>jj&#91;"<strong>double</strong> <ins>repeat</ins> <em>3</em>"&#93;(x)</code> | <code data-mojj>jj&#91;"<strong>+:</strong> <ins>^:</ins> <em>3</em>"&#93;(x)</code> | <code data-mojj>(<strong>+:</strong> <ins>^:</ins> <em>3</em>) <em>x</em></code> |
 
 A hook supplies the original input to the left verb. A fork sends the input down both branches and combines their results with the middle verb. In a noun sentence, evaluation proceeds from the right, so `10 divide 3 plus 2` gives 2. Parentheses let you choose a different grouping.
 
@@ -234,18 +167,9 @@ Each library has a running sum. What if each step takes the cosine of the **prev
 
 | Task | NumPy | MATLAB | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- |
-| Apply cosine 12 times, starting at `x` | `r = x`<br>`for _ in range(12): r = np.cos(r)` | `r = x; for k = 1:12, r = cos(r); end` | `var r = x`<br>`for _ in range(12): r = cos(r)` | `jj["cos repeat 12"](x)` | `jj["(2&o.)^:12"](x)` | `((2&o.)^:12) x` |
-| Evaluate the continued fraction with coefficients `v` | `reduce(lambda tail, a: a + 1/tail, v[::-1])` | `r = v(end); for a = v(end-1:-1:1), r = a + 1/r; end` | `var r = Float64(v.item(-1))`<br>`for i in range(v.size-2, -1, -1): r = Float64(v.item(i)) + 1/r` | `jj["(plus divide) insert"](v)` | `jj["(+ %)/"](v)` | `(+ %)/ v` |
-| Omit each adjacent pair from `v` and take the minimum of what remains | `np.array([np.delete(v, slice(i,i+2)).min() for i in range(len(v)-1)])` | `arrayfun(@(i) min([v(1:i-1), v(i+2:end)]), 1:numel(v)-1)` | `var r = nm.zeros[i64](Shape(v.size-1))`<br>`for i in range(r.size): r[Item(i)] = nm.min(nm.delete(v, List[Int]([i, i+1])))` | `jj["min insert suffix"](jj(2), v)` | `jj["<./\\."](jj(2), v)` | `2 <./\. v` |
-
-<!-- mojj-comparison: showcase-loop-recipes -->
-<details>
-<summary>Read the Mojj and J expressions in color</summary>
-
-![Replace a loop or callback in Mojj and J](highlights/showcase-loop-recipes.svg)
-
-</details>
-<!-- /mojj-comparison -->
+| Apply cosine 12 times, starting at `x` | `r = x`<br>`for _ in range(12): r = np.cos(r)` | `r = x; for k = 1:12, r = cos(r); end` | `var r = x`<br>`for _ in range(12): r = cos(r)` | <code data-mojj>jj&#91;"<strong>cos</strong> <ins>repeat</ins> <em>12</em>"&#93;(x)</code> | <code data-mojj>jj&#91;"(<em>2</em><ins>&amp;</ins><strong>o.</strong>)<ins>^:</ins><em>12</em>"&#93;(x)</code> | <code data-mojj>((<em>2</em><ins>&amp;</ins><strong>o.</strong>)<ins>^:</ins><em>12</em>) <em>x</em></code> |
+| Evaluate the continued fraction with coefficients `v` | `reduce(lambda tail, a: a + 1/tail, v[::-1])` | `r = v(end); for a = v(end-1:-1:1), r = a + 1/r; end` | `var r = Float64(v.item(-1))`<br>`for i in range(v.size-2, -1, -1): r = Float64(v.item(i)) + 1/r` | <code data-mojj>jj&#91;"(<strong>plus</strong> <strong>divide</strong>) <ins>insert</ins>"&#93;(v)</code> | <code data-mojj>jj&#91;"(<strong>+</strong> <strong>%</strong>)<ins>/</ins>"&#93;(v)</code> | <code data-mojj>(<strong>+</strong> <strong>%</strong>)<ins>/</ins> <em>v</em></code> |
+| Omit each adjacent pair from `v` and take the minimum of what remains | `np.array([np.delete(v, slice(i,i+2)).min() for i in range(len(v)-1)])` | `arrayfun(@(i) min([v(1:i-1), v(i+2:end)]), 1:numel(v)-1)` | `var r = nm.zeros[i64](Shape(v.size-1))`<br>`for i in range(r.size): r[Item(i)] = nm.min(nm.delete(v, List[Int]([i, i+1])))` | <code data-mojj>jj&#91;"<strong>min</strong> <ins>insert</ins> <ins>suffix</ins>"&#93;(jj(2), v)</code> | <code data-mojj>jj&#91;"<strong>&lt;.</strong><ins>/</ins><ins>&#92;&#92;.</ins>"&#93;(jj(2), v)</code> | <code data-mojj><em>2</em> <strong>&lt;.</strong><ins>/</ins><ins>&#92;.</ins> <em>v</em></code> |
 
 - **Repetition** feeds each result back into cosine. From `x = 3.0`, twelve steps give approximately `0.7357345683`. J’s `2&o.` selects cosine. Mojj accepts both that spelling and `cos`.
 - **Insertion** groups from the right. The two-verb hook `(+ %)` combines a coefficient and a tail as `a + 1/tail`. For `1 2 3 4`, the fraction is `1 + 1/(2 + 1/(3 + 1/4)) = 43/30`. Python’s `reduce` visits left to right, so it receives the reversed vector.
@@ -255,25 +179,14 @@ Each library has a running sum. What if each step takes the cosine of the **prev
 
 For a sensor trace, root mean square turns several readings into one magnitude. For a vector named `samples`, NumPy spells it `np.sqrt(np.mean(samples**2))`, MATLAB spells it `sqrt(mean(samples.^2))`, and NuMojo spells it `sqrt(nm.mean(samples**2))`. Name the Mojj calculation once and inspect or reuse it at different input lengths.
 
-<!-- mojj-example: showcase-runtime -->
-![Apply a compiled RMS verb to runtime samples](highlights/showcase-runtime.svg)
-
-<details>
-<summary>Copy the example</summary>
-
-```mojo
-from std.collections import List
+<pre data-mojj="mojo"><code>from std.collections import List
 import mojj
 
 def main() raises:
-    comptime RMS = mojj.Expr["sqrt of mean of square"]
+    comptime RMS = mojj.Expr["<strong>sqrt</strong> <ins>of</ins> <strong>mean</strong> <ins>of</ins> <strong>square</strong>"]
     var samples: List[Float64] = [3.0, 4.0]
     print(RMS.describe())
-    print(RMS.reduce(samples))  # sqrt((9 + 16) / 2) ≈ 3.535534
-```
-
-</details>
-<!-- /mojj-example -->
+    print(RMS.reduce(samples))  # sqrt((9 + 16) / 2) ≈ 3.535534</code></pre>
 
 | What you have | What you need | Mojj entry point |
 | --- | --- | --- |
@@ -294,10 +207,10 @@ For every recipe above, J 9.6.3 and Mojj produced the same values, shapes, and n
 
 | Expression | Mojj | J |
 | --- | --- | --- |
-| `%: _1` | Raises a real-domain error. | Returns the complex atom `0j1`, the square root of −1. |
-| `9223372036854775807 + 1` | Raises an integer overflow error. | Promotes the result to floating point. |
-| `+/ i.0` | Returns Int64 0. | Returns Boolean 0, the empty sum. |
-| `*/ i.0` | Returns Int64 1. | Returns Boolean 1, the empty product. |
+| <code data-mojj><strong>%:</strong> <em>&#95;1</em></code> | Raises a real-domain error. | Returns the complex atom `0j1`, the square root of −1. |
+| <code data-mojj><em>9223372036854775807</em> <strong>+</strong> <em>1</em></code> | Raises an integer overflow error. | Promotes the result to floating point. |
+| <code data-mojj><strong>+</strong><ins>/</ins> <strong>i.</strong><em>0</em></code> | Returns Int64 0. | Returns Boolean 0, the empty sum. |
+| <code data-mojj><strong>&#42;</strong><ins>/</ins> <strong>i.</strong><em>0</em></code> | Returns Int64 1. | Returns Boolean 1, the empty product. |
 
 For a reusable named verb, J accepts `rms =: %: @: (+/ % #) @: *:`, then `rms samples` for a vector named `samples`. In Mojj the binding lives in Mojo. Write `comptime RMS = mojj.Expr["%: @: (+/ % #) @: *:"]`, then `RMS.reduce(samples)`. The phrase itself is compiled from a string literal. When porting a larger J program, check the supported valences too. For instance, the dot recipes here use two arguments. Mojj omits the determinant monad. See the [compatibility ledger](COMPATIBILITY.md) and [pinned J comparison](../tests/reference/README.md).
 
@@ -305,21 +218,10 @@ For a reusable named verb, J accepts `rms =: %: @: (+/ % #) @: *:`, then `rms sa
 
 Save this as `rows.mojo` in the repository root. It uses the same matrix and expression as the REPL example.
 
-<!-- mojj-example: showcase-program -->
-![Run the row-total example as a Mojo program](highlights/showcase-program.svg)
-
-<details>
-<summary>Copy the example</summary>
-
-```mojo
-from mojj import jj
+<pre data-mojj="mojo"><code>from mojj import jj
 
 def main() raises:
-    var A = jj["i.2 3"]()
-    print(jj["sum rank 1"](A).as_ints())  # [3, 12]
-```
-
-</details>
-<!-- /mojj-example -->
+    var A = jj["<strong>i.</strong><em>2</em> <em>3</em>"]()
+    print(jj["<strong>sum</strong> <ins>rank</ins> <em>1</em>"](A).as_ints())  # [3, 12]</code></pre>
 
 Run `pixi run mojo run -I src rows.mojo` from the repository root. The `-I src` option makes the local Mojj package available to the compiler.
