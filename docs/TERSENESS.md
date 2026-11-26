@@ -4,33 +4,61 @@ Ask an LLM for a finite impulse response filter and you can have a loop, a matri
 
 Now ask the model to turn convolution into correlation. It hands you a diff. Before you accept it, what do you look for?
 
+I’d look for the coefficient that multiplies the newest sample. I want to recognize that decision in code someone else wrote. That’s where the “aka” in the title needs a qualification. Terseness counts how little I write. By *expressiveness* I mean how directly I can state an idea I care about. The two coincide when a short phrase lets me locate a decision, predict the effect of changing it, and check my prediction.
+
 ## The one-word edit
 
-Suppose the first three samples are `1, 2, 4` in time order, and the filter coefficients (the *taps*) are `1, 2, 3`. The first tap multiplies the newest sample. The first full window should give $1(4)+2(2)+3(1)=11$. For cross-correlation with these real taps, pair the first tap with the oldest sample instead. Now the answer should be $1(1)+2(2)+3(4)=17$. A three-point moving average would make a lousy test here. Reverse three equal weights and you get the same answer.
+Suppose the samples, from oldest to newest, are `1, 2, 4, 8, 16`. The filter coefficients (the *taps*) are `1, 2, 3`. We want one output for each complete three-sample window, with the first tap multiplying the newest sample. On the first window I get $1(4)+2(2)+3(1)=11$.
 
-Here’s the filter at the Mojj prompt. Mojj is a J-inspired array language embedded in Mojo. The prompt accepts `=:` for assignment. Type a name on its own to inspect the value.
+Trace the first pass through this Python loop. The name `age` gives the minus sign a physical meaning. At age zero, the sample arrived just now.
+
+```python
+samples = [1, 2, 4, 8, 16]
+taps = [1, 2, 3]
+filtered = []
+for newest in range(len(taps) - 1, len(samples)):
+    filtered.append(sum(tap * samples[newest - age]
+                        for age, tap in enumerate(taps)))
+```
+
+Here’s the same calculation at the Mojj prompt. Mojj is a J-inspired array language embedded in Mojo. Start it with `pixi run mojj` from the repository root. Use `=:` to save a value and type its name to see it.
 
 ```text
 samples =: 1 2 4 8 16
 taps =: 1 2 3
 windows =: (tally taps) (identity prefix) samples
+windows
 filtered =: windows dot (reverse taps)
 filtered
 ```
 
-The answer is `[11, 22, 44]`. Keep the windows and evaluate one more line.
+`tally taps` supplies the width. With a width on its left, `prefix` visits complete sliding windows, and `identity` returns each window as it stands. Read the rows it produces below. The dot product pairs each row with the reversed taps, `3 2 1`.
 
-```text
-windows dot taps
-```
+| Window in time order | With reversed taps | With original taps |
+| --- | ---: | ---: |
+| 1, 2, 4 | 11 | 17 |
+| 2, 4, 8 | 22 | 34 |
+| 4, 8, 16 | 44 | 68 |
 
-That gives `[17, 34, 68]`. I like `reverse taps` because I can point to the convention I’m most likely to get wrong. I can predict what removing it will do and check that prediction with pencil arithmetic. I find `identity prefix` harder to read. You have to know that `prefix`, given a width on its left, visits each complete sliding window. Applying `identity` returns the window itself. NumPy’s `sliding_window_view` spends more characters to tell a newcomer what’s happening. I’d give NumPy the point on that line. [Run the filter and compare the spellings](ALGORITHMS.md#filter-a-signal).
+For valid cross-correlation with these real taps, the first tap multiplies the oldest sample. At the same prompt, drop `reverse` and enter `windows dot taps`. The corresponding Python edit is `enumerate(reversed(taps))`. Either way, I can predict the new first output, $1(1)+2(2)+3(4)=17$. Reversing the *outputs* would put 44 first. That’s a different edit, and these five samples tell the difference.
 
-That’s the qualification I’d put on the “aka” in the title. Terseness counts how little you write. Expressiveness concerns which ideas you can say directly. They coincide when a short expression names the very thing you want to inspect or change. Sometimes adding a word buys you that economy.
+What did brevity buy here? Read the Python loop again and account for its two indices. To check tap order, I also have to check where `newest` starts and what `age` counts. In `windows dot (reverse taps)` I can see the weights, their order, and the operation that consumes them in one glance. The indexing work is already accounted for by the rows on the screen. Replacing `windows` and `taps` with `u` and `v` would save more letters and give me two more things to remember.
 
-## Six weights in four spellings
+I still have to look twice at Mojj’s `identity prefix`. NumPy’s `sliding_window_view` spends more characters to tell me what I’m about to get. A colleague who reads NumPy every day could reasonably choose its spelling for both of us. [Compare the filter across languages](ALGORITHMS.md#filter-a-signal).
 
-Consider one line of backpropagation. Two input features feed three hidden units. We already know how sensitive the loss is to each unit’s preactivation. To get the gradient for a particular weight, multiply its input feature by the sensitivity of the unit it feeds. We need all six pairings.
+## Why learn the notation if the model can translate it?
+
+Here’s the strongest objection I know. Keep the conventional implementation in the repository. When I want to see the math, ask for the equation. When my colleague wants to understand an index, ask for a loop. Why make either of us learn another language?
+
+For a one-off use of an established operation, I’d take that bargain. If the job is to apply valid convolution, `np.convolve(samples, taps, mode="valid")` is an excellent line to keep. The name tells the next reader where to look up the contract. With the table above in a test, I’d be happy to let a model write that call and move on.
+
+The bargain changes when the convention itself is under development. Suppose the model writes a correlation, calls it a convolution, and illustrates it with a three-point moving average. Its explanation can agree with every output it shows. Reversing three equal taps leaves them unchanged. Asking for a second spelling of that example buys me very little. Choosing taps `1, 2, 3` and calculating 11 *before* I inspect the answer gives me an independent check. The model can do the translation. Someone still has to decide which two meanings a test ought to distinguish.
+
+There is a benefit on the next edit, too. In the Mojj version the windows have a name. I can inspect them, keep them fixed while I change the weights, or give them to the next person investigating a boundary error. A generated explanation lives beside the running program. A named value in the program lets both of us ask the running calculation the same question. Python can name the windows too. That’s a reason to keep the intermediate in either language. The further question for Mojj is whether learning a word once helps me read or invent an operation I haven’t seen before.
+
+## Six weights and one silent mistake
+
+Consider a single training example for a neural network. Two input features feed three hidden units. We know the input vector `x` and the sensitivity `dz` of the loss to each hidden unit’s input. What gradient belongs to the weight connecting feature $i$ to unit $j$? The chain rule gives $x_i\,dz_j$. We need all six pairings.
 
 | Notation | Gradient of the input weights |
 | --- | --- |
@@ -39,35 +67,66 @@ Consider one line of backpropagation. Two input features feed three hidden units
 | Mojj words | `x times table dz` |
 | J | `x */ dz` |
 
-The equation is lovely if the vector orientations are fresh in your mind. Arrive halfway down the page and you may have to scroll back to discover why that product gives a matrix. NumPy answers the question with one word, `outer`. Mojj offers another way to see it. Picture a multiplication table with two inputs labeling the rows and three sensitivities labeling the columns. You can tell me both the shape of the result and what goes in the bottom-right cell.
+I can read the Mojj line as instructions for a multiplication table. Write the two features down the side, the three sensitivities across the top, and fill in the cells. Swapping the operands still produces six plausible numbers. Drawing the table tells me which shape to expect and which weight each number will update. The two characters in the J spelling do separate jobs. Change `*` to `+` in `x */ dz` and you get every pairwise sum. The Mojj edit is `times table` to `plus table`. Once I know what `table` does, I can use it to pose a new question without first asking whether the library has a function named for it.
 
-What does J buy with `*/`? For a reader who knows J, the multiplication sign is a replaceable part. Change `*` to `+` and the same construction gives every pairwise sum. In Mojj the corresponding edit is `times table` to `plus table`. The time spent learning `table` pays off across operations. For someone reading this gradient once, `outer` may still be the better bargain. [Run the training step and inspect its gradients](ALGORITHMS.md#train-a-two-layer-network-for-one-step).
+Suppose I ask the model, “Make the hidden units leaky so negative inputs can learn.” The existing network uses ReLU, which sets negative inputs to zero. We want it to pass a tenth of each negative input and leave positive inputs alone. That changes two calculations during training. Start a fresh Mojj session and run this example with the original weights, before taking an optimizer step.
 
-An LLM can explain any of those spellings. It can also confidently explain a transposed gradient. The outer product with its arguments swapped still gives six plausible numbers. If you know to expect two rows and three columns, you have a check independent of the explanation. This is where the cost of reading matters most to me. I can delegate the first draft and still want a representation in which I can catch my own mistake about what I asked for.
+```text
+x =: 1 2
+W =: 2 3 reshape 1 _1 0.5 0 0.25 0.5
+w =: 0.5 1 _1
+target =: 1.0
+alpha =: 0.1
+z =: x dot W
+h =: z max (alpha * z)
+err =: (h dot w) - target
+slope =: alpha + ((1 - alpha) * (z greater 0))
+dz =: (err * w) * slope
+x times table dz
+```
+
+The middle unit is the interesting one. Its input is $-1+2(0.25)=-0.5$. It used to output zero and now outputs $-0.05$. Its output weight is 1, so this lowers the network’s prediction from $-1$ to $-1.05$. A test of the prediction would pass as soon as we changed `h`.
+
+Can the middle unit now *learn*? Under half-squared error the new prediction error is $-2.05$. Multiply by the middle output weight (1) and by the slope on the negative side (0.1). The middle unit’s sensitivity is $-0.205$. Its column in the gradient table should therefore contain $-0.205$ and $-0.410$, one entry for each input feature. If the backward pass still uses the old zero-or-one ReLU mask, both entries are zero. The new forward prediction and the old broken gradient can coexist quite happily.
+
+There’s a way to check the first entry without trusting the backward pass at all. Nudge the middle unit’s first weight from $-1$ to $-0.999$. Its input goes up by $0.001$, its output by $0.0001$. The loss changes from $2.05^2/2$ to $2.0499^2/2$. Divide that change by the weight nudge and you get about $-0.205$, right where the first entry said it would be.
+
+That column is what I’d ask to see in review. I’d also apply the new activation when measuring the prediction after the weight update. Naming `h`, `slope`, and `dz` costs a few lines and gives a reviewer somewhere to stop before the weights move. The full training example shows the original ReLU and the update together. [Run the training step](ALGORITHMS.md#train-a-two-layer-network-for-one-step).
 
 ## How short should an FFT be?
 
-For someone processing an audio signal, `np.fft.fft(samples)` may say everything necessary. For someone studying the fast Fourier transform, the interesting decision is hidden inside the call. Even the typeset Fourier sum leaves a question open. Evaluating that sum independently for each of $N$ outputs costs order $N^2$ operations. Where does the fast algorithm save the work?
+For someone processing audio, `np.fft.fft(samples)` may say everything necessary. For someone implementing the fast Fourier transform, even a beautifully typeset Fourier sum can leave out the most interesting thing. Evaluating the sum separately at each of $N$ frequencies takes order $N^2$ operations. What work can the frequencies share?
 
-Take a radix-2 transform with a power-of-two length. Let $E_k$ and $O_k$ be the transforms of the even- and odd-indexed samples, and let $W_N=e^{-2\pi i/N}$. Each pair of outputs shares a product.
+Take a power-of-two length $N$. Compute the half-length transforms $E$ and $O$ of the even- and odd-indexed samples. With $W_N=e^{-2\pi i/N}$, two outputs share one product.
 
 $$
-X_k = E_k + W_N^k O_k, \qquad
-X_{k+N/2} = E_k - W_N^k O_k.
+t_k=W_N^k O_k,\qquad X_k=E_k+t_k,\qquad X_{k+N/2}=E_k-t_k.
 $$
 
-In code I’d spend an extra line on `t = twiddle * odd`, then write `even + t` and `even - t`. The name makes the reuse visible. The other half of the explanation lives one level up. Compute each half-size transform once, spend linear work combining the results, and repeat across $\log_2 N$ levels. Both the butterfly and the decomposition belong in an explanation of the algorithm. For an edit to the inverse transform, I’d want to find two conventions just as easily as I found `reverse taps`. Where is the sign in the twiddle factor set, and where does the normalization by $N$ happen?
+Those three expressions give the *butterfly*, the step that combines two smaller transforms. Halving the problem gives $\log_2 N$ levels, with order $N$ work per level. Here I’d spend an extra name on $t_k$ even on a very narrow blackboard. It lets a student point at the multiplication we get to use twice.
 
-## When the equation runs out
+Try changing this transform into its inverse. Take a four-sample pulse one position after the origin, `[0, 1, 0, 0]`. Its even samples transform to `[0, 0]`, its odd samples to `[1, 1]`. The two forward multipliers are $1$ and $-i$. The butterfly gives $[1,-i,-1,i]$. To recover the pulse, use the positive sign in the exponent at each level and divide the completed transform by four. Keep the forward sign by mistake and dividing by four gives `[0, 0, 0, 1]`. A pulse at the origin would come back to the right place under either sign.
 
-Imagine flooding an image from two labeled seeds. Each basin spreads to neighboring pixels as the water rises. On a flat patch, two fronts can reach a pixel at the same height. Which label does it receive? Could it have been reached diagonally? A call like `watershed(image, markers)` can be perfectly readable while telling you little about either decision.
+I’d keep the library call in the audio program, the butterfly in a lesson, and the shifted pulse beside an implementation of the inverse. Each gives its reader a different thing to check. Mojj currently supports real numeric and Boolean arrays. Expressing the example as paired real and imaginary arrays would bury the sign change under bookkeeping, so I’d keep the complex arithmetic on the page. [Mojj’s supported array types](COMPATIBILITY.md).
 
-For the neighbor question, I’d sooner read a four-pixel example than another paragraph of API description. Put a seed in the upper-left pixel of a two-by-two mask. Allow flooding only there and in the lower-right pixel. With four-neighbor connectivity the seed has nowhere to go. With eight-neighbor connectivity it can label the lower-right pixel in one step. That tiny mask settles the meaning of an edit. A separate fixture with two seeds on a plateau would expose the tie rule. Here the most economical notation might be a picture beside the call.
+## When a picture says more than a formula
 
-## Give the reader an edit
+A watershed grows regions in an image from labeled seeds, as if water were rising from separate basins. Imagine a flat strip of five pixels with a seed at each end. Suppose each front advances one pixel per step. After the first step only the middle pixel is unsettled. A request to “label the basins” still admits both of these results.
 
-When comparing languages, give the reader a change to make. Keep the inputs fixed. Ask which line they would touch and which output should change. Turning convolution into correlation tests whether the coefficient order is visible. Switching the network to leaky ReLU asks the reader to find both the forward activation and the backward derivative. An input that drives a hidden unit below zero makes a missed edit show up in its gradient.
+| Choice on this plateau | Left to right |
+| --- | --- |
+| Seeds before flooding | `A . . . B` |
+| Give equal-distance ties to label A | `A A A B B` |
+| Leave a ridge at a meeting of the fronts | `A A │ B B` |
 
-This changes what I ask an LLM for, too. “Make it shorter” is easy to satisfy badly. “Write it so I can see which coefficient multiplies the newest sample” identifies a decision I’ll need to review. Sometimes the result will be a two-character idiom. Sometimes it will be a descriptive function name, a second line for a shared product, or a little matrix printed beside the calculation.
+Now give the algorithm a two-by-two mask with only the upper-left and lower-right pixels open and put seed A in the upper left. With four-neighbor connectivity the lower-right pixel stays unlabeled. Allow diagonal steps and it gets A. With one seed there can be no tie. On the strip there could be no diagonal. Each fixture settles one question.
 
-I care about terseness because there’s a moment after the code arrives when I still have to decide whether it says what I mean. In the filter I can point to one word and tell you, before I run the edit, that 11 will become 17. That’s the kind of short I want.
+If I asked an LLM to port this segmentation, I’d hand it the two fixtures and say which cells must receive a label. A compact call such as `watershed(image, markers)` would be fine once its behavior matched those decisions. Neither an array expression nor a longer flood loop can recover a preference I never supplied. Here the cheapest way to express the missing part of the specification was to draw five pixels.
+
+## What I’d keep in the repository
+
+When a model offers three equivalent versions, I’d give them all the same audition. Pick the change the next maintainer will actually make. Cover the output and try to predict what will move. For the filter, which tap reaches the newest sample? For the network, which column starts learning? If the answer depends on a convention outside the expression, write down one input on which the competing conventions disagree. That input earns its place alongside the code.
+
+I’d use words for the colleague seeing `table` for the first time. I’d happily use the J spelling in a room where everyone reads it. Learning a small, composable vocabulary pays off when tomorrow’s problem uses today’s words in a new combination. In a one-off script for a NumPy shop, a familiar function and a well-chosen example can buy the same ease of review at a lower cost.
+
+Cheap code generation lets me ask for as many spellings as I please. The scarce moment is the one after they arrive, when I have to decide which program I’m willing to maintain. In the filter I can put my finger on one word and tell you, before either of us runs the edit, that 11 will become 17. That’s the kind of short I want.
