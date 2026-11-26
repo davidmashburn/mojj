@@ -127,9 +127,9 @@ constant branch. Noun binding supports scalar/vector nouns and noun sentences:
 `10&-`, `-&10`, `0.5&*`, `(10 + 2)&-`.
 
 Words are lowercase whole tokens. Space, tab, CR, and LF are whitespace;
-punctuation delimits words. Words and symbols may be mixed. Unsupported
+a triple-quoted Mojo string can span several lines within one phrase. Punctuation delimits words. Words and symbols may be mixed. Unsupported
 operators, names, assignments, Unicode, and arbitrary
-modifier trains are rejected rather than reinterpreted.
+modifier trains are rejected in standalone phrase literals. The [Mojj CLI](CLI.md) adds session noun names and assignment.
 
 ## Consumers
 

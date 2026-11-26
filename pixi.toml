@@ -10,11 +10,13 @@ mojo = "==1.1.0"
 python = ">=3.11,<4"
 
 [tasks]
+mojj = "python3 bin/mojj"
 compare-j = "python3 tests/reference/compare.py"
 test-reference-harness = "python3 -m unittest discover -s tests/reference -p 'test_*.py'"
 perf-moments = "mojo run --fp-mode contract=off -I src tests/test_moments.mojo && mojo run --fp-mode contract=off -I src tests/perf/moments.mojo"
 perf-probes = "sh tests/perf/run-probes.sh"
-test = { depends-on = ["test-core", "test-views", "test-shared-reduce", "test-moments", "test-verbs", "test-vocabulary", "test-strings", "test-syntax", "test-reference-harness"] }
+test-cli = "python3 tests/test_cli.py"
+test = { depends-on = ["test-cli", "test-core", "test-views", "test-shared-reduce", "test-moments", "test-verbs", "test-vocabulary", "test-strings", "test-syntax", "test-reference-harness"] }
 test-vocabulary = { depends-on = ["test-circle", "test-predicates", "test-real-verbs", "test-p2-expr", "test-shapes", "test-arrays", "test-array-modifiers", "test-dot-float64", "test-p3-expr"] }
 test-circle = "mojo run --fp-mode contract=off -I src tests/test_circle.mojo"
 test-predicates = "mojo run --fp-mode contract=off -I src tests/test_predicates.mojo"

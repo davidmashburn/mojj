@@ -8,6 +8,18 @@ small J-inspired library; it is not a J interpreter or a general array package.
 
 Start with [Learn Mojj with words](docs/WORDS.md) for a hands-on walkthrough, or explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, NuMojo, Mojj, and J recipes covering array shapes, reductions, windows, and composition.
 
+## Try the Mojj prompt
+
+Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly.
+
+```text
+mojj> v =: 1 2 3 4
+mojj> sum prefix v
+[1, 3, 6, 10]
+```
+
+See [the command-line guide](docs/CLI.md) for assignment, multiline input, scripts, and the equivalent Mojo REPL code.
+
 ## First example
 
 ```mojo

@@ -294,7 +294,20 @@ def test_jj_call_arity() raises:
         _ = jj["%:"](Noun(-1))
 
 
+def test_multiline_literals() raises:
+    var totals = jj["""sum rank 1 (
+        2 2 reshape
+        1 2 3 4
+    )"""]()
+    assert_equal(totals.as_ints(), List[Int]([3, 7]))
+    comptime RMS = Expr["""sqrt of
+        mean of
+        square"""]
+    assert_equal(RMS.apply(3.0), 3.0)
+
+
 def main() raises:
+    test_multiline_literals()
     test_jj_data()
     test_jj_call_arity()
     test_trains_and_composition()
@@ -308,4 +321,4 @@ def main() raises:
     test_double_map_bits()
     test_owned_consumers()
     test_owned_identity()
-    print("PASS test_strings: 13 J semantic test groups")
+    print("PASS test_strings: 14 J semantic test groups")

@@ -96,6 +96,7 @@ struct Kind(ImplicitlyCopyable, Equatable):
     comptime SUFFIX = Self(55)
     comptime DOT = Self(56)
     comptime REPEAT = Self(57)
+    comptime NAME = Self(58)  # Session noun reference
 
     def __eq__(self, other: Self) -> Bool:
         return self.code == other.code
@@ -387,7 +388,7 @@ struct Syntax:
         else:
             self.tokens.append(Term(Part.NOUN, position, node))
 
-    def tokenize(mut self):
+    def tokenize(mut self, session: Bool):
         var nesting = 0
         while self.error == "":
             self.skip()
@@ -566,6 +567,10 @@ struct Syntax:
                         kind = Kind.REVERSE_ROTATE
                     elif word == "transpose":
                         kind = Kind.TRANSPOSE
+                    elif session:
+                        var node = self.add(Kind.NAME, start)
+                        self.tokens.append(Term(Part.NOUN, start, node))
+                        continue
                     else:
                         self.fail(start, "unknown word '" + word + "'")
                     self.verb(kind, start)
@@ -924,7 +929,7 @@ struct Syntax:
             return False
         return True
 
-    def parse(mut self):
+    def parse(mut self, session: Bool = False):
         if self.source.byte_length() > 512:
             self.fail(512, "expression exceeds 512 ASCII bytes")
             return
@@ -932,7 +937,7 @@ struct Syntax:
             if self.byte(index) > 127:
                 self.fail(index, "only ASCII syntax is supported")
                 return
-        self.tokenize()
+        self.tokenize(session)
         if len(self.tokens) == 1:
             self.fail(0, "expected an expression")
         var next = len(self.tokens) - 1
@@ -956,7 +961,7 @@ struct Syntax:
         self.part = result.part
 
 
-def parse(var source: String) -> Syntax:
+def parse(var source: String, session: Bool = False) -> Syntax:
     var result = Syntax(source^)
-    result.parse()
+    result.parse(session)
     return result^

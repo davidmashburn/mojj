@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Evaluate Mojj sentences using the repository's pinned Mojo REPL."""
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+ASSIGN = re.compile(r"^([A-Za-z][A-Za-z0-9_]*)\s*=:(.*)$", re.DOTALL)
+DONE = "__MOJJ_REPL_DONE__"
+OK = "__MOJJ_REPL_OK__"
+ERROR = "__MOJJ_REPL_ERROR__"
+
+
+def exchange(proc, code):
+    """A separate fence cell also runs when the submitted cell fails to compile."""
+    proc.stdin.write(f'{code}\nprint("{OK}")\n\nprint("{DONE}")\n\n')
+    proc.stdin.flush()
+    lines = []
+    for line in proc.stdout:
+        line = line.rstrip("\r\n")
+        if line == DONE:
+            break
+        lines.append(line)
+    else:
+        raise RuntimeError("Mojo REPL exited unexpectedly\n" + "\n".join(lines[-8:]))
+    for line in lines:
+        if line.startswith(ERROR):
+            raise ValueError(line[len(ERROR):])
+    if OK not in lines:
+        reasons = [line.partition("constraint failed: ")[2] for line in lines
+                   if "constraint failed: " in line]
+        raise ValueError(reasons[-1] if reasons else "\n".join(lines).strip())
+    # LLDB also prints compiler warnings and debugger state for new variables.
+    for line in lines:
+        if line.startswith("result> "):
+            print(line.removeprefix("result> "), flush=True)
+
+
+def submit(proc, sentence):
+    assignment = ASSIGN.fullmatch(sentence)
+    if assignment:
+        name, sentence = assignment.groups()
+    # Keep the submitted Mojo cell on one physical line even for multiline
+    # phrases. Quoting also keeps input inside a literal at the REPL boundary.
+    if any(not c.isascii() or (ord(c) < 32 and c not in "\t\n\r") for c in sentence):
+        raise ValueError("expected an ASCII Mojj phrase")
+    expr = f'evaluate[{json.dumps(sentence)}](env)'
+    action = (f'env.assign("{name}", value^)' if assignment else
+              'print("result> ", end="")\n    display(value)')
+    exchange(proc, f'try:\n    var value = {expr}\n    {action}\nexcept e:\n    print("{ERROR}", e, sep="")')
+
+
+def interact(proc):
+    interactive = sys.stdin.isatty()
+    failed = False
+    pending = []
+    if interactive:
+        print("Mojj (Mojo REPL)   name =: sentence   :quit to exit")
+    while True:
+        try:
+            if interactive:
+                line = input("... " if pending else "mojj> ")
+            else:
+                line = next(sys.stdin).rstrip("\n")
+        except (EOFError, StopIteration):
+            if pending:
+                print("incomplete multiline phrase", file=sys.stderr)
+                failed = True
+            break
+        if line.strip() == ":quit":
+            break
+        pending.append(line)
+        sentence = "\n".join(pending).strip()
+        if sentence.count("(") > sentence.count(")"):
+            continue
+        pending.clear()
+        if sentence:
+            try:
+                submit(proc, sentence)
+            except ValueError as exc:
+                print(exc, file=sys.stderr, flush=True)
+                failed = True
+    return int(failed and not interactive)
+
+
+def main():
+    if sys.argv[1:] in (["--help"], ["-h"]):
+        print(__doc__, "\nUsage: mojj < script.mojj   (or run interactively)")
+        return 0
+    if sys.argv[1:]:
+        print("usage: mojj [--help]", file=sys.stderr)
+        return 2
+    with subprocess.Popen(
+        ["pixi", "run", "mojo", "repl"], cwd=ROOT / "src",
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, errors="replace",
+    ) as proc:
+        try:
+            exchange(proc, "from mojj._session import Session, evaluate, display\nvar env = Session()")
+            return interact(proc)
+        finally:
+            if proc.poll() is None:
+                try:
+                    proc.stdin.write(":quit\n")
+                    proc.stdin.close()
+                except BrokenPipeError:
+                    pass
+                proc.stdout.read()
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, RuntimeError, ValueError) as exc:
+        sys.exit(str(exc))
+    except KeyboardInterrupt:
+        sys.exit(130)

@@ -21,14 +21,14 @@ from .verbs import (
 )
 
 
-struct _Syntax[source: StringLiteral]:
-    comptime ast = parse(String(Self.source))
+struct _Syntax[source: StringLiteral, session: Bool = False]:
+    comptime ast = parse(String(Self.source), Self.session)
 
 
-struct _Value[source: StringLiteral, node: Int](NounProvider):
+struct _Value[source: StringLiteral, node: Int, session: Bool = False](NounProvider):
     @staticmethod
     def value() raises -> Noun:
-        comptime ast = _Syntax[Self.source].ast
+        comptime ast = _Syntax[Self.source, Self.session].ast
         comptime current = ast.nodes[Self.node]
         comptime if current.kind == Kind.LITERAL:
             comptime first = current.a
@@ -67,15 +67,17 @@ struct _Value[source: StringLiteral, node: Int](NounProvider):
                         values.append(number.integer)
                     return Noun(values^)
         elif current.kind == Kind.MONAD:
-            return _Verb[Self.source, current.a].monad(_Value[Self.source, current.b].value())
+            return _Verb[Self.source, current.a, Self.session].monad(_Value[Self.source, current.b, Self.session].value())
         elif current.kind == Kind.DYAD:
-            return _Verb[Self.source, current.a].dyad(_Value[Self.source, current.b].value(), _Value[Self.source, current.c].value())
+            return _Verb[Self.source, current.a, Self.session].dyad(_Value[Self.source, current.b, Self.session].value(), _Value[Self.source, current.c, Self.session].value())
+        elif current.kind == Kind.NAME:
+            raise Error("session names in a derived verb require a literal operand")
         else:
             raise Error("Mojj internal: expected noun node")
 
     @staticmethod
     def describe() -> String:
-        comptime ast = _Syntax[Self.source].ast
+        comptime ast = _Syntax[Self.source, Self.session].ast
         comptime current = ast.nodes[Self.node]
         comptime if current.kind == Kind.LITERAL:
             var result = String("")
@@ -89,9 +91,9 @@ struct _Value[source: StringLiteral, node: Int](NounProvider):
                     result += String(number.integer)
             return result
         elif current.kind == Kind.MONAD:
-            return "monad(" + _Verb[Self.source, current.a].describe() + ", " + _Value[Self.source, current.b].describe() + ")"
+            return "monad(" + _Verb[Self.source, current.a, Self.session].describe() + ", " + _Value[Self.source, current.b, Self.session].describe() + ")"
         elif current.kind == Kind.DYAD:
-            return "dyad(" + _Verb[Self.source, current.a].describe() + ", " + _Value[Self.source, current.b].describe() + ", " + _Value[Self.source, current.c].describe() + ")"
+            return "dyad(" + _Verb[Self.source, current.a, Self.session].describe() + ", " + _Value[Self.source, current.b, Self.session].describe() + ", " + _Value[Self.source, current.c, Self.session].describe() + ")"
         else:
             return "invalid noun"
 
@@ -100,8 +102,8 @@ struct _VerbAt[index: Int, *candidates: Verb]:
     comptime Type = Self.candidates[Self.index]
 
 
-struct _Verb[source: StringLiteral, node: Int](Verb):
-    comptime ast = _Syntax[Self.source].ast
+struct _Verb[source: StringLiteral, node: Int, session: Bool = False](Verb):
+    comptime ast = _Syntax[Self.source, Self.session].ast
     comptime current = Self.ast.nodes[Self.node]
     comptime rank_operand = Self.current.b if Self.current.kind == Kind.RANK else 0
     comptime repeat_count = Self.ast.repeat_count(Self.current.b) if Self.current.kind == Kind.REPEAT else 0
@@ -121,15 +123,15 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
         Tally,
         Right,  # CAP
         Right,  # LITERAL
-        Insert[_Verb[Self.source, Self.current.a]],
-        ComposeAll[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
-        Atop[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
+        Insert[_Verb[Self.source, Self.current.a, Self.session]],
+        ComposeAll[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
+        Atop[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
         Right,  # BIND
-        Hook[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
-        Fork[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b], _Verb[Self.source, Self.current.c]],
-        BindLeftNoun[_Value[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
-        BindRightNoun[_Verb[Self.source, Self.current.a], _Value[Self.source, Self.current.b]],
-        ConstantNoun[_Value[Self.source, Self.current.a]],
+        Hook[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
+        Fork[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session], _Verb[Self.source, Self.current.c, Self.session]],
+        BindLeftNoun[_Value[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
+        BindRightNoun[_Verb[Self.source, Self.current.a, Self.session], _Value[Self.source, Self.current.b, Self.session]],
+        ConstantNoun[_Value[Self.source, Self.current.a, Self.session]],
         Right,  # MONAD
         Right,  # DYAD
         Equal,
@@ -148,8 +150,8 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
         Power,
         Logarithm,
         Circle,
-        BondVerbs[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
-        Reflex[_Verb[Self.source, Self.current.a]],
+        BondVerbs[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
+        Reflex[_Verb[Self.source, Self.current.a, Self.session]],
         ShapeReshape,
         Iota,
         RavelAppend,
@@ -163,15 +165,15 @@ struct _Verb[source: StringLiteral, node: Int](Verb):
         ReverseRotate,
         Transpose,
         Rank[
-            _Verb[Self.source, Self.current.a],
+            _Verb[Self.source, Self.current.a, Self.session],
             Self.ast.rank_value(Self.rank_operand, 0),
             Self.ast.rank_value(Self.rank_operand, 1),
             Self.ast.rank_value(Self.rank_operand, 2),
         ],
-        Prefix[_Verb[Self.source, Self.current.a]],
-        Suffix[_Verb[Self.source, Self.current.a]],
-        Dot[_Verb[Self.source, Self.current.a], _Verb[Self.source, Self.current.b]],
-        Repeat[_Verb[Self.source, Self.current.a], Self.repeat_count],
+        Prefix[_Verb[Self.source, Self.current.a, Self.session]],
+        Suffix[_Verb[Self.source, Self.current.a, Self.session]],
+        Dot[_Verb[Self.source, Self.current.a, Self.session], _Verb[Self.source, Self.current.b, Self.session]],
+        Repeat[_Verb[Self.source, Self.current.a, Self.session], Self.repeat_count],
     ].Type
 
     @staticmethod
