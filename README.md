@@ -56,6 +56,11 @@ passed the full suite, demo, package smoke and pinned J comparison on `d303a52`.
 On macOS arm64 the pinned J comparison also passed all 142 expectations,
 including the 14 repetition fixtures.
 
+## Research notes
+
+- [Verb valence](research/verb-valence.md) examines when one spelling should accept one or two arguments, using existing Mojj programs and parser behavior.
+- [Glyph inventory and confusion tests](research/unicode-inventory.md) screens candidate symbols and emoji. The [initial notation sketch](research/unicode-notation.md) records the original motivation.
+
 ## Ideas
 
 - [One expression, two textual forms](ideas/expression-frontends.md) — shared
