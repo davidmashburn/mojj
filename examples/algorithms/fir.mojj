@@ -1,0 +1,5 @@
+samples =: 1 2 4 8 16
+taps =: 1 2 3
+windows =: (tally taps) (identity prefix) samples
+filtered =: windows dot (reverse taps)
+filtered

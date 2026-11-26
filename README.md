@@ -8,6 +8,8 @@ small J-inspired library; it is not a J interpreter or a general array package.
 
 Start with [Learn Mojj with words](docs/WORDS.md) for a hands-on walkthrough, or explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, NuMojo, Mojj, and J recipes covering array shapes, reductions, windows, and composition.
 
+Work through a [signal filter and a neural-network training step](docs/ALGORITHMS.md) to compare Mojj with mathematical notation and executable array code.
+
 ## Try the Mojj prompt
 
 Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly.
