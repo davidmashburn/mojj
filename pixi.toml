@@ -46,6 +46,7 @@ package-strings-smoke = { cmd = "mojo run --fp-mode contract=off -I build tests/
 python = ">=3.11,<4"
 prompt-toolkit = ">=3.0,<4"
 pandoc = ">=3,<4"
+pygments = ">=2.19,<3"
 
 [feature.docs.tasks]
 docs = "python3 tools/render_docs.py"

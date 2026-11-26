@@ -17,8 +17,14 @@ import shutil
 import subprocess
 import sys
 from enum import Enum
+from functools import lru_cache
+from itertools import groupby
+from operator import itemgetter
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
+from pygments.lexers import get_lexer_by_name
+from pygments.token import Comment, Keyword, Name, Number, Operator, String
+from pygments.util import ClassNotFound
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "bin"))
@@ -118,13 +124,47 @@ def code_fragments(source: str, language: str) -> list[tuple[str, str]]:
     return fragments
 
 
+MOJJ_MODES = frozenset(item.value for item in Language)
+HOST_LABELS = {
+    "numpy": "python", "python": "python", "matlab": "matlab", "numojo": "mojo",
+    "mojo": "mojo", "mojj entry point": "mojo", "wolfram language": "mathematica",
+}
+HOST_STYLES = {
+    Comment: "comment", Keyword: "keyword", String: "string", Number: "number",
+    Name.Builtin: "builtin", Name: "name", Operator: "operator",
+}
+
+
+@lru_cache
+def host_lexer(language):
+    if language in {Language.MOJJ.value, Language.J.value, Language.TEXT.value}:
+        return None
+    try:
+        return get_lexer_by_name(language)
+    except ClassNotFound:
+        return None
+
+
 def colored_code(source, language):
+    """Color the original characters; embedded Mojj roles take priority over Mojo strings."""
+    styles = [("", 0)] * len(source)
+    lexer = host_lexer(language)
+    if lexer is not None:
+        for start, token, text in lexer.get_tokens_unprocessed(source):
+            for category, style in HOST_STYLES.items():
+                if token in category:
+                    styles[start:start + len(text)] = [("host-" + style, start)] * len(text)
+                    break
+    offset = 0
+    for role, text in code_fragments(source, language):
+        if role:
+            styles[offset:offset + len(text)] = [("mojj-" + Role(role).name.lower(), offset)] * len(text)
+        offset += len(text)
+
     parts = []
-    for style, token in code_fragments(source, language):
-        escaped = html.escape(token, quote=False)
-        if style:
-            escaped = f'<span class="mojj-{Role(style).name.lower()}">{escaped}</span>'
-        parts.append(escaped)
+    for (style, _start), run in groupby(zip(styles, source), key=itemgetter(0)):
+        text = html.escape("".join(char for _, char in run), quote=False)
+        parts.append(f'<span class="{style}">{text}</span>' if style else text)
     return "".join(parts)
 
 
@@ -220,7 +260,12 @@ def _table_languages(table):
         label = plain_text(cells[0][4]).strip().lower() if cells else ""
         for index, cell in enumerate(cells):
             if index < len(headers) and phrase_cell(headers, label, index):
-                yield cell
+                yield cell, Language.MOJJ.value
+            elif index < len(headers):
+                heading = label if index and headers[0] in {"environment", "notation"} else headers[index]
+                language = HOST_LABELS.get(heading.split(" (", 1)[0])
+                if language:
+                    yield cell, language
 
 
 def transform(document, source, destination, outputs):
@@ -242,24 +287,26 @@ def transform(document, source, destination, outputs):
             return value
         kind, content = value.get("t"), value.get("c")
         if kind == "Table":
-            for cell in _table_languages(content):
-                cell[4] = walk(cell[4], Language.MOJJ.value)
+            for cell, mode in _table_languages(content):
+                cell[4] = walk(cell[4], mode)
             value["c"] = walk(content)
             return {"t": "Div", "c": [["", ["table-scroll"], [["tabindex", "0"], ["aria-label", "Scrollable table"]]], [value]]}
         if kind in ("Code", "CodeBlock"):
             attributes, code = content
-            mode = language or Language.MOJO.value
+            mode = language
             if kind == "CodeBlock":
-                mode = attributes[1][0] if attributes[1] else ""
-            elif any(style for style, _ in code_fragments(code, Language.MOJO.value)):
+                mode = attributes[1][0] if attributes[1] else None
+            elif mode in (None, Language.MOJJ.value) and any(
+                style for style, _ in code_fragments(code, Language.MOJO.value)
+            ):
                 mode = Language.MOJO.value
-            fragments = code_fragments(code, mode)
-            if any(style for style, _ in fragments):
+            if mode and (mode in MOJJ_MODES or host_lexer(mode)):
                 rendered = colored_code(code, mode)
+                css = "mojj-code" if mode in MOJJ_MODES else "host-code"
                 if kind == "CodeBlock":
-                    rendered = f'<pre class="mojj-code"><code class="language-{html.escape(mode)}">{rendered}</code></pre>'
+                    rendered = f'<pre class="{css}"><code class="language-{html.escape(mode, quote=True)}">{rendered}</code></pre>'
                     return {"t": "RawBlock", "c": ["html", rendered]}
-                return {"t": "RawInline", "c": ["html", f'<code class="mojj-code">{rendered}</code>']}
+                return {"t": "RawInline", "c": ["html", f'<code class="{css}">{rendered}</code>']}
             return value
         if kind == "Link":
             content[2][0] = link(content[2][0])
@@ -306,6 +353,12 @@ code { background:var(--panel); border-radius:.2rem; padding:.1rem .25rem; }
 pre { padding:1rem; background:var(--panel); border:1px solid var(--line);
   border-radius:.4rem; overflow:auto; line-height:1.6; tab-size:4; }
 pre code { padding:0; border:0; font-size:1em; background:none; }
+.host-keyword, .host-operator { color:var(--modifier); }
+.host-keyword { font-weight:700; }
+.host-string { color:var(--noun); }
+.host-number, .host-builtin { color:var(--link); }
+.host-name { color:var(--verb); }
+.host-comment { color:var(--muted); font-style:italic; }
 .mojj-noun { color:var(--noun); font-style:italic; }
 .mojj-verb { color:var(--verb); font-weight:700; }
 .mojj-modifier { color:var(--modifier); text-decoration:underline; text-underline-offset:.2em; }

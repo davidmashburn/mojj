@@ -133,7 +133,8 @@ class PandocTests(unittest.TestCase):
 | J | `+/ x` |
 ''')
         self.assertEqual(parsed.text, ["np.flip(taps)", "reverse taps", "|. taps", "|. taps", "np.sum(x)", "sum x", "+/ x"])
-        self.assertTrue(all(not style for style, _ in parsed.code[0]))
+        self.assertIn(("host-name", "np"), parsed.code[0])
+        self.assertIn(("host-name", "np"), parsed.code[4])
         self.assertIn(("mojj-verb", "reverse"), parsed.code[1])
         self.assertIn(("mojj-verb", "|."), parsed.code[2])
         self.assertIn(("mojj-modifier", "/"), parsed.code[-1])
@@ -147,15 +148,37 @@ class PandocTests(unittest.TestCase):
         self.assertIn(("mojj-verb", "%:"), parsed.code[0])
         self.assertEqual(parsed.code[1], [("", "0j1")])
 
-    def test_embedded_table_code_keeps_host_syntax_plain(self):
+    def test_embedded_table_code_uses_both_grammars(self):
         _, parsed = self.parsed('''| Task | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- |
 | Sum | `jj["sum rank 1"](A).as_ints()` | `jj["+/\\"1"](A)` | `+/"1 A` |
 ''')
         self.assertEqual(parsed.text[0], 'jj["sum rank 1"](A).as_ints()')
-        self.assertEqual(parsed.code[0][0], ("", 'jj["'))
-        self.assertEqual(parsed.code[0][-1], ("", '"](A).as_ints()'))
+        self.assertIn(("host-name", "jj"), parsed.code[0])
+        self.assertIn(("mojj-verb", "sum"), parsed.code[0])
+        self.assertIn(("host-name", "A"), parsed.code[0])
         self.assertIn(("mojj-modifier", '\\"'), parsed.code[1])
+
+    def test_language_fences_and_comparison_labels(self):
+        _, parsed = self.parsed("""```py
+for x in xs:
+    print(x)
+```
+
+| MATLAB (row vectors) | NuMojo | Wolfram Language |
+| --- | --- | --- |
+| `A.'` | `var x = 2` | `Dot[x, y]` |
+
+| Environment | Code |
+| --- | --- |
+| Wolfram Language (Mathematica) | `Dot[x, y]` |
+""")
+        self.assertEqual(parsed.text, ["for x in xs:\n    print(x)", "A.'", "var x = 2", "Dot[x, y]", "Dot[x, y]"])
+        self.assertIn(("host-keyword", "for"), parsed.code[0])
+        self.assertIn(("host-operator", "'"), parsed.code[1])
+        self.assertIn(("host-keyword", "var"), parsed.code[2])
+        self.assertIn(("host-name", "Dot"), parsed.code[3])
+        self.assertEqual(parsed.code[3], parsed.code[4])
 
     def test_output_is_offline_mathml_and_rewrites_reader_links(self):
         with tempfile.TemporaryDirectory() as temporary:

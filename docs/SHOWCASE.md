@@ -10,7 +10,7 @@ For a guided introduction using the word spellings, start with [Learn Mojj with 
 
 Each call returns a noun, so you can pass its result straight into another call. If you prefer explicit names, import `Noun` and `Expr` from `mojj`. Write `Noun(x)` for an `Int`, `Float64`, `Bool`, or a list of any one of those types. For a phrase, spell the three calls `Expr[phrase].value()`, `Expr[phrase].monad(y)`, and `Expr[phrase].dyad(x, y)`.
 
-In the comparison tables, read <code><strong>sum</strong> <ins>rank</ins> <em>1</em></code> as a verb, a modifier, and a noun. GitHub uses bold, underline, and italics for those roles. For the same tables in the prompt’s colors, run `pixi run docs` and open `build/docs/docs/SHOWCASE.html`.
+In the comparison tables, read <code><strong>sum</strong> <ins>rank</ins> <em>1</em></code> as a verb, a modifier, and a noun. GitHub uses bold, underline, and italics for those roles. The HTML edition also highlights Python, MATLAB, and Mojo in their own columns. To read it with Mojj’s prompt colors, run `pixi run docs` and open `build/docs/docs/SHOWCASE.html`.
 
 ## Try it in the Mojo REPL
 
