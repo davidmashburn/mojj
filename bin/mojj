@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Evaluate Mojj sentences using the repository's pinned Mojo REPL."""
 import json
+import os
 import re
 import subprocess
 import sys
+from importlib.util import find_spec
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,32 +58,44 @@ def interact(proc):
     interactive = sys.stdin.isatty()
     failed = False
     pending = []
+    read_line = input
     if interactive:
         print("Mojj (Mojo REPL)   name =: sentence   :quit to exit")
+        if (
+            sys.stdout.isatty()
+            and not os.environ.get("NO_COLOR")
+            and os.environ.get("TERM") != "dumb"
+            and find_spec("prompt_toolkit") is not None
+        ):
+            from mojj_prompt import highlighted_prompt
+
+            read_line = highlighted_prompt()
     while True:
         try:
             if interactive:
-                line = input("... " if pending else "mojj> ")
+                entry = read_line("... " if pending else "mojj> ")
             else:
-                line = next(sys.stdin).rstrip("\n")
+                entry = next(sys.stdin).rstrip("\n")
         except (EOFError, StopIteration):
             if pending:
                 print("incomplete multiline phrase", file=sys.stderr)
                 failed = True
             break
-        if line.strip() == ":quit":
-            break
-        pending.append(line)
-        sentence = "\n".join(pending).strip()
-        if sentence.count("(") > sentence.count(")"):
-            continue
-        pending.clear()
-        if sentence:
-            try:
-                submit(proc, sentence)
-            except ValueError as exc:
-                print(exc, file=sys.stderr, flush=True)
-                failed = True
+        # Bracketed paste can deliver several physical lines in one read.
+        for line in entry.split("\n"):
+            if line.strip() == ":quit":
+                return int(failed and not interactive)
+            pending.append(line)
+            sentence = "\n".join(pending).strip()
+            if sentence.count("(") > sentence.count(")"):
+                continue
+            pending.clear()
+            if sentence:
+                try:
+                    submit(proc, sentence)
+                except ValueError as exc:
+                    print(exc, file=sys.stderr, flush=True)
+                    failed = True
     return int(failed and not interactive)
 
 

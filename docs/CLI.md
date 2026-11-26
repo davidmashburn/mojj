@@ -16,6 +16,20 @@ mojj> doubled
 
 Assignment evaluates the right side once. Updating `readings` leaves the earlier value of `doubled` available. A failed assignment preserves the previous binding. Use `=:` for assignment and `=` for equality.
 
+## Read the colors
+
+The interactive prompt highlights each token as you type. Try `totals =: sum rank 1 readings` after assigning `readings`.
+
+| Appearance | Role | In this sentence |
+| --- | --- | --- |
+| Bold cyan | Verb (an operation) | `sum` adds the items |
+| Green | Noun (data or a name for data) | `readings` supplies the array, `1` the rank, and `totals` names the result |
+| Underlined magenta | Modifier (changes how an operation applies) | `rank` applies `sum` to rank-1 cells |
+
+The same colors apply to symbols. In `+/ readings`, `+` is a verb and `/` modifies it to add across the items. Names take the noun color even while you’re typing a new name. Pressing Enter evaluates the sentence and reports any undefined names.
+
+Set `NO_COLOR=1` for plain input. Scripts, redirected output, and terminals with `TERM=dumb` also use plain text. The colors belong to the Mojj prompt started by `pixi run mojj`; the underlying Mojo REPL has its own display.
+
 ## Continue a sentence on the next line
 
 An open parenthesis gives you a continuation prompt. Close the group and press Enter to evaluate the whole sentence. The same rule works with piped input.

@@ -14,7 +14,7 @@ For the argument behind the notation, read [Why care about terseness (aka expres
 
 ## Try the Mojj prompt
 
-Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly.
+Run `pixi run mojj` from the repository root. It starts a Mojo REPL under the hood and accepts Mojj sentences directly. As you type, the prompt highlights verbs in bold cyan, nouns in green, and modifiers in underlined magenta.
 
 ```text
 mojj> v =: 1 2 3 4

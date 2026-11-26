@@ -8,6 +8,7 @@ platforms = ["osx-arm64", "linux-64"]
 [dependencies]
 mojo = "==1.1.0"
 python = ">=3.11,<4"
+prompt-toolkit = ">=3.0,<4"
 
 [tasks]
 mojj = "python3 bin/mojj"
