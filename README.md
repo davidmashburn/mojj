@@ -58,6 +58,7 @@ including the 14 repetition fixtures.
 
 ## Research notes
 
+- [Language improvement rubric](research/language-improvements.md) sets criteria for proposals and applies them to naming sliding windows.
 - [Verb valence](research/verb-valence.md) examines when one spelling should accept one or two arguments, using existing Mojj programs and parser behavior.
 - [Glyph inventory and confusion tests](research/unicode-inventory.md) screens candidate symbols and emoji. The [initial notation sketch](research/unicode-notation.md) records the original motivation.
 
