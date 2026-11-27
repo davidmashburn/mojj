@@ -4,10 +4,12 @@
 words and symbols produce the same typed verbs. Runtime inputs are `Noun` values;
 there is no runtime string parser or language interpreter.
 
-## Migration from 0.1
+<a id="migration-from-01"></a>
 
-**Breaking change:** bare verb sequences form J trains. Whitespace no longer
-means composition. Use `of` or `@:` explicitly:
+## Trains and composition
+
+**Breaking change from the prototype:** bare verb sequences form J trains.
+Whitespace no longer means composition. Use `of` or `@:` explicitly:
 
 | Phrase | At 3 | Structure |
 | --- | --- | --- |
@@ -139,8 +141,8 @@ var hook = Expr["<strong>minus</strong> <strong>square</strong>"].monad(Noun(3))
 var difference = Expr["<strong>minus</strong>"].dyad(Noun(10), Noun(3))
 var sentence = Expr["<em>10</em> <strong>divide</strong> <em>3</em> <strong>plus</strong> <em>2</em>"].value()</code></pre>
 
-`monad`/`dyad` consume verbs and return a `Noun`; `value` evaluates a complete
-noun sentence. A wrong consumer is a compile-time error. `describe()` works
+`monad` applies a verb to one noun and `dyad` applies it to two; both return
+a `Noun`. `value` evaluates a complete noun sentence. A wrong consumer is a compile-time error. `describe()` works
 at compile time for either kind of phrase.
 
 Float64 convenience methods `apply(value)`, `map(data)`, and `reduce(data)`

@@ -7,7 +7,7 @@ workloads include input copying, allocation and destruction.
 
 ## Results
 
-Keep the scalar square path. All three widths qualified in the first Apple
+The selection rule did not justify replacing the scalar square path. All three widths qualified in the first Apple
 M4 run. Width four remained the preferred candidate because neither
 alternative displaced it head-to-head. No width reproduced seven wins on
 that host. Width four also recorded a 1.34× median slowdown for
@@ -18,8 +18,8 @@ the repeat, which limits what those slowdowns establish.
 On hosted Linux x86-64, width four won all eight blocks for 100,000-element
 square map with a 1.093× median speedup, below the 1.10× threshold. At
 1,024 elements it was 1.79× faster for square map and 1.23× faster for RMS,
-with eight wins each. The Linux result establishes gains at those tested
-sizes and falls short of the primary selection rule.
+with eight wins each. The Linux result shows gains in that run at those sizes, but falls short
+of the primary selection rule at 100,000 elements.
 
 | Workload at 100,000 elements | Width | M4 first run | M4 repeat | Linux x86-64 |
 | --- | ---: | ---: | ---: | ---: |

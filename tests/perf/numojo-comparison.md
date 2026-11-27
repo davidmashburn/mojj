@@ -1,11 +1,11 @@
 # NuMojo comparison, 2026-11-15
 
-Scratch diagnostic: NuMojo 0.11.0 (the release published for Mojo 1.1.0)
-imported into the same binary as Mojj from source, `--fp-mode contract=off`,
-Apple M1, one process, one session. The harness was
-`build/numojo-bench/compare.mojo` in a scratch pixi workspace; it is not
-committed. The host was loaded, so only same-session ratios support a
-conclusion, not absolute values.
+This historical diagnostic compares Mojj with NuMojo 0.11.0, imported from
+source into the same binary. It used Mojo 1.1.0 with
+`--fp-mode contract=off` on an Apple M1, in one process and one session.
+The harness was `build/numojo-bench/compare.mojo` in a scratch Pixi workspace;
+it is not committed. The host was loaded, so the results support same-session
+comparisons rather than portable absolute costs.
 
 ## Steady-state cost, 100,000 Float64 elements, ns/element
 
@@ -18,18 +18,20 @@ conclusion, not absolute values.
 | RMS (`%: @: (+/ % #) @: *:` / `sqrt(mean(a*a))`) | 1.33 | 1.34 |
 
 NuMojo is ~2x faster than Mojj's strict fold on `sum()`, and Mojj is ~1.4x
-faster on the elementwise map. RMS converges to parity at 100k.
+faster on the elementwise map. The recorded RMS costs are nearly equal at 100,000 elements.
 
-## Fixed cost, ns/call
+## Reported fixed-cost estimates, ns/call
 
 | Elements | Mojj `+/` | NuMojo `sum()` | Mojj `+:` | NuMojo `a+a` |
 | ---: | ---: | ---: | ---: | ---: |
 | 1,000 | 5.9 | 62 | 0.87 | 62 |
 | 10,000 | 9.6 | 54 | 4.3 | 54 |
 
-NuMojo pays ~50-60 ns per call constructing `NDArray` objects, so it loses on
-short vectors even when its steady-state loop is faster. Mojj's per-call fixed
-cost is 5-10 ns.
+The original diagnostic labels these figures as fixed costs in ns/call,
+but does not retain the harness or explain how fixed cost was separated
+from per-element work. Treat them as unverified overhead estimates rather
+than total call times. Object construction may contribute to the difference;
+this report does not isolate that cost.
 
 ## Semantics that differ
 
@@ -44,12 +46,12 @@ cost is 5-10 ns.
 
 ## Conclusion
 
-NuMojo is not a drop-in under Mojj today. Adopting it for the reduction path
-would buy the ~2x sum speedup but discard the strict right fold (a documented
-Mojj contract, tested bit-for-bit) and the explicit domain-error semantics,
-and it would regress short-vector latency and the elementwise map.
+The tested NuMojo reduction is not a semantic replacement for Mojj’s strict
+fold. Its recorded sum cost was about half Mojj’s at 100,000 elements, but
+the cancellation fixture shows that the two can return different answers.
+The faster sum alone does not justify replacing Mojj’s default reduction.
 
-The performance plan's recommendation stands: keep the strict fold as the
-default and oracle, and if J-comparable sum speed is required, add a separately
-named blocked reduction (option B) behind an explicit surface rather than
-swapping the storage engine.
+These results support retaining the strict fold as the default and reference
+implementation. A reassociating reduction would need a separate, explicit
+contract and new measurements. This scratch diagnostic does not establish
+the cost of replacing the storage engine.

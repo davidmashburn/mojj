@@ -1,4 +1,4 @@
-# Float64 rectangular dot
+# Float64 rectangular dot measurements
 
 The benchmark calls `Expr["+/ . *"].dyad` with a Float64 matrix and vector in both operand orders. Each sample makes 26 calls, varying the first vector element over 13 values twice and summing every output element. Before timing, each binary checks the output shape, dtype and every element against a scalar right-fold oracle for all 13 inputs. The matrices contain exactly representable binary fractions.
 
@@ -6,7 +6,7 @@ Each of eight blocks runs the baseline and candidate once, alternating their ord
 
 ## Implementation decision
 
-Mojj retains the guarded **matrix × vector** specialization from `c06d309`. Vector × matrix uses generic product assembly. Both candidate directions were first measured independently, then tested again after adding checks for shortened matrix storage. The final isolated M4 trial selected the implementation. The tables below distinguish that decision from preliminary timings.
+Mojj retains the guarded **matrix × vector** specialization from `c06d309`. Vector × matrix uses generic product assembly. Both candidate directions were first measured independently, then tested again after adding checks for shortened matrix storage. The final isolated M4 trial selected the implementation. The tables below retain the rejected candidates and preliminary timings for comparison; those gains do not describe shipped behavior.
 
 | Isolated change | Matrix shape | M4 | Linux first | Linux repeat |
 | --- | ---: | ---: | ---: | ---: |

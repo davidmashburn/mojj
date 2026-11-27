@@ -2,7 +2,7 @@
 
 This benchmark compares the retained matrix × vector optimization (`c06d309`) with its baseline (`15a1b77`) through the public `+/ . *` expression. Each timed batch uses one matrix shape and makes 100 calls. For each share shown below, that many calls use the matrix on the left, evenly spaced among the vector × matrix calls. The measured loop varies the first vector element and sums every output. Before timing, the driver checks the dtype, shape and every output element against a scalar right fold for all 13 input variants in both directions.
 
-## Estimates from isolated timings
+## Break-even estimates from isolated timings
 
 For each [isolated pair](rectangular.md), let S be the matrix × vector time saved per call and C the extra vector × matrix time per call. S was positive in every pair. Assuming the two costs add, the break-even matrix × vector share is C / (C + S) when C is positive and zero otherwise. Above the seventh sorted threshold the candidate would win at least seven of the eight observed pairs under that assumption.
 
@@ -32,7 +32,7 @@ Each cell reports the median candidate/baseline elapsed-time ratio and the numbe
 
 [Linux first](mixed-linux-first.csv) · [Linux repeat](mixed-linux-repeat.csv) · [Apple M4](mixed-m4.csv) · [Hosted run](https://github.com/davidmashburn/mojj/actions/runs/44816253874)
 
-On Linux, five matrix × vector calls per hundred was the smallest tested share with seven faster pairs on both shapes in both runs. At zero the median moved across parity between runs. The measured batches therefore do not establish an exact crossover. At an even split the Linux median time fell by 37–38% on both shapes. No M4 mix reached seven faster pairs. An application estimate needs its observed shape and operand-order frequencies, and an M4 estimate needs a quieter repeat.
+On Linux, five matrix × vector calls per hundred was the smallest tested share with seven faster pairs on both shapes in both runs. At zero the median moved across parity between runs. The measured batches therefore do not establish an exact crossover. At an even split the Linux median time fell by 37–38% on both shapes. In the original, heavily loaded M4 run, no mix reached seven faster pairs. The quieter repeat below did at an even split. An application estimate needs its observed shape and operand-order frequencies, and the M4 repeat below narrows the evidence without establishing an exact crossover.
 
 ## Linux replication
 

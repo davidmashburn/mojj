@@ -1,6 +1,7 @@
 # Float64 double SIMD experiments
 
-Four-wide SIMD is the selected Float64 vector implementation of `+:`.
+Four-wide SIMD is the selected Float64 vector implementation of `+:`
+(double), based on the Apple M4 trials recorded here.
 The primary comparison timed the complete `Expr["+:"].map(data)` call,
 including input copying, output allocation and destruction. Width four won
 eight of eight paired blocks at 100,000 elements. Its median paired speedup
@@ -13,7 +14,7 @@ The [square SIMD trial](square/README.md) records the separate decision for Floa
 Speedup is baseline time divided by candidate time **within each block**,
 then the median across eight blocks. A win means a lower time in that block.
 The preallocated raw loops isolate arithmetic and memory access. Public rows
-include the full list boundary.
+include input copying, output allocation, and destruction.
 
 | # | Question | Median speedup | Wins |
 | ---: | --- | --- | --- |

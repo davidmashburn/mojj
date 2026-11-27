@@ -8,7 +8,7 @@ list can be passed directly, and `data.copy()` is an explicit way to keep the
 original. The string tests cover borrowed input and result independence,
 owned results, strict sum order, and rank and domain errors.
 
-## Inspecting the entry copy
+## Inspect the input copy
 
 The following probe keeps distinct functions for the public paths. Save it
 as `public_paths.mojo` outside the source tree.
@@ -49,7 +49,7 @@ both borrowing wrappers call the list constructor before evaluation. For
 a nonempty list, the constructor allocates storage and copies the input
 elements. The owned wrappers place the incoming pointer, length, and
 capacity into the noun before entering the same map or reduction
-implementation. Each owned path removes one input payload copy in this probe.
+implementation. In this assembly probe, each owned path avoids the input payload copy made by its borrowing counterpart.
 
 ## Direct identity maps
 
@@ -63,7 +63,7 @@ begins after input preparation and ends after the last result is consumed.
 It includes popping each input from its batch, calling the public method,
 reading one position from its result, and destroying the result.
 
-| Elements | Owned input with identity copy | Direct transfer | Median paired ratio | Pairs faster |
+| Elements | Owned input with identity copy | Direct transfer | Median direct-transfer / copy ratio | Direct-transfer wins |
 | ---: | ---: | ---: | ---: | ---: |
 | 16 | 224.7 ns | 68.5 ns | 0.340 | 14/16 |
 | 100,000 | 75,560 ns | 673.3 ns | 0.010 | 16/16 |

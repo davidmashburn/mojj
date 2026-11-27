@@ -3,14 +3,16 @@
 Inspectable numerical composition in Mojo.
 
 Mojj builds calculations from small, typed operations. The same expression can
-describe its structure and evaluate runtime data. This is a fresh, deliberately
-small J-inspired library; it is not a J interpreter or a general array package.
+describe its structure and evaluate runtime data. It is a deliberately small,
+J-inspired library with a compiled expression API and a separate typed
+composition API. It is not a full J interpreter or a
+general array package.
 
 Start with [Learn Mojj with words](docs/WORDS.md) for a hands-on walkthrough, or explore [Mojj by example](docs/SHOWCASE.md) for side-by-side NumPy, MATLAB, NuMojo, Mojj, and J recipes covering array shapes, reductions, windows, and composition.
 
 Work through a [signal filter and a neural-network training step](docs/ALGORITHMS.md) to compare Mojj with mathematical notation and executable array code.
 
-For the argument behind the notation, read [Why care about terseness (aka expressiveness) in the age of LLM's?](docs/TERSENESS.md).
+For the argument behind the notation, read [Why terseness still matters in the age of LLMs](docs/TERSENESS.md).
 
 On GitHub, Mojj examples use **bold** for verbs, *italics* for nouns, and <ins>underlining</ins> for modifiers. To read the same guides in the prompt’s colors, run `pixi run docs` and open `build/docs/README.html`. When editing a guide, you can write ordinary code fences and table code spans, then run `pixi run docs-format` to apply the formatting.
 
@@ -113,7 +115,9 @@ in the development environment to drive bounded compiler-failure tests; the
 library and numerical execution are pure Mojo. From another project, add this
 repository's `src` or precompiled `build` directory to Mojo's import path with `-I`.
 
-## Current contract
+<a id="current-contract"></a>
+
+## Typed composition API
 
 - Float64 values in contiguous `List` inputs, with runtime lengths and CPU
   evaluation.
@@ -168,9 +172,9 @@ print(result.mean, result.variance)  # 5.0, 16.0
 ```
 
 `PopulationMoments[]` reads the input directly. It uses Welford's online
-recurrence with a compensated mean update and divides by the population size. A finite singleton has zero
-variance. Empty input, nonfinite mapped values, and overflow of the running
-accumulators raise. Its online mean can round differently from `Mean[]`.
+recurrence with a compensated mean update and divides by the population size.
+A finite singleton has zero variance. Empty input, nonfinite mapped values,
+and overflow of the running accumulators raise. Its online mean can round differently from `Mean[]`.
 `Stats.describe()` retains the mapped expression.
 
 Built-in operations are pure. Extension traits are `ScalarOp`, `SeriesExpr`,
@@ -180,9 +184,11 @@ traversal interface whose index must already be valid.
 
 ## Scope and numerical behavior
 
-The legacy typed reductions below accumulate left to right with ordinary Float64 arithmetic. There
-is no compensated summation, overflow protection, algebraic rewrite engine,
-or general automatic fusion pass. The tasks disable floating-point contraction;
+Typed `Sum` and `Mean` accumulate left to right with ordinary Float64
+arithmetic, without compensated summation or overflow protection.
+`PopulationMoments` has its own checked, compensated recurrence, described
+above. Mojj has no algebraic rewrite engine or general automatic fusion pass.
+The tasks disable floating-point contraction;
 this is not a guarantee of bitwise portability. No speedup or compiler-level
 allocation claim is made without measurements.
 
@@ -190,8 +196,9 @@ The J verb API supports hooks, forks, shaped numeric arrays, rank agreement,
 and windows. Shaped results own their storage. See the
 [compatibility ledger](docs/COMPATIBILITY.md) for supported domains and limits.
 
-The full test suite, demo, and compiled-package smoke tests passed on macOS
-arm64 and Ubuntu 24.04 x86-64 under Docker Desktop emulation on Apple M4.
+In recorded validation, the full test suite, demo, and compiled-package smoke
+tests passed on macOS arm64 and Ubuntu 24.04 x86-64 under Docker Desktop
+emulation on Apple M4.
 The [performance report](tests/perf/README.md#shared-mean-and-population-variance)
 uses macOS arm64 timings.
 

@@ -1,6 +1,6 @@
 # Algorithms in Mojj
 
-For a closer look at what these spellings make easy to read and change, see [Why care about terseness (aka expressiveness) in the age of LLM's?](TERSENESS.md).
+Compare two algorithms across mathematical notation and array languages: a signal filter and one neural-network training step. Each example includes a small edit whose effect you can predict before running it. For the argument behind this approach, see [Why terseness still matters in the age of LLMs](TERSENESS.md).
 
 ## Filter a signal
 
@@ -36,7 +36,7 @@ $$
 z=xW,\qquad h=\max(0,z),\qquad \hat y=h\cdot w,\qquad L=\tfrac12(\hat y-y)^2.
 $$
 
-With $e=\hat y-y$, the hidden gradient is $d_z=e\,w\odot\mathbf{1}_{z>0}$. The input-weight gradient is the outer product $x^\mathsf{T} d_z$, treating $d_z$ as a row. These three lines show where the notation matters.
+With $e=\hat y-y$, the hidden gradient is $d_z=e\,w\odot\mathbf{1}_{z>0}$. The input-weight gradient is the outer product $x^\mathsf{T} d_z$, treating $d_z$ as a row. The table compares the matrix product used in the forward pass with the elementwise and outer products used in the gradients.
 
 | Step | Wolfram Language | NumPy | MATLAB (row vectors) | NuMojo | Mojj words | Mojj symbols | J |
 | --- | --- | --- | --- | --- | --- | --- | --- |

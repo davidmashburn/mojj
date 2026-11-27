@@ -2,7 +2,7 @@
 
 For a guided introduction using the word spellings, start with [Learn Mojj with words](WORDS.md).
 
-`jj(x)` turns Mojo data into a Mojj **noun** (a scalar or array). For example, `jj(3)` wraps one integer and `jj([2, 4])` wraps a vector. Use `jj["…"](...)` when you have a **phrase** to evaluate. The brackets hold the code. The number of arguments in parentheses tells you how to read it.
+`jj(x)` turns Mojo data into a Mojj **noun** (a scalar or array). For example, `jj(3)` wraps one integer and `jj([2, 4])` wraps a vector. Use `jj["…"](...)` when you have a **phrase** to evaluate. The brackets hold the phrase; the number of arguments in parentheses determines whether it is a complete sentence, a monad, or a dyad.
 
 - **Zero** · `jj["10 - 3"]()` evaluates a complete sentence → `7`.
 - **One** · `jj["-"](jj(3))` applies the monad (negate) → `-3`.
@@ -20,7 +20,7 @@ Start the REPL from the repository’s `src` directory so it can import Mojj.
 cd src && pixi run mojo repl
 ```
 
-Paste this block and press Enter on a blank line. The variables stay available for all the tables.
+Paste this block and press Enter on a blank line. The variables stay available for the Mojj examples in the tables.
 
 <pre data-mojj="mojo"><code>from mojj import jj
 var v = jj([1, 2, 3, 4])
@@ -131,7 +131,7 @@ Read the last row as “pair each left item with one right row.” Mojj matches 
 | Inner product | `np.dot([1,2,3],[4,5,6])` | `dot([1 2 3],[4 5 6])` | `nm.dot(nm.array[i64]("[1,2,3]"), nm.array[i64]("[4,5,6]"))` | <code data-mojj>jj&#91;"<em>1</em> <em>2</em> <em>3</em> <strong>dot</strong> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj>jj&#91;"<em>1</em> <em>2</em> <em>3</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>4</em> <em>5</em> <em>6</em>"&#93;()</code> | <code data-mojj><em>1</em> <em>2</em> <em>3</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>4</em> <em>5</em> <em>6</em></code> |
 | Matrix times vector | `A @ np.array([1,2,3])` | `A*[1;2;3]` | `A @ nm.array[i64]("[1,2,3]")` | <code data-mojj>jj&#91;"<strong>dot</strong>"&#93;(A, jj(&#91;1, 2, 3&#93;))</code> | <code data-mojj>jj&#91;"<strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong>"&#93;(A, jj(&#91;1, 2, 3&#93;))</code> | <code data-mojj><em>A</em> <strong>+</strong><ins>/</ins> <ins>.</ins> <strong>&#42;</strong> <em>1</em> <em>2</em> <em>3</em></code> |
 
-For the last row the two inner products are `0×1 + 1×2 + 2×3 = 8` and `3×1 + 4×2 + 5×3 = 26`. MATLAB returns a column. Mojj returns a length-two vector. Table keeps both axes, so its two-by-three result above contains six separate products.
+For the last row the two inner products are `0×1 + 1×2 + 2×3 = 8` and `3×1 + 4×2 + 5×3 = 26`. MATLAB returns a column. Mojj returns a length-two vector. The `table` modifier keeps both axes, so its two-by-three result above contains six separate products.
 
 Insertion groups from the right. For example, `minus insert 10 3 2` means `10 - (3 - 2)`, giving 9. The same order matters for floating-point sums. Derived Mojj mean returns zero on an empty vector, whereas NumPy and MATLAB return NaN for their empty vector means.
 
@@ -197,13 +197,13 @@ def main() raises:
 
 A named `Expr` provides `.describe()` and the Float64 convenience methods `.apply()`, `.map()`, and `.reduce()`, as in the RMS example.
 
-For example, set `selected = mojj.StridedView(data, 0, 2, 2)` on readings `[2., 10., 4.]`. The view selects 2 and 4. With `mojj.SharedReduce[mojj.SumFold[], mojj.MeanFold[mojj.Square], mojj.Add[1]]`, the shared transform produces 3 and 5. The first fold sums to 8 and the second averages 9 and 25 to give 17. The [typed example](../README.md#current-contract) shows the complete call. Typed `mojj.Mean[]` accumulates left to right and requires nonempty input.
+For example, set `selected = mojj.StridedView(data, 0, 2, 2)` on readings `[2., 10., 4.]`. The view selects 2 and 4. With `mojj.SharedReduce[mojj.SumFold[], mojj.MeanFold[mojj.Square], mojj.Add[1]]`, the shared transform produces 3 and 5. The first fold sums to 8 and the second averages 9 and 25 to give 17. The [typed example](../README.md#typed-composition-api) shows the complete call. Typed `mojj.Mean[]` accumulates left to right and requires nonempty input.
 
 Mojj compiles literal phrases over Boolean, Int64 and Float64 nouns. For checked overflow, unsupported complex results, empty frames, and the supported valences of each verb, see the [compatibility ledger](COMPATIBILITY.md) and [syntax guide](SYNTAX.md). The comparison format takes inspiration from [NumPy for MATLAB users](https://numpy.org/doc/stable/user/numpy-for-matlab-users.html).
 
 ## Where J and Mojj differ
 
-For every recipe above, J 9.6.3 and Mojj produced the same values, shapes, and numeric types on the inputs shown. Result storage and supported domains can differ even for a short expression. These examples use the same source text in J 9.6.3 and in a Mojj noun sentence. In the last two rows, `i.0` supplies an empty integer vector.
+In the recorded recipe checks, J 9.6.3 and Mojj produced the same values, shapes, and numeric types on the inputs shown. Result storage and supported domains can differ even for a short expression. These examples use the same source text in J 9.6.3 and in a Mojj noun sentence. In the last two rows, `i.0` supplies an empty integer vector.
 
 | Expression | Mojj | J |
 | --- | --- | --- |

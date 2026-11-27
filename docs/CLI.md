@@ -12,7 +12,7 @@ mojj&gt; <em>readings</em>
 mojj&gt; <em>doubled</em>
 [2, 4, 6, 8]</code></pre>
 
-Assignment evaluates the right side once. Updating `readings` leaves the earlier value of `doubled` available. A failed assignment preserves the previous binding. Use `=:` for assignment and `=` for equality.
+Assignment evaluates the right side once. Reassigning `readings` does not recompute `doubled`; it retains the values calculated at its assignment. A failed assignment preserves the previous binding. Use `=:` for assignment and `=` for equality.
 
 ## Read the colors
 
@@ -41,7 +41,7 @@ mojj&gt; <strong>sum</strong> <ins>rank</ins> <em>1</em> <em>batches</em>
 
 Higher-rank arrays display their shape followed by the elements in row-major order. Enter `:quit` to leave the session. For a script, put the same commands in a text file without the prompts and run `pixi run mojj < readings.mojj`. Errors go to standard error. A script continues after a failed sentence and exits with a nonzero status if any sentence failed.
 
-## What runs under the hood?
+## How execution works
 
 The `mojj` launcher starts one `pixi run mojo repl` process with Mojj on its import path. For each command the launcher sends a Mojo cell containing the quoted phrase. Mojo compiles the phrase with Mojj’s parser and runs the same verbs used by `jj`. The running Mojo process owns the session’s noun values. Starting a new session starts with an empty set of names.
 
@@ -61,4 +61,4 @@ Mojo also accepts a triple-quoted string for a single Mojj phrase. Line breaks s
     <em>2</em> <em>4</em> <em>6</em> <em>8</em>
 )"""]().as_ints())  # [6, 14]</code></pre>
 
-Session names start with an ASCII letter and can contain letters, digits, and underscores. Mojj vocabulary words are reserved. Assignment stores scalars and arrays. Write verbs directly in each sentence and use literals for operands that form a derived verb, such as the rank in `sum rank 1`. To give a verb a reusable name in Mojo, use a compile-time `Expr` as shown in the [words walkthrough](WORDS.md#run-it-as-a-program). Each input phrase has the library’s usual [syntax limits](SYNTAX.md).
+Session names start with an ASCII letter and can contain letters, digits, and underscores. Mojj vocabulary words are reserved. Assignment stores scalars and arrays. Write verbs directly in each sentence and use literals for operands that form a derived verb, such as the rank in `sum rank 1`. To give a verb a reusable name in Mojo, use a compile-time `Expr` as shown in the [words walkthrough](WORDS.md#run-it-as-a-program). Each input phrase is subject to the library’s [syntax limits](SYNTAX.md#bounds-and-validation).

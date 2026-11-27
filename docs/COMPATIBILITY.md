@@ -1,6 +1,6 @@
 # J compatibility ledger
 
-Mojj implements a compiled, numerical subset of J. The tables below describe supported domains and the checked reference cases.
+Mojj implements a compiled, numerical subset of J. This ledger separates supported behavior, intentional differences from J, and the limits of the recorded checks. For phrase syntax, see the [syntax guide](SYNTAX.md).
 
 ## Contract
 
@@ -10,7 +10,7 @@ Mojj implements a compiled, numerical subset of J. The tables below describe sup
 | Arithmetic | <code data-mojj><strong>+</strong> <strong>-</strong> <strong>&#42;</strong> <strong>%</strong></code>, real powers/logs/roots, residue, min/max, comparisons, circle and Boolean verbs | Unsupported valences raise; negative square root raises |
 | Trains | Hooks, forks, cap, longer verb trains, constant noun branches | Verb trains only; no arbitrary adverb/conjunction trains |
 | Modifiers | <code data-mojj><ins>@:</ins></code>, rank-sensitive <code data-mojj><ins>@</ins></code>, noun and verb bond, reflex, rank, insertion/table, prefix/suffix, dot and fixed verb repetition (<code data-mojj><ins>^:</ins></code>) | Repetition takes one integer literal from 0 through 1024. Inverse, convergence and array-of-count forms are unsupported. A noun-bound verb supports monadic use only |
-| Grammar | Relevant J parse-table rows, numeric nouns and sentences, groups | No assignment, names, foreigns, control flow, or dynamic evaluation |
+| Grammar | Relevant J parse-table rows, numeric nouns and sentences, groups | No assignment or names within standalone literals; no foreigns, control flow, or dynamic evaluation |
 | Aliases | Words and symbols normalize before parsing | No whitespace pipeline mode |
 | Execution | Literal-specialized typed verbs; fresh result storage | No promised fusion, allocation optimization, or performance parity |
 
@@ -33,7 +33,7 @@ and one for multiplication/division. Unsupported identity inference raises.
 The derived mean is a fork, and its empty result is zero because J defines
 zero divided by zero as zero.
 
-The older `core.mojo` API is independently retained. Its lazy Float64 `Sum`
+The typed composition API in `core.mojo` has a separate contract. Its lazy Float64 `Sum`
 and `Mean` accumulate left to right; its empty `Mean` raises. Its tree
 representations and policies must not be used as a description of the new
 J verb API.
@@ -59,6 +59,6 @@ The locked Mojo 1.1.0 toolchain passed the full test suite, demo, and compiled-p
 
 ## Reference execution
 
-The current suite has 142 expectations against pinned J 9.6.3 for macOS arm64 and Linux x86-64. It compares every result axis, checks integer and Boolean values exactly, and records dtype differences separately. It exercises vector and matrix products, zero-length axes, negative windows, prefix frame agreement, shape errors, and fixed-count repetition. Two expected differences cover checked integer overflow and complex-producing square root. See the [cases and reproduction command](../tests/reference/README.md).
+The reference corpus contains 142 expectations against pinned J 9.6.3 for macOS arm64 and Linux x86-64. It compares every result axis, checks integer and Boolean values exactly, and records dtype differences separately. It exercises vector and matrix products, zero-length axes, negative windows, prefix frame agreement, shape errors, and fixed-count repetition. Two expected differences cover checked integer overflow and complex-producing square root. See the [cases and reproduction command](../tests/reference/README.md).
 
 The [historical performance report](../tests/reference/RESULTS.md) used the original 33 fixtures. J is a development reference and is independent of the library runtime.

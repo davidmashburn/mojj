@@ -1,8 +1,9 @@
-# Float64 vector dot
+# Float64 vector dot measurements
 
 On an Apple M4 running Darwin arm64 with Mojo 1.1.0 (8189361e), the candidate used less elapsed time than revision `5f160a4` for the public `Expr["+/ . *"].dyad` call in all 40 matched pairs of the first run and 39 of 40 in a second run. Both builds used the archived source tree, with only the candidate's Float64 vector path added. Each run used eight trials and alternated which binary ran first. Host load varied during these measurements.
 
-The first run produced these paired elapsed-time ratios.
+The table reports candidate time divided by baseline time within each pair;
+a ratio below one favors the specialized path.
 
 | Vector length | Calls per sample | Median candidate / baseline | Range |
 |---:|---:|---:|---:|

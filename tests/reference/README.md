@@ -18,7 +18,8 @@ pixi run compare-j --fetch-j --output build/reference/results.json
 For slower builds, add `--compile-timeout-seconds 600` to the comparison command.
 The option sets the time limit for each Mojo compilation and defaults to 180 seconds.
 
-The checked-in final report is `tests/reference/results.json`. The command above
+The checked-in final report from the original 33-case comparison is
+`tests/reference/results.json`; it does not cover all 142 current expectations. The command above
 writes a fresh result under `build/` so it does not silently replace that report.
 
 The first comparison downloads the official J archive into ignored
@@ -28,7 +29,7 @@ executable and both libraries match `runtime.json`. A Java `jconsole` is not
 suitable. The archive URL uses a mutable release tag, so both the archive and
 individual files are checked against SHA-256 pins; changed downloads fail closed.
 Each platform has a separate archive, executable and library digests, and runtime version string.
-Use `--conformance-only` to check the corpus without collecting benchmark timings. Each Linux CI run retains its JSON comparison as the `j-conformance-linux-x86-64` artifact.
+Use `--conformance-only` to check the corpus without collecting benchmark timings. The Linux conformance workflow retains its JSON comparison as the `j-conformance-linux-x86-64` artifact.
 
 The default `pixi run test` runs the Python harness checks without downloading
 or executing J. The live comparison is an explicit task. Python, Mojo, and
@@ -94,7 +95,7 @@ are not identical. Results describe these implementations and workloads, not
 Mojo versus J generally. Allocation/scalar traversal may explain some of the
 gap, but no profiler evidence here establishes the cause.
 
-[RESULTS.md](RESULTS.md) summarizes the initial and final runs, and retains the intervening noisy
+[RESULTS.md](RESULTS.md) summarizes the original 33-case initial and final runs, and retains the intervening noisy
 repeat as evidence of variability and the limits on numerical speed claims. The JSON includes all five
 samples, repetition counts, runtime hashes, hardware/toolchain metadata, source
 revision, and SHA-256 fingerprints for the measured source and harness. The

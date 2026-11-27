@@ -1,6 +1,8 @@
-# Recorded J comparison
+# Recorded J comparison: original 33 cases
 
-All **33 conformance expectations passed** in the final run: 30 successful
+This historical report covers the November 6, 2026 comparison, before the
+corpus expanded to 142 expectations. All **33 conformance expectations passed**
+in its final run: 30 successful
 value/shape agreements, one shared shape error, and two intentional differences.
 J promotes the overflow example to floating point and produces a complex square
 root; Mojj rejects both. Empty sum/product also differ in dtype (J Boolean, Mojj
@@ -66,7 +68,7 @@ explicit live task reverified its files, passed 33/33 expectations, and checked 
 The compiler still emits existing unreachable-code warnings for compile-time
 assertion branches.
 
-No Linux execution, remote CI, exhaustive IEEE tests, full-J suite, memory
+For this recorded comparison, no Linux execution, remote CI, exhaustive IEEE tests, full-J suite, memory
 profiling, assembly audit, or quiet-host timing study was performed. General
 arrays, additional J grammar, other J versions, and the legacy API remain
 outside this comparison. See [method and reproduction steps](README.md).

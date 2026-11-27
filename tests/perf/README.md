@@ -1,7 +1,7 @@
 # Performance probes and bottleneck report
 
-Matched-control microbenchmarks for the compiled `Expr` API. They exist so a
-change can be attributed instead of guessed at: each library path is printed
+These microbenchmarks compare the compiled `Expr` API with matched controls
+to help identify where evaluation time goes: each library path is printed
 next to a bare-Mojo loop that does the same arithmetic, in one process, on one
 host. This is a diagnostic, not a test; `pixi run test` does not run it.
 
@@ -33,7 +33,7 @@ load.
 - Apple M1, 8 cores, macOS 26.2, Mojo 1.1.0, `--fp-mode contract=off`.
 - Built with `mojo build`; 100,000-element rows are the mean of 100 timed calls
   after one warm-up, fixed-cost rows the mean of 20,000 calls. The first result
-  cell is consumed so nothing is optimized away.
+  cell is consumed to reduce the opportunity for dead-code elimination.
 - The host is shared, not quiet. Load averages during these runs were 2–6 with
   other applications active. The bare controls moved up 30–50% between the
   baseline session and the post-change session, so only same-session ratios
@@ -62,11 +62,12 @@ destruction and the input `Noun` copy.
 | RMS | 100,000 | 65.4× | 3.97× |
 
 Mojj's per-element cost fell from 7.6 to 0.5–0.6 ns for `+:`, from 15.7 to
-0.9–1.1 ns for `+/`, and from 23 to 1.3–1.5 ns for RMS. The remaining sum gap
-is the strict right fold: J reassociates float `+/`, Mojj does not. The 10,000
-and 100,000 sum rows are the honest cost of that documented choice, not a
-regression. Closing them requires a separately named blocked reduction
-(option B in the plan), not more unboxing.
+0.9–1.1 ns for `+/`, and from 23 to 1.3–1.5 ns for RMS.
+The strict right fold is consistent with a remaining sum bottleneck: J can
+reassociate floating `+/`, while Mojj preserves right grouping. The serial
+controls and assembly check below support that interpretation, but do not
+establish the cause of the entire gap. A blocked reduction would need a
+separate numerical contract because reassociation can change results.
 
 ## Attribution at 100,000 elements, after the slices
 
@@ -87,8 +88,9 @@ regression. Closing them requires a separately named blocked reduction
 | `Expr["%: @: (+/ % #) @: *:"]` | 1.33–1.50 |
 
 The map path now sits at the bare typed-loop cost plus one result-list
-allocation. The fold sits on the strict serial-fold floor: a dependent `fadd`
-chain, which is a hardware limit for preserving order, not slack in the code.
+allocation. The fold is close to the measured strict serial-fold control.
+The assembly shows a dependent `fadd` chain, which limits opportunities for parallel
+accumulation while preserving order.
 The RMS row is `square` (map) plus `sum` (fold) plus two scalar steps.
 
 ## Fixed-cost rows, ns/call
@@ -103,9 +105,9 @@ The RMS row is `square` (map) plus `sum` (fold) plus two scalar steps.
 Scalar reductions cost about 6 ns. Vector-returning maps cost about 65 ns even
 for one element, because the call allocates a result list and constructs a
 `Noun`. On this host one small `List[Float64]` allocation measured 51–77 ns
-under load, so the fixed cost is allocation and `Noun` scaffolding, not
-arithmetic. That is slice 4 (ownership and copies), and it is the right place
-to attack short-vector latency.
+under load, consistent with allocation and `Noun` construction contributing
+much of the fixed cost. These controls do not isolate every component. See the later
+[ownership probe](ownership.md) for input-transfer and identity-map results.
 
 ## Assembly check
 

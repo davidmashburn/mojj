@@ -1,10 +1,10 @@
-# Why care about terseness (aka expressiveness) in the age of LLM's?
+# Why terseness still matters in the age of LLMs
 
 Ask an LLM for a finite impulse response filter and you can have a loop, a matrix expression, or a library call before you’ve decided what to name the output. If the case for a terse language rests on saving keystrokes, that case just got considerably weaker.
 
 Now ask the model to turn convolution into correlation. It hands you a diff. Before you accept it, what do you look for?
 
-I’d look for the coefficient that multiplies the newest sample. I want to recognize that decision in code someone else wrote. That’s where the “aka” in the title needs a qualification. Terseness counts how little I write. By *expressiveness* I mean how directly I can state an idea I care about. The two coincide when a short phrase lets me locate a decision, predict the effect of changing it, and check my prediction.
+I’d look for the coefficient that multiplies the newest sample. I want to recognize that decision in code someone else wrote. That requires a distinction between terseness and expressiveness. Terseness counts how little I write. By *expressiveness* I mean how directly I can state an idea I care about. The two coincide when a short phrase lets me locate a decision, predict the effect of changing it, and check my prediction.
 
 ## The one-word edit
 
@@ -83,9 +83,9 @@ Suppose I ask the model, “Make the hidden units leaky so negative inputs can l
 
 The middle unit is the interesting one. Its input is $-1+2(0.25)=-0.5$. It used to output zero and now outputs $-0.05$. Its output weight is 1, so this lowers the network’s prediction from $-1$ to $-1.05$. A test of the prediction would pass as soon as we changed `h`.
 
-Can the middle unit now *learn*? Under half-squared error the new prediction error is $-2.05$. Multiply by the middle output weight (1) and by the slope on the negative side (0.1). The middle unit’s sensitivity is $-0.205$. Its column in the gradient table should therefore contain $-0.205$ and $-0.410$, one entry for each input feature. If the backward pass still uses the old zero-or-one ReLU mask, both entries are zero. The new forward prediction and the old broken gradient can coexist quite happily.
+Can the middle unit now *learn*? Under half-squared error the new prediction error is $-2.05$. Multiply by the middle output weight (1) and by the slope on the negative side (0.1). The middle unit’s sensitivity is $-0.205$. Its column in the gradient table should therefore contain $-0.205$ and $-0.410$, one entry for each input feature. If the backward pass still uses the old zero-or-one ReLU mask, both entries are zero. The correct forward prediction can coexist with an incorrect gradient.
 
-There’s a way to check the first entry without trusting the backward pass at all. Nudge the middle unit’s first weight from $-1$ to $-0.999$. Its input goes up by $0.001$, its output by $0.0001$. The loss changes from $2.05^2/2$ to $2.0499^2/2$. Divide that change by the weight nudge and you get about $-0.205$, right where the first entry said it would be.
+There’s a way to check the first entry without trusting the backward pass at all. Nudge the middle unit’s first weight from $-1$ to $-0.999$. Its input goes up by $0.001$, its output by $0.0001$. The loss changes from $2.05^2/2$ to $2.0499^2/2$. Divide that change by the weight nudge and you get about $-0.205$, matching the gradient entry to the precision of this finite-difference check.
 
 That column is what I’d ask to see in review. I’d also apply the new activation when measuring the prediction after the weight update. Naming `h`, `slope`, and `dz` costs a few lines and gives a reviewer somewhere to stop before the weights move. The full training example shows the original ReLU and the update together. [Run the training step](ALGORITHMS.md#train-a-two-layer-network-for-one-step).
 

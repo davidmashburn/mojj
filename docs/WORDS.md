@@ -14,7 +14,7 @@ cd src && pixi run mojo repl
 var readings = jj([1, 2, 3, 4])
 print(jj["<strong>sum</strong>"](readings).as_int())  # 10</code></pre>
 
-`jj(data)` wraps Mojo data as a **noun**, Mojj’s name for a scalar or array. `jj["sum"]` names a calculation. The parentheses after the brackets run it, and their argument count tells you how to read it.
+`jj(data)` wraps Mojo data as a **noun**, Mojj’s name for a scalar or array. `jj["sum"]` names a calculation. The parentheses after the brackets run it, and their argument count determines whether it is a complete sentence, a monad, or a dyad.
 
 <pre data-mojj="mojo"><code>print(jj["<em>10</em> <strong>-</strong> <em>3</em>"]().as_int())             # 7
 print(jj["<strong>square</strong>"](jj(3)).as_int())        # 9
@@ -59,7 +59,7 @@ Go back to the original sequence. With one argument, `sum prefix` totals success
 print(jj["<strong>sum</strong> <ins>prefix</ins>"](jj(2), readings).as_ints())   # [3, 5, 7]
 print(jj["<strong>sum</strong> <ins>prefix</ins>"](jj(-2), readings).as_ints())  # [3, 7]</code></pre>
 
-A positive width slides one item at a time, so the middle window contains 2 and 3. A negative width takes disjoint blocks, so the two totals agree with the batch totals above.
+A positive width slides one item at a time, so the middle window contains 2 and 3. A negative width takes disjoint blocks, retaining a shorter final block if needed. Here both blocks have two items, so their totals agree with the batch totals above.
 
 What if you want to **exclude** each pair and find the lowest reading left? `min insert` takes the minimum of a group. Adding `suffix` and supplying a width makes that group everything outside each window.
 
